@@ -53,8 +53,8 @@ def populate_db(group_config_name: str, data_config_name: str):
     all_data_to_upload = data_mapping[group_config_name]["upload_lists"]
     for data_to_upload in all_data_to_upload:
         #  upload_named_group_of_tsv_files(data_to_upload["database"], data_to_upload["tables"])
-        logger.info(f"Uploading tsvs")
+        logger.info("Uploading tsvs")
 
 
 def hello(group_config_name: str, data_config_name: str):
-    print('hello')
+    print("hello")

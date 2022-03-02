@@ -9,6 +9,10 @@ click = "*"
 faker = "*"
 
 [dev-packages]
+black = "==21.9b0"
+flake8 = "*"
+xenon = "*"
+isort = "*"
 
 [requires]
 python_version = "3.9"

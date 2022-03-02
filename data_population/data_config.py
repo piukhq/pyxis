@@ -24,7 +24,6 @@ data_configs = {
         payment_cards_history=3000,
         transactions=10000,
     ),
-
     "benchmark_2": DataConfig(
         membership_plans=7,
         users=500,
