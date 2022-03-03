@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 @dataclass
 class DataConfig:
-    membership_plans: int
+    retailers: int
     users: int
     users_history: int
     membership_cards: int
@@ -15,7 +15,7 @@ class DataConfig:
 
 data_configs = {
     "benchmark": DataConfig(
-        membership_plans=7,
+        retailers=8,
         users=500,
         users_history=600,
         membership_cards=5000,
@@ -23,15 +23,5 @@ data_configs = {
         payment_cards=2000,
         payment_cards_history=3000,
         transactions=10000,
-    ),
-    "benchmark_2": DataConfig(
-        membership_plans=7,
-        users=500,
-        users_history=600,
-        membership_cards=5000,
-        membership_cards_history=6000,
-        payment_cards=2000,
-        payment_cards_history=3000,
-        transactions=10000,
-    ),
+    )
 }
