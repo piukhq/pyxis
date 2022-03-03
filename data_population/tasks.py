@@ -1,7 +1,7 @@
 import logging
 
 from enum import Enum
-from polaris import tsv_generation as polaris_tsv
+from data_population.polaris import tsv_generation as polaris_tsv
 from settings import POLARIS_DB, VELA_DB, CARINA_DB
 from data_population import database_tables
 from data_population.data_config import data_configs
@@ -22,15 +22,15 @@ data_mapping = {
         "upload_lists": [{"database": POLARIS_DB, "tables": database_tables.PolarisTables}],
     },
     DataGroups.VELA: {
-        "data_creation_modules": [vela_tsv],
+        "data_creation_modules": ["vela_tsv"],
         "upload_lists": [{"database": VELA_DB, "tables": database_tables.VelaTables}],
     },
     DataGroups.CARINA: {
-        "data_creation_modules": [carina_tsv],
+        "data_creation_modules": ["carina_tsv"],
         "upload_lists": [{"database": CARINA_DB, "tables": database_tables.CarinaTables}],
     },
     DataGroups.ALL: {
-        "data_creation_modules": [polaris, vela, carina],
+        "data_creation_modules": [polaris_tsv, "vela", "carina"],
         "upload_lists": [
             {"database": POLARIS_DB, "tables": database_tables.PolarisTables},
             {"database": VELA_DB, "tables": database_tables.VelaTables},

@@ -4,7 +4,7 @@ from dataclasses import dataclass
 @dataclass
 class DataConfig:
     retailers: int
-    users: int
+    account_holders: int
     users_history: int
     membership_cards: int
     membership_cards_history: int
@@ -16,7 +16,7 @@ class DataConfig:
 data_configs = {
     "benchmark": DataConfig(
         retailers=8,
-        users=500,
+        account_holders=10,
         users_history=600,
         membership_cards=5000,
         membership_cards_history=6000,

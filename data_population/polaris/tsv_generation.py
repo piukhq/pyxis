@@ -1,7 +1,5 @@
 from data_population.data_config import DataConfig
-from row_generation import PolarisGenerators
-from data_population.common.db import PolarisDB
-from data_population.common.models import RetailerConfig
+from data_population.polaris.data_generation import PolarisFactory
 
 
 class TSVHandler:
@@ -9,20 +7,20 @@ class TSVHandler:
     def __init__(self, data_config: DataConfig):
         self.id = 0
         self.config = data_config
-        self.generator = PolarisGenerators()
+        self.create_data = PolarisFactory(data_config=data_config)
+
+        self.retailers = []
+        self.account_holders = []
+        self.account_holder_profiles = []
 
     def create_tsv_files(self):
-        self.create_retailers()
+        self.retailers = self.create_data.retailer_config()
+        self.account_holders = self.create_data.account_holder()
+        self.account_holder_profiles = self.create_data.account_holder_profile()
 
-    def create_retailers(self):
+        print(len(self.retailers))
+        print(len(self.account_holders))
+        print(len(self.account_holder_profiles))
 
-        all_data = []
-        for i in range(100, 100000):
-            all_data.append(self.generator.generate_retailer(i + 1))
 
-        with PolarisDB().open() as session:
-            session.execute(RetailerConfig.__table__.delete().where(RetailerConfig.loyalty_name == ""))
-            session.commit()
-            session.bulk_save_objects(all_data)
-            session.commit()
 
