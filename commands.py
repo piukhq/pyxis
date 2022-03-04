@@ -2,41 +2,42 @@ import click
 import logging
 
 from data_population.data_config import data_configs
-from data_population.tasks import populate_db, hello, DataGroups
+from data_population.tasks import populate, hello, data_mapping
 
 logger = logging.getLogger("Data-controller")
 
 
 tasks = {
-    "populate-db": populate_db,
+    "populate-db": populate,
     "hello": hello,
 }
 
 param_options = {
     "tasks": list(tasks.keys()),
-    "group": [group.value for group in DataGroups],
-    "data_config": list(data_configs.keys()),
+    "group": list(data_mapping.keys()),
+    "data_configuration": list(data_configs.keys()),
 }
 
 TASK_HELP = f"Task you wish to perform (required) " f"Please choose from: {param_options['tasks']}"
 
-DATA_CONFIG_HELP = f"Data Configuration (required). " f"Please choose from: {param_options['data_config']}"
+DATA_CONFIGURATION_HELP = f"Data Configuration (required). " f"Please choose from: {param_options['data_config']}"
 
-GROUP_CONFIG_HELP = (
-    f"Group of data you wish to interact with. Defaults to 'all'. " f"Please choose from: {param_options['group']}"
+DB_HELP = (
+    f"Database to be populated. If none is selected, all databases will be selected. Please choose from: "
+    f"{param_options['group']}"
 )
 
 
 @click.command()
 @click.option("-t", "--task-name", type=click.Choice(param_options["tasks"]), required=True, help=TASK_HELP)
 @click.option(
-    "-d", "--data-config-name", type=click.Choice(param_options["data_config"]), required=True, help=DATA_CONFIG_HELP
+    "-d", "--data-configuration", type=click.Choice(param_options["data_configuration"]), required=True, help=DATA_CONFIGURATION_HELP
 )
 @click.option(
-    "-g", "--group-config-name", type=click.Choice(param_options["group"]), default="all", help=GROUP_CONFIG_HELP
+    "-db", "--db", type=click.Choice(param_options["group"]), default=None, help=DB_HELP
 )
-def main(task_name: str, group_config_name: str, data_config_name: str):
-    tasks[task_name](group_config_name, data_config_name)
+def main(task_name: str, data_configuration: str, db: str):
+    tasks[task_name](data_configuration, db)
 
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
 from data_population.data_config import DataConfig
-from data_population.polaris.data_generation import PolarisFactory
+from data_population.tsv_generation.polaris_generators import PolarisFactory
 
 
 class TSVHandler:
