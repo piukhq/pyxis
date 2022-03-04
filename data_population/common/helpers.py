@@ -12,3 +12,10 @@ class Table:
 
     def keys_as_list(self):
         return list(self.__dict__.keys())
+
+
+def id_generator(starting_num: int = 0):
+    num = starting_num
+    while True:
+        yield num
+        num += 1

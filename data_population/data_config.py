@@ -5,8 +5,8 @@ from dataclasses import dataclass
 class DataConfig:
     retailers: int
     account_holders: int
-    users_history: int
-    membership_cards: int
+    campaigns_per_retailer: int
+    earn_rule_per_campaign: int
     membership_cards_history: int
     payment_cards: int
     payment_cards_history: int
@@ -17,8 +17,8 @@ data_configs = {
     "benchmark": DataConfig(
         retailers=8,
         account_holders=10,
-        users_history=600,
-        membership_cards=5000,
+        campaigns_per_retailer=1,
+        earn_rule_per_campaign=1,
         membership_cards_history=6000,
         payment_cards=2000,
         payment_cards_history=3000,

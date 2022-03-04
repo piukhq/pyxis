@@ -7,7 +7,7 @@ from settings import fake
 from data_population.polaris import components
 
 
-class PolarisFactory:
+class PolarisGenerators:
 
     def __init__(self, data_config):
         self.now = datetime.datetime.utcnow()
@@ -68,5 +68,19 @@ class PolarisFactory:
                 "",  # custom
                 ])
         return account_holder_profiles
+
+    def account_holder_marketing_preference(self):
+        account_holder_marketing_preferences = []
+        for count in range(1, self.data_config.account_holders + 1):
+            account_holder_marketing_preferences.append([
+                self.now,  # created_at
+                self.now,  # updated_at
+                count,  # id
+                count,  # account_holder_id
+                "marketing_pref",  # key_name
+                "True",  # value
+                "BOOLEAN",  # value_type
+                ])
+        return account_holder_marketing_preferences
 
 
