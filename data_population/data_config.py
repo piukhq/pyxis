@@ -15,8 +15,8 @@ class DataConfig:
 
 data_configs = {
     "benchmark": DataConfig(
-        retailers=8,
-        account_holders=10,
+        retailers=10,
+        account_holders=1000,
         campaigns_per_retailer=1,
         earn_rule_per_campaign=1,
         membership_cards_history=6000,

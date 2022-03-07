@@ -1,3 +1,5 @@
+from enum import Enum
+
 profile_config = {
         'email': {'required': 'true', 'label': 'email'},
         'first_name': {'required': 'true', 'label': 'first_name'},
@@ -16,3 +18,12 @@ marketing_preferences = {
                 'type': 'boolean'
         }
 }
+
+
+class AccountHolderStatuses(str, Enum):
+    ACTIVE = 'ACTIVE'
+    PENDING = 'PENDING'
+    FAILED = 'FAILED'
+    INACTIVE = 'INACTIVE'
+
+

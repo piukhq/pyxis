@@ -1,10 +1,9 @@
-import time
 import datetime
 import uuid
 import random
 
 from settings import fake
-from data_population.polaris import components
+from data_population.tsv_creation.fixtures import profile_config, marketing_preferences, AccountHolderStatuses
 
 
 class PolarisGenerators:
@@ -23,9 +22,9 @@ class PolarisGenerators:
                     str(count).zfill(4),  # account_number_prefix (e.g. '0013')
                     10,  # account_number_length
                     self.now,  # created_at
-                    components.profile_config,  # profile_config
+                    profile_config,  # profile_config
                     self.now,  # updated_at
-                    components.marketing_preferences,  # marketing_preference
+                    marketing_preferences,  # marketing_preference
                     "Performance Retailer",  # loyalty_name
                     "",  # email_header_image
                     "Performance Retailer <welcome@performance_retailer.com>",  # welcome_email_from
@@ -38,12 +37,12 @@ class PolarisGenerators:
         for count in range(1, self.data_config.account_holders + 1):
             account_holders.append([
                 fake.email(),  # email
-                'ACTIVE',  # status
-                "hello",  # account_number
+                AccountHolderStatuses.ACTIVE,  # status
+                str(fake.credit_card_number()),  # account_number
                 True,  # is_active
                 False,  # is_superuser
                 self.now,  # created_at
-                random.randint(1, self.data_config.retailers + 1),  # retailer_id
+                random.randint(1, self.data_config.retailers),  # retailer_id
                 self.now,  # updated_at
                 uuid.uuid4(),  # account_holder_uuid
                 count,  # id

@@ -1,4 +1,5 @@
 import logging
+import os
 
 from faker import Faker
 
@@ -12,7 +13,9 @@ logging.getLogger("faker").setLevel(logging.WARNING)
 
 fake = Faker("en_GB")
 
-TSV_BASE_DIR = env_var("TSV_BASE_DIR", "tsv")
+PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
+
+TSV_BASE_DIR = env_var("TSV_BASE_DIR", "data_population/data/generated_tsvs")
 
 LOCAL_SECRETS = env_var("LOCAL_SECRETS", "False")
 LOCAL_SECRETS_PATH = env_var("LOCAL_SECRETS_PATH", "local_secrets.json")
@@ -27,8 +30,8 @@ VAULT_CONFIG = dict(
 )
 
 DB_CONNECTION_URI = env_var("DB_CONNECTION_URI")
-POLARIS_DB = env_var("CARINA_DB", "carina")
-VELA_DB = env_var("CARINA_DB", "carina")
+POLARIS_DB = env_var("POLARIS_DB", "polaris")
+VELA_DB = env_var("VELA_DB", "vela")
 CARINA_DB = env_var("CARINA_DB", "carina")
 
 SERVICE_API_KEY = "F616CE5C88744DD52DB628FAD8B3D"
