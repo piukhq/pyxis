@@ -1,3 +1,5 @@
+import logging
+
 import settings
 from data_population.data_config import DataConfig
 from data_population.tsv_creation.generators.polaris_generators import PolarisGenerators
@@ -9,6 +11,8 @@ import csv
 import os
 
 execution_order = id_generator(1)
+
+logger = logging.getLogger('TSVHandler')
 
 
 class TSVHandler:
@@ -68,3 +72,5 @@ class TSVHandler:
         with open(tsv_name, "w+") as f:
             tsv_writer = csv.writer(f, delimiter="\t", quoting=csv.QUOTE_NONE, escapechar="", quotechar="")
             tsv_writer.writerows(data)
+
+        logger.info(f"Wrote tsv {tsv_name}")
