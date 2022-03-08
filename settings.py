@@ -15,12 +15,7 @@ fake = Faker("en_GB")
 
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 
-TSV_BASE_DIR = env_var("TSV_BASE_DIR", "data_population/data/generated_tsvs")
-
-LOCAL_SECRETS = env_var("LOCAL_SECRETS", "False")
-LOCAL_SECRETS_PATH = env_var("LOCAL_SECRETS_PATH", "local_secrets.json")
-
-REDIS_URL = env_var("REDIS_URL", "redis://localhost:6379/0")
+TSV_BASE_DIR = env_var("TSV_BASE_DIR", "data_population/data")
 
 VAULT_CONFIG = dict(
     VAULT_URL=env_var("VAULT_URL", ""),

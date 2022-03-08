@@ -8,7 +8,6 @@ locust = "*"
 click = "*"
 faker = "*"
 psycopg2 = "*"
-sqlalchemy = "*"
 
 [dev-packages]
 black = "==21.9b0"

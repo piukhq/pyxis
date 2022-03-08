@@ -1,29 +1,24 @@
 from enum import Enum
 
 profile_config = {
-        'email': {'required': 'true', 'label': 'email'},
-        'first_name': {'required': 'true', 'label': 'first_name'},
-        'last_name': {'required': 'true', 'label': 'last_name'},
-        'date_of_birth': {'required': 'true', 'label': 'date_of_birth'},
-        'phone': {'required': 'true', 'label': 'phone'},
-        'address_line1': {'required': 'true', 'label': 'address_line1'},
-        'address_line2': {'required': 'true', 'label': 'address_line2'},
-        'postcode': {'required': 'true', 'label': 'postcode'},
-        'city': {'required': 'true', 'label': 'city'}
-        }
-
-marketing_preferences = {
-        'marketing_pref': {
-                'label': 'Would you like to receive marketing?',
-                'type': 'boolean'
-        }
+    "email": {"required": "true", "label": "email"},
+    "first_name": {"required": "true", "label": "first_name"},
+    "last_name": {"required": "true", "label": "last_name"},
+    "date_of_birth": {"required": "true", "label": "date_of_birth"},
+    "phone": {"required": "true", "label": "phone"},
+    "address_line1": {"required": "true", "label": "address_line1"},
+    "address_line2": {"required": "true", "label": "address_line2"},
+    "postcode": {"required": "true", "label": "postcode"},
+    "city": {"required": "true", "label": "city"},
 }
+
+marketing_preferences = {"marketing_pref": {"label": "Would you like to receive marketing?", "type": "boolean"}}
+
+# todo: these should be converted to yaml on write (?)
 
 
 class AccountHolderStatuses(str, Enum):
-    ACTIVE = 'ACTIVE'
-    PENDING = 'PENDING'
-    FAILED = 'FAILED'
-    INACTIVE = 'INACTIVE'
-
-
+    ACTIVE = "ACTIVE"
+    PENDING = "PENDING"
+    FAILED = "FAILED"
+    INACTIVE = "INACTIVE"

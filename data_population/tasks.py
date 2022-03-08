@@ -7,16 +7,21 @@ from data_population.db_tasks import db_tasks
 logger = logging.getLogger("TaskController")
 
 
-def populate(data_configuration: str):
+def populate_all(data_configuration: str):
     """
-    Communicates with selected (or all) databases to organise tsv generation and database re-population.
+    Populates all databases.
+
+    :param data_configuration: data_configuration name as passed in cli command
     """
 
     data_config = data_configs[data_configuration]
 
     #  Create all tsvs
+    logger.info("Generating all tsvs")
     tsv_manager.TSVHandler(data_config).create_tsv_files()
-    logger.info(f"Creating all tsvs")
+    logger.info("All tsvs successfully generated")
 
     #  Repopulate all dbs
+    logger.info("Attempting upload of all tsvs")
     db_tasks.DataTaskHandler().repopulate_all_databases()
+    logger.info("All tsvs successfully uploaded")
