@@ -1,5 +1,6 @@
 from locust import HttpUser, constant
-from locust_performance_testing.locust_config import set_task_repeats
+from locust_performance_testing.helpers import set_task_repeats
+from locust_performance_testing.user_tasks import UserTasks
 
 
 class WebsiteUser(HttpUser):
@@ -13,9 +14,9 @@ class WebsiteUser(HttpUser):
     repeats = {
         # --TOKEN--
         "post_token": 1,  # REQUIRED
-
+        "stop_user_after_test_suite": 1,
     }
 
     set_task_repeats(repeats)
-    tasks = [UserBehavior]
+    tasks = [UserTasks]
     wait_time = constant(0)

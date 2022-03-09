@@ -8,6 +8,8 @@ locust = "*"
 click = "*"
 faker = "*"
 psycopg2 = "*"
+azure-keyvault-secrets = "*"
+azure-identity = "*"
 
 [dev-packages]
 black = "==21.9b0"
