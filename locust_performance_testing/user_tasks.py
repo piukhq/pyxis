@@ -1,14 +1,16 @@
+import random
+
 from locust import SequentialTaskSet
 from locust.exception import StopUser
+from locust_performance_testing.helpers import repeatable_task, load_secrets, get_polaris_retailer_count, get_headers, get_account_holder_information_via_cursor
 from faker import Faker
-from locust_performance_testing.helpers import repeatable_task
 
 
 class UserTasks(SequentialTaskSet):
     """
     User behaviours for the BPL performance test suite.
     N.b. Tasks here use a preconfigured 'repeatable_task' decorator, which extends the locust @task decorator and allows
-    each task to be run a number of times, as defined in the locustfile which creates this class. All functions to
+    each task to be run a number of times, as defined in the locustfile which instantiates this class. All functions to
     be called by the User MUST have the @repeatable_task() decorator, and must also be included in the 'repeats'
     dictionary in the parent locustfile.
     """
@@ -16,12 +18,58 @@ class UserTasks(SequentialTaskSet):
     def __init__(self, parent):
         super().__init__(parent)
         self.url_prefix = "/bpl"
+        self.keys = load_secrets()
+        self.headers = get_headers()
+        self.retailer_id = random.randint(1, get_polaris_retailer_count())
         self.fake = Faker()
+        self.first_name = self.fake.first_name()
+        self.last_name = self.fake.last_name()
+        self.email = f"{self.first_name}_{self.last_name}_{self.fake.pyint()[:5]}"
+        self.account_number = ""
+        self.account_uuid = ""
 
     # ---------------------------------POLARIS ENDPOINTS---------------------------------
+
     @repeatable_task()
-    def endpoint_call(self):
-        pass
+    def post_account_holder(self):
+
+        data = {
+            "credentials": {
+                "email": self.email,
+                "first_name": self.first_name,
+                "last_name": self.last_name
+            },
+            "marketing_preferences": [],
+            "callback_url": "",
+            "third_party_identifier": ""
+        }
+        retailer_slug = f'retailer_{self.retailer_id}'
+
+        with self.client.post(
+            f"{self.url_prefix}/loyalty/{retailer_slug}/accounts/enrolment",
+            json=data,
+            headers=self.headers['polaris'],
+            name=f"{self.url_prefix}/loyalty/[retailer_slug]/accounts/enrolment"
+        ) as response:
+
+            if response.status_code == 202:
+                self.account_number, self.account_uuid = get_account_holder_information_via_cursor(self.email, 10, 0.5)
+
+    @repeatable_task()
+    def post_get_by_credentials(self):
+
+        data = {
+                "email": self.email,
+                "account_number": self.account_number
+            }
+
+        retailer_slug = f'retailer_{self.retailer_id}'
+
+        self.client.post(
+            f"{self.url_prefix}/loyalty/{retailer_slug}/accounts/getbycredentials",
+            json=data,
+            headers=self.headers['polaris'],
+            name=f"{self.url_prefix}/loyalty/[retailer_slug]/accounts/getbycredentials")
 
     # ---------------------------------SPECIAL TASKS---------------------------------
 

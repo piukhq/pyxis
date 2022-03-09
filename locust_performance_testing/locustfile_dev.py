@@ -1,5 +1,5 @@
 from locust import HttpUser, constant
-from locust_performance_testing.helpers import set_task_repeats
+from locust_performance_testing.helpers import set_task_repeats, load_secrets
 from locust_performance_testing.user_tasks import UserTasks
 
 
@@ -12,8 +12,8 @@ class WebsiteUser(HttpUser):
     """
 
     repeats = {
-        # --TOKEN--
-        "post_token": 1,  # REQUIRED
+
+        "post_token": 1,
         "stop_user_after_test_suite": 1,
     }
 

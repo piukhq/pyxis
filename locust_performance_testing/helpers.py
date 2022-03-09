@@ -1,12 +1,22 @@
+import logging
+import time
+
+import psycopg2
+
+from settings import VAULT_URL, POLARIS_AUTH_KEY_NAME, VELA_AUTH_KEY_NAME, DB_CONNECTION_URI
 from functools import wraps
 from locust import task
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
-from settings import VAULT_CONFIG
 
-repeat_tasks = {}  # values assigned by locustfile
 
-all_secrets = {}
+repeat_tasks = {}  # value assigned by locustfile
+
+all_secrets = {}  # value assigned by load_secrets()
+retailer_count = None  # value assigned by get_polaris_retailer_count()
+
+headers = {}  # value assigned by get_headers()
+
 
 def repeatable_task():
     def decorator(func):
@@ -29,9 +39,10 @@ def set_task_repeats(repeats: dict):
 
 def load_secrets():
     global all_secrets
-    if all_secrets:
-        return all_secrets
-    else:
+
+    if not all_secrets:
+        logger = logging.getLogger('VaultHandler')
+
         credential = DefaultAzureCredential(
             exclude_environment_credential=True,
             exclude_shared_token_cache_credential=True,
@@ -39,4 +50,86 @@ def load_secrets():
             exclude_interactive_browser_credential=True,
         )
 
-        client = SecretClient(vault_url=VAULT_CONFIG['VAULT_URL'], credential=credential)
+        client = SecretClient(vault_url=VAULT_URL, credential=credential)
+
+        logger.info(f"Attempting to load secrets [{POLARIS_AUTH_KEY_NAME}], [{VELA_AUTH_KEY_NAME}]")
+        all_secrets.update({
+            "polaris_key": client.get_secret(POLARIS_AUTH_KEY_NAME).value,
+            "vela_key": client.get_secret(VELA_AUTH_KEY_NAME).value
+        })
+        logger.info(f"Successfully loaded secrets")
+
+    return all_secrets
+
+
+def get_polaris_retailer_count() -> int:
+    """
+    Returns current retailer count in Polaris. Only contacts db on first execution.
+
+    :return: Number of retailers in Polaris.
+    """
+    global retailer_count
+
+    if not retailer_count:
+
+        connection = DB_CONNECTION_URI[:-9] + "/polaris"
+        print(connection)
+
+        with psycopg2.connect(connection) as connection:
+            with connection.cursor() as cursor:
+                query = 'SELECT count(*) from retailer_config;'
+                cursor.execute(query)
+                results = cursor.fetchone()
+
+                retailer_count = int(results[0])
+
+    return retailer_count
+
+
+def get_headers():
+    global headers
+    global all_secrets
+
+    if not headers:
+        headers = {}
+
+        for key_name in all_secrets.keys():
+            headers[key_name] = {}
+            headers[key_name].update({
+                'Authorisation': f"Token {all_secrets[key_name]}",
+                'bpl_user_channel': 'performance',
+            })
+
+    return headers
+
+
+def get_account_holder_information_via_cursor(email: str, timeout: int, retry_period: float) -> (str, str):
+    """
+    Tries to get account holder information directly from polaris in a retry loop.
+
+    :param email: account holder email
+    :param timeout: maximum amount of time for which we continue to ask for information from the db
+    :param retry_period: frequency of database query
+    :return: account number, account holder uuid if account is found within timeout period. Else returns empty strings.
+    """
+    connection = DB_CONNECTION_URI[:-9] + "/polaris"
+    print(connection)
+
+    with psycopg2.connect(connection) as connection:
+        with connection.cursor() as cursor:
+
+            total_retry_time = 0
+
+            while total_retry_time <= timeout:
+
+                query = 'SELECT account_number, account_holder_uuid, email from account_holder WHERE email = %s ;'
+                cursor.execute(query, (email, ))
+                results = cursor.fetchone()
+
+                if results:
+                    return results[0], results[1]
+
+                time.sleep(retry_period)
+                total_retry_time += retry_period
+
+            return "", ""  # only if timeout occurs

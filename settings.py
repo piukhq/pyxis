@@ -17,15 +17,11 @@ PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 
 TSV_BASE_DIR = env_var("TSV_BASE_DIR", "data_population/data")
 
-VAULT_CONFIG = dict(
-    VAULT_URL=env_var("VAULT_URL", ""),
-    POLARIS_AUTH_KEY_NAME=env_var("POLARIS_AUTH_KEY_NAME", "bpl-polaris-api-auth-token"),
-    VELA_AUTH_KEY_NAME=env_var("VELA_AUTH_KEY_NAME", "bpl-vela-api-auth-token")
-)
+VAULT_URL = env_var("VAULT_URL", "")
+POLARIS_AUTH_KEY_NAME = env_var("POLARIS_AUTH_KEY_NAME", "bpl-polaris-api-auth-token")
+VELA_AUTH_KEY_NAME = env_var("VELA_AUTH_KEY_NAME", "bpl-vela-api-auth-token")
 
-DB_CONNECTION_URI = env_var("DB_CONNECTION_URI")
+DB_CONNECTION_URI = env_var("DB_CONNECTION_URI", "")
 POLARIS_DB = env_var("POLARIS_DB", "polaris")
 VELA_DB = env_var("VELA_DB", "vela")
 CARINA_DB = env_var("CARINA_DB", "carina")
-
-SERVICE_API_KEY = "F616CE5C88744DD52DB628FAD8B3D"
