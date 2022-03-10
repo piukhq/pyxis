@@ -29,6 +29,7 @@ def repeatable_task():
             return True
 
         return wrapper
+
     return decorator
 
 
@@ -41,7 +42,7 @@ def load_secrets():
     global all_secrets
 
     if not all_secrets:
-        logger = logging.getLogger('VaultHandler')
+        logger = logging.getLogger("VaultHandler")
 
         credential = DefaultAzureCredential(
             exclude_environment_credential=True,
@@ -53,10 +54,12 @@ def load_secrets():
         client = SecretClient(vault_url=VAULT_URL, credential=credential)
 
         logger.info(f"Attempting to load secrets [{POLARIS_AUTH_KEY_NAME}], [{VELA_AUTH_KEY_NAME}]")
-        all_secrets.update({
-            "polaris_key": client.get_secret(POLARIS_AUTH_KEY_NAME).value,
-            "vela_key": client.get_secret(VELA_AUTH_KEY_NAME).value
-        })
+        all_secrets.update(
+            {
+                "polaris_key": client.get_secret(POLARIS_AUTH_KEY_NAME).value,
+                "vela_key": client.get_secret(VELA_AUTH_KEY_NAME).value,
+            }
+        )
         logger.info(f"Successfully loaded secrets")
 
     return all_secrets
@@ -77,7 +80,7 @@ def get_polaris_retailer_count() -> int:
 
         with psycopg2.connect(connection) as connection:
             with connection.cursor() as cursor:
-                query = 'SELECT count(*) from retailer_config;'
+                query = "SELECT count(*) from retailer_config;"
                 cursor.execute(query)
                 results = cursor.fetchone()
 
@@ -95,10 +98,12 @@ def get_headers():
 
         for key_name in all_secrets.keys():
             headers[key_name] = {}
-            headers[key_name].update({
-                'Authorisation': f"Token {all_secrets[key_name]}",
-                'bpl_user_channel': 'performance',
-            })
+            headers[key_name].update(
+                {
+                    "Authorisation": f"Token {all_secrets[key_name]}",
+                    "bpl_user_channel": "performance",
+                }
+            )
 
     return headers
 
@@ -122,8 +127,8 @@ def get_account_holder_information_via_cursor(email: str, timeout: int, retry_pe
 
             while total_retry_time <= timeout:
 
-                query = 'SELECT account_number, account_holder_uuid, email from account_holder WHERE email = %s ;'
-                cursor.execute(query, (email, ))
+                query = "SELECT account_number, account_holder_uuid, email from account_holder WHERE email = %s ;"
+                cursor.execute(query, (email,))
                 results = cursor.fetchone()
 
                 if results:

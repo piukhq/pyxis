@@ -2,7 +2,13 @@ import random
 
 from locust import SequentialTaskSet
 from locust.exception import StopUser
-from locust_performance_testing.helpers import repeatable_task, load_secrets, get_polaris_retailer_count, get_headers, get_account_holder_information_via_cursor
+from locust_performance_testing.helpers import (
+    repeatable_task,
+    load_secrets,
+    get_polaris_retailer_count,
+    get_headers,
+    get_account_holder_information_via_cursor,
+)
 from faker import Faker
 
 
@@ -34,21 +40,17 @@ class UserTasks(SequentialTaskSet):
     def post_account_holder(self):
 
         data = {
-            "credentials": {
-                "email": self.email,
-                "first_name": self.first_name,
-                "last_name": self.last_name
-            },
+            "credentials": {"email": self.email, "first_name": self.first_name, "last_name": self.last_name},
             "marketing_preferences": [],
             "callback_url": "",
-            "third_party_identifier": ""
+            "third_party_identifier": "",
         }
 
         with self.client.post(
             f"{self.url_prefix}/loyalty/{self.retailer_slug}/accounts/enrolment",
             json=data,
-            headers=self.headers['polaris'],
-            name=f"{self.url_prefix}/loyalty/<retailer_slug>/accounts/enrolment"
+            headers=self.headers["polaris"],
+            name=f"{self.url_prefix}/loyalty/<retailer_slug>/accounts/enrolment",
         ) as response:
 
             if response.status_code == 202:
@@ -57,32 +59,32 @@ class UserTasks(SequentialTaskSet):
     @repeatable_task()
     def post_get_by_credentials(self):
 
-        data = {
-                "email": self.email,
-                "account_number": self.account_number
-            }
+        data = {"email": self.email, "account_number": self.account_number}
 
         self.client.post(
             f"{self.url_prefix}/loyalty/{self.retailer_slug}/accounts/getbycredentials",
             json=data,
-            headers=self.headers['polaris'],
-            name=f"{self.url_prefix}/loyalty/<retailer_slug>/accounts/getbycredentials")
+            headers=self.headers["polaris"],
+            name=f"{self.url_prefix}/loyalty/<retailer_slug>/accounts/getbycredentials",
+        )
 
     @repeatable_task()
     def get_account(self):
 
         self.client.get(
             f"{self.url_prefix}/loyalty/{self.retailer_slug}/accounts/{self.account_uuid}",
-            headers=self.headers['polaris'],
-            name=f"{self.url_prefix}/loyalty/<retailer_slug>/accounts/<account_uuid>")
+            headers=self.headers["polaris"],
+            name=f"{self.url_prefix}/loyalty/<retailer_slug>/accounts/<account_uuid>",
+        )
 
     @repeatable_task()
     def get_account_profile(self):
 
         self.client.get(
             f"{self.url_prefix}/loyalty/{self.retailer_slug}/accounts/{self.account_uuid}/profile",
-            headers=self.headers['polaris'],
-            name=f"{self.url_prefix}/loyalty/<retailer_slug>/accounts/<account_uuid>/profile")
+            headers=self.headers["polaris"],
+            name=f"{self.url_prefix}/loyalty/<retailer_slug>/accounts/<account_uuid>/profile",
+        )
 
     @repeatable_task()
     def patch_account_profile(self):
@@ -92,31 +94,34 @@ class UserTasks(SequentialTaskSet):
                 "email": self.email,
                 "first_name": self.first_name,
                 "last_name": self.last_name,
-                "phone": self.fake.pyint()
+                "phone": self.fake.pyint(),
             }
         }
 
         self.client.patch(
             f"{self.url_prefix}/loyalty/{self.retailer_slug}/accounts/{self.account_uuid}/profile",
             json=data,
-            headers=self.headers['polaris'],
-            name=f"{self.url_prefix}/loyalty/<retailer_slug>/accounts/<account_uuid>/profile")
+            headers=self.headers["polaris"],
+            name=f"{self.url_prefix}/loyalty/<retailer_slug>/accounts/<account_uuid>/profile",
+        )
 
     @repeatable_task()
     def get_marketing_unsubscribe(self):
 
         self.client.get(
             f"{self.url_prefix}/loyalty/{self.retailer_slug}/marketing/unsubscribe?u={self.account_uuid}",
-            headers=self.headers['polaris'],
-            name=f"{self.url_prefix}/loyalty/<retailer_slug>/marketing/unsubscribe?u=<account_uuid>")
+            headers=self.headers["polaris"],
+            name=f"{self.url_prefix}/loyalty/<retailer_slug>/marketing/unsubscribe?u=<account_uuid>",
+        )
 
     @repeatable_task()
     def delete_account(self):
 
         self.client.delete(
             f"{self.url_prefix}/loyalty/{self.retailer_slug}/accounts/{self.account_uuid}",
-            headers=self.headers['polaris'],
-            name=f"{self.url_prefix}/loyalty/<retailer_slug>/accounts/<account_uuid>")
+            headers=self.headers["polaris"],
+            name=f"{self.url_prefix}/loyalty/<retailer_slug>/accounts/<account_uuid>",
+        )
 
     # ---------------------------------SPECIAL TASKS---------------------------------
 

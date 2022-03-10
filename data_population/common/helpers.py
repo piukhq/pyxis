@@ -24,4 +24,3 @@ def timed_function(func):
         logger.debug(f"Function [{func.__name__}] completed in {n-t} seconds")
 
     return inner
-

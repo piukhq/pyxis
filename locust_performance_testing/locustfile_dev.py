@@ -12,7 +12,6 @@ class WebsiteUser(HttpUser):
     """
 
     repeats = {
-
         "post_token": 1,
         "stop_user_after_test_suite": 1,
     }

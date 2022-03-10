@@ -12,7 +12,7 @@ import os
 
 execution_order = id_generator(1)
 
-logger = logging.getLogger('TSVHandler')
+logger = logging.getLogger("TSVHandler")
 
 
 class TSVHandler:
