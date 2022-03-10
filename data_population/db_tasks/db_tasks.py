@@ -45,7 +45,7 @@ class DataTaskHandler:
 
         logger.info(f"{db_name.upper()}: Beginning database re-population ...")
 
-        connection = DB_CONNECTION_URI[:-9] + "/" + db_name
+        connection = DB_CONNECTION_URI.replace("DATABASE", db_name)
 
         with psycopg2.connect(connection) as connection:
             with connection.cursor() as cursor:

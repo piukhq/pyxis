@@ -20,11 +20,11 @@ class UserTasks(SequentialTaskSet):
         self.url_prefix = "/bpl"
         self.keys = load_secrets()
         self.headers = get_headers()
-        self.retailer_id = random.randint(1, get_polaris_retailer_count())
+        self.retailer_slug = f"retailer_{random.randint(1, get_polaris_retailer_count())}"
         self.fake = Faker()
         self.first_name = self.fake.first_name()
         self.last_name = self.fake.last_name()
-        self.email = f"{self.first_name}_{self.last_name}_{self.fake.pyint()[:5]}"
+        self.email = f"{self.first_name}_{self.last_name}_{self.fake.pyint()[:5]}@performance.com"
         self.account_number = ""
         self.account_uuid = ""
 
@@ -43,13 +43,12 @@ class UserTasks(SequentialTaskSet):
             "callback_url": "",
             "third_party_identifier": ""
         }
-        retailer_slug = f'retailer_{self.retailer_id}'
 
         with self.client.post(
-            f"{self.url_prefix}/loyalty/{retailer_slug}/accounts/enrolment",
+            f"{self.url_prefix}/loyalty/{self.retailer_slug}/accounts/enrolment",
             json=data,
             headers=self.headers['polaris'],
-            name=f"{self.url_prefix}/loyalty/[retailer_slug]/accounts/enrolment"
+            name=f"{self.url_prefix}/loyalty/<retailer_slug>/accounts/enrolment"
         ) as response:
 
             if response.status_code == 202:
@@ -63,13 +62,61 @@ class UserTasks(SequentialTaskSet):
                 "account_number": self.account_number
             }
 
-        retailer_slug = f'retailer_{self.retailer_id}'
-
         self.client.post(
-            f"{self.url_prefix}/loyalty/{retailer_slug}/accounts/getbycredentials",
+            f"{self.url_prefix}/loyalty/{self.retailer_slug}/accounts/getbycredentials",
             json=data,
             headers=self.headers['polaris'],
-            name=f"{self.url_prefix}/loyalty/[retailer_slug]/accounts/getbycredentials")
+            name=f"{self.url_prefix}/loyalty/<retailer_slug>/accounts/getbycredentials")
+
+    @repeatable_task()
+    def get_account(self):
+
+        self.client.get(
+            f"{self.url_prefix}/loyalty/{self.retailer_slug}/accounts/{self.account_uuid}",
+            headers=self.headers['polaris'],
+            name=f"{self.url_prefix}/loyalty/<retailer_slug>/accounts/<account_uuid>")
+
+    @repeatable_task()
+    def get_account_profile(self):
+
+        self.client.get(
+            f"{self.url_prefix}/loyalty/{self.retailer_slug}/accounts/{self.account_uuid}/profile",
+            headers=self.headers['polaris'],
+            name=f"{self.url_prefix}/loyalty/<retailer_slug>/accounts/<account_uuid>/profile")
+
+    @repeatable_task()
+    def patch_account_profile(self):
+
+        data = {
+            "credentials": {
+                "email": self.email,
+                "first_name": self.first_name,
+                "last_name": self.last_name,
+                "phone": self.fake.pyint()
+            }
+        }
+
+        self.client.patch(
+            f"{self.url_prefix}/loyalty/{self.retailer_slug}/accounts/{self.account_uuid}/profile",
+            json=data,
+            headers=self.headers['polaris'],
+            name=f"{self.url_prefix}/loyalty/<retailer_slug>/accounts/<account_uuid>/profile")
+
+    @repeatable_task()
+    def get_marketing_unsubscribe(self):
+
+        self.client.get(
+            f"{self.url_prefix}/loyalty/{self.retailer_slug}/marketing/unsubscribe?u={self.account_uuid}",
+            headers=self.headers['polaris'],
+            name=f"{self.url_prefix}/loyalty/<retailer_slug>/marketing/unsubscribe?u=<account_uuid>")
+
+    @repeatable_task()
+    def delete_account(self):
+
+        self.client.delete(
+            f"{self.url_prefix}/loyalty/{self.retailer_slug}/accounts/{self.account_uuid}",
+            headers=self.headers['polaris'],
+            name=f"{self.url_prefix}/loyalty/<retailer_slug>/accounts/<account_uuid>")
 
     # ---------------------------------SPECIAL TASKS---------------------------------
 
