@@ -78,7 +78,7 @@ def get_polaris_retailer_count() -> int:
 
     if not retailer_count:
 
-        connection = DB_CONNECTION_URI.replace('DATABASE', 'polaris')
+        connection = DB_CONNECTION_URI.replace("DATABASE", "polaris")
 
         with psycopg2.connect(connection) as connection:
             with connection.cursor() as cursor:
@@ -119,7 +119,7 @@ def get_account_holder_information_via_cursor(email: str, timeout: int, retry_pe
     :param retry_period: frequency of database query
     :return: account number, account holder uuid if account is found within timeout period. Else returns empty strings.
     """
-    connection = DB_CONNECTION_URI.replace('DATABASE', 'polaris')
+    connection = DB_CONNECTION_URI.replace("DATABASE", "polaris")
 
     with psycopg2.connect(connection) as connection:
         with connection.cursor() as cursor:
@@ -134,13 +134,15 @@ def get_account_holder_information_via_cursor(email: str, timeout: int, retry_pe
                     cursor.execute(query, (email,))
                     results = cursor.fetchone()
                 except Exception:
-                    raise StopUser('Unable to direct fetch account_holder information from db')
+                    raise StopUser("Unable to direct fetch account_holder information from db")
 
                 if None not in results:  # need to test that all fields are populated
                     return results[0], results[1]
 
                 if total_retry_time >= timeout:
-                    logger.info(f"Timeout ({timeout})s on direct fetch of account_holder information with email {email}")
+                    logger.info(
+                        f"Timeout ({timeout})s on direct fetch of account_holder information with email {email}"
+                    )
                 time.sleep(retry_period)
                 total_retry_time += retry_period
 

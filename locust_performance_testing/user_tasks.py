@@ -53,14 +53,11 @@ class UserTasks(SequentialTaskSet):
                 "address_line1": "address1",
                 "address_line2": "address2",
                 "postcode": "pe000rf",
-                "city": "Performanceville"
+                "city": "Performanceville",
             },
-            "marketing_preferences": [{
-                "key": "marketing_pref",
-                "value": True
-            }],
+            "marketing_preferences": [{"key": "marketing_pref", "value": True}],
             "callback_url": "http://luna-api/enrol/callback/success",
-            "third_party_identifier": "perf"
+            "third_party_identifier": "perf",
         }
 
         with self.client.post(
@@ -111,7 +108,7 @@ class UserTasks(SequentialTaskSet):
             "transaction_total": random.randint(1000, 9999),
             "datetime": self.now,
             "MID": "1234",
-            "loyalty_id": self.account_uuid
+            "loyalty_id": self.account_uuid,
         }
 
         print(f"retailer: {self.retailer_slug}")
