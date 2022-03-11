@@ -1,5 +1,7 @@
 import random
+import time
 
+from datetime import datetime
 from locust import SequentialTaskSet
 from locust.exception import StopUser
 from locust_performance_testing.helpers import (
@@ -26,14 +28,15 @@ class UserTasks(SequentialTaskSet):
         self.url_prefix = "/bpl"
         self.keys = load_secrets()
         self.headers = get_headers()
-        # self.retailer_slug = f"retailer_{random.randint(1, get_polaris_retailer_count())}"
-        self.retailer_slug = 'trenette'
+        self.retailer_slug = f"retailer_{random.randint(1, get_polaris_retailer_count())}"
+        # self.retailer_slug = 'trenette'
         self.fake = Faker()
         self.first_name = self.fake.first_name()
         self.last_name = self.fake.last_name()
         self.email = f"{self.first_name}_{self.last_name}_{str(self.fake.pyint())[:5]}@performance.com".lower()
         self.account_number = ""
         self.account_uuid = ""
+        self.now = int(datetime.timestamp(datetime.now()))
 
     # ---------------------------------POLARIS ENDPOINTS---------------------------------
 
@@ -41,12 +44,22 @@ class UserTasks(SequentialTaskSet):
     def post_account_holder(self):
 
         data = {
-            "credentials": {"email": self.email, "first_name": self.first_name, "last_name": self.last_name},
+            "credentials": {
+                "email": self.email,
+                "first_name": self.first_name,
+                "last_name": self.last_name,
+                "date_of_birth": "010101",
+                "phone": "000000000000",
+                "address_line1": "address1",
+                "address_line2": "address2",
+                "postcode": "pe000rf",
+                "city": "Performanceville"
+            },
             "marketing_preferences": [{
                 "key": "marketing_pref",
                 "value": True
             }],
-            "callback_url": "",
+            "callback_url": "http://luna-api/enrol/callback/success",
             "third_party_identifier": "perf"
         }
 
@@ -82,29 +95,6 @@ class UserTasks(SequentialTaskSet):
         )
 
     @repeatable_task()
-    def get_account_status(self):
-
-        self.client.get(
-            f"{self.url_prefix}/loyalty/{self.retailer_slug}/accounts/{self.account_uuid}/status",
-            headers=self.headers["polaris_key"],
-            name=f"{self.url_prefix}/loyalty/<retailer_slug>/accounts/<account_uuid>/status",
-        )
-
-    @repeatable_task()
-    def patch_account_status(self):
-
-        data = {
-            "status":'active'
-        }
-
-        self.client.patch(
-            f"{self.url_prefix}/loyalty/{self.retailer_slug}/accounts/{self.account_uuid}/status",
-            json=data,
-            headers=self.headers["polaris_key"],
-            name=f"{self.url_prefix}/loyalty/<retailer_slug>/accounts/<account_uuid>/profile",
-        )
-
-    @repeatable_task()
     def get_marketing_unsubscribe(self):
 
         self.client.get(
@@ -113,6 +103,29 @@ class UserTasks(SequentialTaskSet):
             name=f"{self.url_prefix}/loyalty/<retailer_slug>/marketing/unsubscribe?u=<account_uuid>",
         )
 
+    @repeatable_task()
+    def post_transaction(self):
+
+        data = {
+            "id": f"TX{self.fake.pyint()}",
+            "transaction_total": random.randint(1000, 9999),
+            "datetime": self.now,
+            "MID": "1234",
+            "loyalty_id": self.account_uuid
+        }
+
+        print(f"retailer: {self.retailer_slug}")
+        print(f"sending {data}")
+
+        with self.client.post(
+            f"{self.url_prefix}/retailers/{self.retailer_slug}/transaction",
+            headers=self.headers["vela_key"],
+            json=data,
+            name=f"{self.url_prefix}/retailers/<retailer_slug>/transaction",
+        ) as response:
+            print(response.json())
+
+    #  endpoint not yet implemented but leaving for later
     @repeatable_task()
     def delete_account(self):
 

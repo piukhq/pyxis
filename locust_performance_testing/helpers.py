@@ -79,7 +79,6 @@ def get_polaris_retailer_count() -> int:
     if not retailer_count:
 
         connection = DB_CONNECTION_URI.replace('DATABASE', 'polaris')
-        print(connection)
 
         with psycopg2.connect(connection) as connection:
             with connection.cursor() as cursor:
@@ -121,7 +120,6 @@ def get_account_holder_information_via_cursor(email: str, timeout: int, retry_pe
     :return: account number, account holder uuid if account is found within timeout period. Else returns empty strings.
     """
     connection = DB_CONNECTION_URI.replace('DATABASE', 'polaris')
-    print(connection)
 
     with psycopg2.connect(connection) as connection:
         with connection.cursor() as cursor:
@@ -129,7 +127,6 @@ def get_account_holder_information_via_cursor(email: str, timeout: int, retry_pe
             total_retry_time = 0
 
             while total_retry_time <= timeout:
-                print(f"looking for email: {email}")
 
                 query = "SELECT account_number, account_holder_uuid, email from account_holder WHERE email = %s ;"
 
