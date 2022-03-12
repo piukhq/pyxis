@@ -105,7 +105,7 @@ class CarinaGenerators:
 
                 reward_config_id = next(reward_config_id_gen)
 
-                for reward in range(self.data_config.rewards_per_campaign):
+                for reward in range(self.data_config.rewards_per_retailer):
 
                     reward_id = str(uuid.uuid4())
                     self.reward_ids[retailer_count].append((reward_config_id, reward_id))

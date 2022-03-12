@@ -67,6 +67,26 @@ class DataTaskHandler:
                         cursor.copy_from(f, table_name, sep="\t", null="NULL")
                     logger.info(f"{db_name.upper()}: {table_name}: Successfully uploaded data")
 
+                    # UPDATE SEQUENCES
+                    column = "id"
+                    task_table_columns = {
+                        "retry_task": "retry_task_id",
+                        "task_type": "task_type_id",
+                        "task_type_key": "task_type_key_id",
+                    }
+                    if table_name in task_table_columns:
+                        column = task_table_columns[table_name]
+                    sequence_name = f"'{table_name}_{column}_seq'"
+                    query_statement = f"SELECT * FROM pg_class where relname = {sequence_name}"
+                    cursor.execute(query_statement)
+                    if cursor.fetchone() is not None:
+                        logger.info(f"{db_name.upper()}: {table_name}: Attempting to update table seq")
+                        update_seq_statement = (
+                            f"select setval({sequence_name}, (select max({column})+1 from {table_name}), false)"
+                        )
+                        cursor.execute(update_seq_statement)
+                        logger.info(f"{db_name.upper()}: {table_name}: Successfully update sequence")
+
         logger.info(f"{db_name.upper()}: All tables successfully repopulated")
 
     @property

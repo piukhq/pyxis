@@ -27,3 +27,15 @@ def populate_all(data_configuration: str):
     logger.info("Attempting upload of all tsvs")
     db_tasks.DataTaskHandler().repopulate_all_databases()
     logger.info("All tsvs successfully uploaded")
+
+
+@timed_function
+def truncate_tables(db: str, table_name: str = None):
+    """
+    Truncate tables for a given db
+
+    :param db: database name. Choices: 'carina', 'polaris', 'vela' or 'all'
+    :param table_name: Provide a table name to truncate. Must be a table from database
+     given in first param
+    """
+    pass # FIXME: Finish this. Need to refactor DataTaskHandler for this
