@@ -1,10 +1,11 @@
+import logging
 import os
 
 import psycopg2
 
 import settings
-from settings import DB_CONNECTION_URI, POLARIS_DB, VELA_DB, CARINA_DB, TSV_BASE_DIR
-import logging
+
+from settings import CARINA_DB, DB_CONNECTION_URI, POLARIS_DB, TSV_BASE_DIR, VELA_DB
 
 logger = logging.getLogger("DataTaskHandler")
 
@@ -69,7 +70,7 @@ class DataTaskHandler:
         logger.info(f"{db_name.upper()}: All tables successfully repopulated")
 
     @property
-    def all_tsv_info(self) -> [dict]:
+    def all_tsv_info(self) -> dict:
         """
         :return: list of dictionaries containing information about which table and database each tsv should
          be loaded to, and in what order.

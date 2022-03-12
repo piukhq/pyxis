@@ -1,9 +1,9 @@
 import logging
 
-from data_population.tsv_creation import tsv_manager
+from data_population.common.utils import timed_function
 from data_population.data_config import data_configs
 from data_population.db_tasks import db_tasks
-from data_population.common.helpers import timed_function
+from data_population.tsv_creation import tsv_manager
 
 logger = logging.getLogger("TaskController")
 
