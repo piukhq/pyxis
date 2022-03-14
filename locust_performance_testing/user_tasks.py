@@ -110,16 +110,12 @@ class UserTasks(SequentialTaskSet):
             "loyalty_id": self.account_uuid,
         }
 
-        print(f"retailer: {self.retailer_slug}")
-        print(f"sending {data}")
-
-        with self.client.post(
+        self.client.post(
             f"{self.url_prefix}/retailers/{self.retailer_slug}/transaction",
             headers=self.headers["vela_key"],
             json=data,
             name=f"{self.url_prefix}/retailers/<retailer_slug>/transaction",
-        ) as response:
-            print(response.json())
+        )
 
     #  endpoint not yet implemented but leaving for later
     @repeatable_task()
