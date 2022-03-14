@@ -6,11 +6,11 @@ from data_population.common.utils import id_generator
 from data_population.data_config import DataConfig
 from data_population.tsv_creation.fixtures import (
     carina_task_type_ids,
-    carina_task_type_keys,
+    generate_carina_type_key_values,
+    generate_polaris_type_key_values,
+    generate_vela_type_key_values,
     polaris_task_type_ids,
-    polaris_task_type_keys,
     vela_task_type_ids,
-    vela_task_type_keys,
 )
 from data_population.tsv_creation.generators.carina_generators import CarinaGenerators
 from data_population.tsv_creation.generators.polaris_generators import PolarisGenerators
@@ -47,9 +47,13 @@ class TSVHandler:
         self.write_to_tsv(self.vela_generator.reward_rule(), VELA_DB, table="reward_rule")
         self.write_to_tsv(self.vela_generator.transaction(), VELA_DB, table="transaction")
         self.write_to_tsv(self.vela_generator.processed_transaction(), VELA_DB, table="processed_transaction")
-        self.write_to_tsv(retry_task(vela_task_type_ids), VELA_DB, table="retry_task")
+        self.write_to_tsv(retry_task(self.config, vela_task_type_ids), VELA_DB, table="retry_task")
         self.write_to_tsv(
-            task_type_key_value(vela_task_type_ids, vela_task_type_keys), VELA_DB, table="task_type_key_value"
+            task_type_key_value(
+                vela_task_type_ids, generate_vela_type_key_values(self.config), self.config.transactions
+            ),
+            VELA_DB,
+            table="task_type_key_value",
         )
 
         # CARINA GENERATION
@@ -58,9 +62,14 @@ class TSVHandler:
         self.write_to_tsv(self.carina_generator.retailer_fetch_type(), CARINA_DB, table="retailer_fetch_type")
         self.write_to_tsv(self.carina_generator.reward_config(), CARINA_DB, table="reward_config")
         self.write_to_tsv(self.carina_generator.reward(), CARINA_DB, table="reward")
-        self.write_to_tsv(retry_task(carina_task_type_ids), CARINA_DB, table="retry_task")
+        self.write_to_tsv(self.carina_generator.reward_update(), CARINA_DB, table="reward_update")
+        self.write_to_tsv(retry_task(self.config, carina_task_type_ids), CARINA_DB, table="retry_task")
         self.write_to_tsv(
-            task_type_key_value(carina_task_type_ids, carina_task_type_keys), CARINA_DB, table="task_type_key_value"
+            task_type_key_value(
+                carina_task_type_ids, generate_carina_type_key_values(self.config), self.config.reward_updates
+            ),
+            CARINA_DB,
+            table="task_type_key_value",
         )
 
         # POLARIS GENERATION
@@ -85,9 +94,13 @@ class TSVHandler:
         self.write_to_tsv(
             self.polaris_generator.account_holder_pending_reward(), POLARIS_DB, table="account_holder_pending_reward"
         )
-        self.write_to_tsv(retry_task(polaris_task_type_ids), POLARIS_DB, table="retry_task")
+        self.write_to_tsv(retry_task(self.config, polaris_task_type_ids), POLARIS_DB, table="retry_task")
         self.write_to_tsv(
-            task_type_key_value(polaris_task_type_ids, polaris_task_type_keys), POLARIS_DB, table="task_type_key_value"
+            task_type_key_value(
+                polaris_task_type_ids, generate_polaris_type_key_values(self.config), self.config.account_holders
+            ),
+            POLARIS_DB,
+            table="task_type_key_value",
         )
 
     @staticmethod

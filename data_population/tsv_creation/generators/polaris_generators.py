@@ -78,7 +78,7 @@ class PolarisGenerators:
         return account_holder_profiles
 
     def account_holder_marketing_preference(self) -> list:
-        """Generates account_holders_marketing_preferences (n defined in data_config (1-1 w/account_holders))"""
+        """Generates account_holder_marketing_preferences (n defined in data_config (1-1 w/account_holders))"""
         account_holder_marketing_preferences = []
         for count in range(1, self.data_config.account_holders + 1):
             account_holder_marketing_preferences.append(
@@ -95,7 +95,7 @@ class PolarisGenerators:
         return account_holder_marketing_preferences
 
     def account_holder_campaign_balance(self) -> list:
-        """Generates account_holders_campaign_balances (n defined in data_config (1-1 w/account_holders))"""
+        """Generates account_holder_campaign_balances (n defined in data_config (1-1 w/account_holders))"""
         account_holder_campaign_balances = []
         for count in range(1, self.data_config.account_holders + 1):
             account_holder_campaign_balances.append(
@@ -110,21 +110,19 @@ class PolarisGenerators:
             )
         return account_holder_campaign_balances
 
-
     def account_holder_reward(self) -> list:
         """
-        Generates account_holders_reward (n defined in data_config (1-1 w/account_holders))
-        Takes reward_uuids as arg which are a dictionary of types:
-        {<retailer_id>: [(<reward_config_id>, <reward_id: uuid>)]}
-        retailer_id = retailer_{count} for count in range(1, self.data_config.retailers + 1)
-        reward_config_id = next(id_generator(1))
-        reward_id = uuids
+        Generates account_holder_rewards. Total required defined in config (rewards_per_retailer).
+        There is a limitation on the account_holder_id column as this need to match the number of rows
+        in the account_holder tabe.
         """
         account_holder_rewards = []
-        total_account_holders = self.data_config.account_holders # 2000
-        total_retailers = self.data_config.retailers # 10
-        total_rewards_required_per_retailer = self.data_config.rewards_per_retailer # 3000
-        total_rewards_per_account = math.ceil(total_rewards_required_per_retailer / total_account_holders) # 1.5 rounded up to 2
+        total_account_holders = self.data_config.account_holders  # 2000
+        total_retailers = self.data_config.retailers  # 10
+        total_rewards_required_per_retailer = self.data_config.rewards_per_retailer  # 3000
+        total_rewards_per_account = math.ceil(
+            total_rewards_required_per_retailer / total_account_holders
+        )  # 1.5 rounded up to 2
         rewards_populated_count = 0
 
         for retailer_count in range(1, total_retailers + 1):
@@ -151,14 +149,13 @@ class PolarisGenerators:
                     )
         return account_holder_rewards
 
-
     def account_holder_pending_reward(self) -> list:
         """
-        Generates account_holders_pending_reward (n defined in data_config (1-1 w/(account_holders * total_retailers)))
+        Generates account_holder_pending_rewards (1-1 w/(account_holders * total_retailers)))
         """
         account_holder_pending_rewards = []
-        total_account_holders = self.data_config.account_holders # 2000
-        total_retailers = self.data_config.retailers # 10
+        total_account_holders = self.data_config.account_holders  # 2000
+        total_retailers = self.data_config.retailers  # 10
         pending_rewards_populated_count = 0
 
         for retailer_count in range(1, total_retailers + 1):
