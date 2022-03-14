@@ -16,6 +16,8 @@ black = "==21.9b0"
 flake8 = "*"
 xenon = "*"
 isort = "*"
+ipython = "*"
+mypy = "*"
 
 [requires]
 python_version = "3.9"

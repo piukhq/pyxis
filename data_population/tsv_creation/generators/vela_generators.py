@@ -1,6 +1,6 @@
 import datetime
 
-from data_population.common.helpers import id_generator
+from data_population.common.utils import id_generator
 
 
 class VelaGenerators:

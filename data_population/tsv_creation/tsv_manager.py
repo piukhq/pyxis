@@ -1,14 +1,13 @@
+import csv
 import logging
+import os
 
-import settings
+from data_population.common.utils import id_generator
 from data_population.data_config import DataConfig
+from data_population.tsv_creation.generators.carina_generators import CarinaGenerators
 from data_population.tsv_creation.generators.polaris_generators import PolarisGenerators
 from data_population.tsv_creation.generators.vela_generators import VelaGenerators
-from data_population.tsv_creation.generators.carina_generators import CarinaGenerators
-from data_population.common.helpers import id_generator
-from settings import POLARIS_DB, VELA_DB, CARINA_DB, TSV_BASE_DIR
-import csv
-import os
+from settings import CARINA_DB, POLARIS_DB, TSV_BASE_DIR, VELA_DB
 
 execution_order = id_generator(1)
 

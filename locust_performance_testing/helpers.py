@@ -1,14 +1,15 @@
 import logging
 import time
 
+from functools import wraps
+
 import psycopg2
 
-from settings import VAULT_URL, POLARIS_AUTH_KEY_NAME, VELA_AUTH_KEY_NAME, DB_CONNECTION_URI
-from functools import wraps
-from locust import task
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
+from locust import task
 
+from settings import DB_CONNECTION_URI, POLARIS_AUTH_KEY_NAME, VAULT_URL, VELA_AUTH_KEY_NAME
 
 repeat_tasks = {}  # value assigned by locustfile
 
@@ -60,7 +61,7 @@ def load_secrets():
                 "vela_key": client.get_secret(VELA_AUTH_KEY_NAME).value,
             }
         )
-        logger.info(f"Successfully loaded secrets")
+        logger.info("Successfully loaded secrets")
 
     return all_secrets
 
@@ -108,7 +109,7 @@ def get_headers():
     return headers
 
 
-def get_account_holder_information_via_cursor(email: str, timeout: int, retry_period: float) -> (str, str):
+def get_account_holder_information_via_cursor(email: str, timeout: int, retry_period: float) -> tuple[str, str]:
     """
     Tries to get account holder information directly from polaris in a retry loop.
 

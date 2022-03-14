@@ -1,15 +1,16 @@
 import random
 
+from faker import Faker
 from locust import SequentialTaskSet
 from locust.exception import StopUser
+
 from locust_performance_testing.helpers import (
-    repeatable_task,
-    load_secrets,
-    get_polaris_retailer_count,
-    get_headers,
     get_account_holder_information_via_cursor,
+    get_headers,
+    get_polaris_retailer_count,
+    load_secrets,
+    repeatable_task,
 )
-from faker import Faker
 
 
 class UserTasks(SequentialTaskSet):

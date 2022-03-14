@@ -1,7 +1,7 @@
 import datetime
 import uuid
 
-from data_population.common.helpers import id_generator
+from data_population.common.utils import id_generator
 
 
 class CarinaGenerators:
