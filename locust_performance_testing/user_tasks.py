@@ -2,16 +2,17 @@ import random
 import time
 
 from datetime import datetime
+from faker import Faker
 from locust import SequentialTaskSet
 from locust.exception import StopUser
+
 from locust_performance_testing.helpers import (
-    repeatable_task,
-    load_secrets,
-    get_polaris_retailer_count,
-    get_headers,
     get_account_holder_information_via_cursor,
+    get_headers,
+    get_polaris_retailer_count,
+    load_secrets,
+    repeatable_task,
 )
-from faker import Faker
 
 
 class UserTasks(SequentialTaskSet):
@@ -29,7 +30,6 @@ class UserTasks(SequentialTaskSet):
         self.keys = load_secrets()
         self.headers = get_headers()
         self.retailer_slug = f"retailer_{random.randint(1, get_polaris_retailer_count())}"
-        # self.retailer_slug = 'trenette'
         self.fake = Faker()
         self.first_name = self.fake.first_name()
         self.last_name = self.fake.last_name()

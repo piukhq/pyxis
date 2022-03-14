@@ -1,9 +1,9 @@
 import datetime
-import uuid
 import random
+import uuid
 
+from data_population.tsv_creation.fixtures import AccountHolderStatuses, marketing_preferences, profile_config
 from settings import fake
-from data_population.tsv_creation.fixtures import profile_config, marketing_preferences, AccountHolderStatuses
 
 
 class PolarisGenerators:

@@ -1,5 +1,6 @@
-import click
 import logging
+
+import click
 
 from data_population.data_config import data_configs
 from data_population.tasks import populate_all
