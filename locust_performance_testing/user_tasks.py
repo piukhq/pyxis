@@ -1,5 +1,6 @@
 import random
 
+from datetime import datetime
 from faker import Faker
 from locust import SequentialTaskSet
 from locust.exception import StopUser
@@ -31,9 +32,10 @@ class UserTasks(SequentialTaskSet):
         self.fake = Faker()
         self.first_name = self.fake.first_name()
         self.last_name = self.fake.last_name()
-        self.email = f"{self.first_name}_{self.last_name}_{self.fake.pyint()[:5]}@performance.com"
+        self.email = f"{self.first_name}_{self.last_name}_{str(self.fake.pyint())[:5]}@performance.com".lower()
         self.account_number = ""
         self.account_uuid = ""
+        self.now = int(datetime.timestamp(datetime.now()))
 
     # ---------------------------------POLARIS ENDPOINTS---------------------------------
 
@@ -41,16 +43,26 @@ class UserTasks(SequentialTaskSet):
     def post_account_holder(self):
 
         data = {
-            "credentials": {"email": self.email, "first_name": self.first_name, "last_name": self.last_name},
-            "marketing_preferences": [],
-            "callback_url": "",
-            "third_party_identifier": "",
+            "credentials": {
+                "email": self.email,
+                "first_name": self.first_name,
+                "last_name": self.last_name,
+                "date_of_birth": "010101",
+                "phone": "000000000000",
+                "address_line1": "address1",
+                "address_line2": "address2",
+                "postcode": "pe000rf",
+                "city": "Performanceville",
+            },
+            "marketing_preferences": [{"key": "marketing_pref", "value": True}],
+            "callback_url": "http://luna-api/enrol/callback/success",
+            "third_party_identifier": "perf",
         }
 
         with self.client.post(
             f"{self.url_prefix}/loyalty/{self.retailer_slug}/accounts/enrolment",
             json=data,
-            headers=self.headers["polaris"],
+            headers=self.headers["polaris_key"],
             name=f"{self.url_prefix}/loyalty/<retailer_slug>/accounts/enrolment",
         ) as response:
 
@@ -65,7 +77,7 @@ class UserTasks(SequentialTaskSet):
         self.client.post(
             f"{self.url_prefix}/loyalty/{self.retailer_slug}/accounts/getbycredentials",
             json=data,
-            headers=self.headers["polaris"],
+            headers=self.headers["polaris_key"],
             name=f"{self.url_prefix}/loyalty/<retailer_slug>/accounts/getbycredentials",
         )
 
@@ -74,36 +86,8 @@ class UserTasks(SequentialTaskSet):
 
         self.client.get(
             f"{self.url_prefix}/loyalty/{self.retailer_slug}/accounts/{self.account_uuid}",
-            headers=self.headers["polaris"],
+            headers=self.headers["polaris_key"],
             name=f"{self.url_prefix}/loyalty/<retailer_slug>/accounts/<account_uuid>",
-        )
-
-    @repeatable_task()
-    def get_account_profile(self):
-
-        self.client.get(
-            f"{self.url_prefix}/loyalty/{self.retailer_slug}/accounts/{self.account_uuid}/profile",
-            headers=self.headers["polaris"],
-            name=f"{self.url_prefix}/loyalty/<retailer_slug>/accounts/<account_uuid>/profile",
-        )
-
-    @repeatable_task()
-    def patch_account_profile(self):
-
-        data = {
-            "credentials": {
-                "email": self.email,
-                "first_name": self.first_name,
-                "last_name": self.last_name,
-                "phone": self.fake.pyint(),
-            }
-        }
-
-        self.client.patch(
-            f"{self.url_prefix}/loyalty/{self.retailer_slug}/accounts/{self.account_uuid}/profile",
-            json=data,
-            headers=self.headers["polaris"],
-            name=f"{self.url_prefix}/loyalty/<retailer_slug>/accounts/<account_uuid>/profile",
         )
 
     @repeatable_task()
@@ -111,16 +95,35 @@ class UserTasks(SequentialTaskSet):
 
         self.client.get(
             f"{self.url_prefix}/loyalty/{self.retailer_slug}/marketing/unsubscribe?u={self.account_uuid}",
-            headers=self.headers["polaris"],
+            headers=self.headers["polaris_key"],
             name=f"{self.url_prefix}/loyalty/<retailer_slug>/marketing/unsubscribe?u=<account_uuid>",
         )
 
+    @repeatable_task()
+    def post_transaction(self):
+
+        data = {
+            "id": f"TX{self.fake.pyint()}",
+            "transaction_total": random.randint(1000, 9999),
+            "datetime": self.now,
+            "MID": "1234",
+            "loyalty_id": self.account_uuid,
+        }
+
+        self.client.post(
+            f"{self.url_prefix}/retailers/{self.retailer_slug}/transaction",
+            headers=self.headers["vela_key"],
+            json=data,
+            name=f"{self.url_prefix}/retailers/<retailer_slug>/transaction",
+        )
+
+    #  endpoint not yet implemented but leaving for later
     @repeatable_task()
     def delete_account(self):
 
         self.client.delete(
             f"{self.url_prefix}/loyalty/{self.retailer_slug}/accounts/{self.account_uuid}",
-            headers=self.headers["polaris"],
+            headers=self.headers["polaris_key"],
             name=f"{self.url_prefix}/loyalty/<retailer_slug>/accounts/<account_uuid>",
         )
 

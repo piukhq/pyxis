@@ -5,6 +5,7 @@ from functools import wraps
 
 import psycopg2
 
+from locust.exception import StopUser
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
 from locust import task
@@ -17,6 +18,8 @@ all_secrets = {}  # value assigned by load_secrets()
 retailer_count = None  # value assigned by get_polaris_retailer_count()
 
 headers = {}  # value assigned by get_headers()
+
+logger = logging.getLogger("LocustHandler")
 
 
 def repeatable_task():
@@ -76,8 +79,7 @@ def get_polaris_retailer_count() -> int:
 
     if not retailer_count:
 
-        connection = DB_CONNECTION_URI[:-9] + "/polaris"
-        print(connection)
+        connection = DB_CONNECTION_URI.replace("DATABASE", "polaris")
 
         with psycopg2.connect(connection) as connection:
             with connection.cursor() as cursor:
@@ -101,8 +103,8 @@ def get_headers():
             headers[key_name] = {}
             headers[key_name].update(
                 {
-                    "Authorisation": f"Token {all_secrets[key_name]}",
-                    "bpl_user_channel": "performance",
+                    "Authorization": f"token {all_secrets[key_name]}",
+                    "bpl-user-channel": "foo",
                 }
             )
 
@@ -118,8 +120,7 @@ def get_account_holder_information_via_cursor(email: str, timeout: int, retry_pe
     :param retry_period: frequency of database query
     :return: account number, account holder uuid if account is found within timeout period. Else returns empty strings.
     """
-    connection = DB_CONNECTION_URI[:-9] + "/polaris"
-    print(connection)
+    connection = DB_CONNECTION_URI.replace("DATABASE", "polaris")
 
     with psycopg2.connect(connection) as connection:
         with connection.cursor() as cursor:
@@ -129,12 +130,20 @@ def get_account_holder_information_via_cursor(email: str, timeout: int, retry_pe
             while total_retry_time <= timeout:
 
                 query = "SELECT account_number, account_holder_uuid, email from account_holder WHERE email = %s ;"
-                cursor.execute(query, (email,))
-                results = cursor.fetchone()
 
-                if results:
+                try:
+                    cursor.execute(query, (email,))
+                    results = cursor.fetchone()
+                except Exception:
+                    raise StopUser("Unable to direct fetch account_holder information from db")
+
+                if None not in results:  # need to test that all fields are populated
                     return results[0], results[1]
 
+                if total_retry_time >= timeout:
+                    logger.info(
+                        f"Timeout ({timeout})s on direct fetch of account_holder information with email {email}"
+                    )
                 time.sleep(retry_period)
                 total_retry_time += retry_period
 

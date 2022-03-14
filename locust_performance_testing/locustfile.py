@@ -1,5 +1,4 @@
 from locust import HttpUser, constant
-
 from locust_performance_testing.helpers import set_task_repeats
 from locust_performance_testing.user_tasks import UserTasks
 
@@ -14,11 +13,11 @@ class WebsiteUser(HttpUser):
 
     repeats = {
         "post_account_holder": 1,  # will 409 if set to > 1
-        "post_get_by_credentials": 1,
-        "get_account": 1,
+        "post_get_by_credentials": 20,
+        "get_account": 30,
         "get_marketing_unsubscribe": 1,
-        "post_transaction": 1,
-        "delete_account": 0,  # will 404 if > 0 (NOT IMPLEMENTED)
+        "post_transaction": 0,
+        "delete_account": 0,  # will 404 if > 0 (ENDPOINT NOT IMPLEMENTED)
         "stop_locust_after_test_suite": 1,  # Should be set to 1 in most normal situations
     }
 
