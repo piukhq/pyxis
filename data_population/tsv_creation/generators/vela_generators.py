@@ -1,21 +1,26 @@
-import datetime
+from datetime import datetime, timedelta
+from random import randint
+from typing import Optional
+from uuid import uuid4
 
 from data_population.common.utils import id_generator
 
 
 class VelaGenerators:
     def __init__(self, data_config):
-        self.now = datetime.datetime.utcnow()
-        self.end_date = self.now + datetime.timedelta(weeks=100)
+        self.now = datetime.utcnow()
+        self.end_date = self.now + timedelta(weeks=100)
         self.data_config = data_config
+        self.retailer_ids = []
 
-    def retailer_rewards(self) -> [list]:
+    def retailer_rewards(self) -> list:
         retailers = []
         for count in range(1, self.data_config.retailers + 1):
+            self.retailer_ids.append(count)
             retailers.append([count, f"retailer_{count}"])  # id  # slug
         return retailers
 
-    def campaign(self) -> [list]:
+    def campaign(self) -> list:
         """Generates campaigns (n defined in data_config as retailers * campaigns per retailer)"""
         id_gen = id_generator(1)
         campaigns = []
@@ -37,7 +42,7 @@ class VelaGenerators:
                 )
         return campaigns
 
-    def earn_rule(self) -> [list]:
+    def earn_rule(self) -> list:
         """
         Generates earn_rules (n defined in data_config as retailers * campaigns per retailer * earn_rules per campaign)
         """
@@ -59,7 +64,7 @@ class VelaGenerators:
                 )
         return earn_rules
 
-    def reward_rule(self) -> [list]:
+    def reward_rule(self) -> list:
         """Generates reward_rules (n defined in data_config as retailers * campaigns per retailer (1-1 w/campaigns))"""
         total_campaigns = self.data_config.retailers * self.data_config.campaigns_per_retailer
         reward_rules = []
@@ -76,3 +81,32 @@ class VelaGenerators:
                 ]
             )
         return reward_rules
+
+    def transaction(self, additionals: Optional[list] = []) -> list:
+        id_gen = id_generator(1)
+        transactions = []
+        retailer_ids = self.retailer_ids
+        total_retailers = len(retailer_ids)
+        tx_per_retailer = int(self.data_config.transactions / total_retailers)
+
+        for retailer_id in retailer_ids:
+            for count in range(1, tx_per_retailer + 1):
+                data = [
+                    next(id_gen),  # id
+                    self.now,  # created_at
+                    self.now,  # updated_at
+                    f"tx_{count}",  # transaction_id
+                    randint(500, 1000),  # amount
+                    f"mid_{randint(1, self.data_config.transactions)}",  # mid
+                    self.now,  # datetime
+                    uuid4(),  # account_holder_uuid, not a fkey
+                    retailer_id,  # retailer_rewards.id fkey
+                ]
+                if bool(additionals):
+                    data.extend(additionals)
+                transactions.append(data)
+        return transactions
+
+    def processed_transaction(self) -> list:
+        additional_col = ['{"test_campaign_1", "test_campaign_2"}']  # campaign_slug, array
+        return self.transaction(additionals=additional_col)

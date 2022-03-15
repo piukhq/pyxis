@@ -4,8 +4,17 @@ import os
 
 from data_population.common.utils import id_generator
 from data_population.data_config import DataConfig
+from data_population.tsv_creation.fixtures import (
+    carina_task_type_ids,
+    generate_carina_type_key_values,
+    generate_polaris_type_key_values,
+    generate_vela_type_key_values,
+    polaris_task_type_ids,
+    vela_task_type_ids,
+)
 from data_population.tsv_creation.generators.carina_generators import CarinaGenerators
 from data_population.tsv_creation.generators.polaris_generators import PolarisGenerators
+from data_population.tsv_creation.generators.task_generators import retry_task, task_type_key_value
 from data_population.tsv_creation.generators.vela_generators import VelaGenerators
 from settings import CARINA_DB, POLARIS_DB, TSV_BASE_DIR, VELA_DB
 
@@ -36,6 +45,16 @@ class TSVHandler:
         self.write_to_tsv(self.vela_generator.campaign(), VELA_DB, table="campaign")
         self.write_to_tsv(self.vela_generator.earn_rule(), VELA_DB, table="earn_rule")
         self.write_to_tsv(self.vela_generator.reward_rule(), VELA_DB, table="reward_rule")
+        self.write_to_tsv(self.vela_generator.transaction(), VELA_DB, table="transaction")
+        self.write_to_tsv(self.vela_generator.processed_transaction(), VELA_DB, table="processed_transaction")
+        self.write_to_tsv(retry_task(self.config, vela_task_type_ids), VELA_DB, table="retry_task")
+        self.write_to_tsv(
+            task_type_key_value(
+                vela_task_type_ids, generate_vela_type_key_values(self.config), self.config.transactions
+            ),
+            VELA_DB,
+            table="task_type_key_value",
+        )
 
         # CARINA GENERATION
         self.write_to_tsv(self.carina_generator.retailer(), CARINA_DB, table="retailer")
@@ -43,6 +62,15 @@ class TSVHandler:
         self.write_to_tsv(self.carina_generator.retailer_fetch_type(), CARINA_DB, table="retailer_fetch_type")
         self.write_to_tsv(self.carina_generator.reward_config(), CARINA_DB, table="reward_config")
         self.write_to_tsv(self.carina_generator.reward(), CARINA_DB, table="reward")
+        self.write_to_tsv(self.carina_generator.reward_update(), CARINA_DB, table="reward_update")
+        self.write_to_tsv(retry_task(self.config, carina_task_type_ids), CARINA_DB, table="retry_task")
+        self.write_to_tsv(
+            task_type_key_value(
+                carina_task_type_ids, generate_carina_type_key_values(self.config), self.config.reward_updates
+            ),
+            CARINA_DB,
+            table="task_type_key_value",
+        )
 
         # POLARIS GENERATION
         self.write_to_tsv(self.polaris_generator.retailer_config(), POLARIS_DB, table="retailer_config")
@@ -52,6 +80,27 @@ class TSVHandler:
             self.polaris_generator.account_holder_marketing_preference(),
             POLARIS_DB,
             table="account_holder_marketing_preference",
+        )
+        self.write_to_tsv(
+            self.polaris_generator.account_holder_campaign_balance(),
+            POLARIS_DB,
+            table="account_holder_campaign_balance",
+        )
+        self.write_to_tsv(
+            self.polaris_generator.account_holder_reward(),
+            POLARIS_DB,
+            table="account_holder_reward",
+        )
+        self.write_to_tsv(
+            self.polaris_generator.account_holder_pending_reward(), POLARIS_DB, table="account_holder_pending_reward"
+        )
+        self.write_to_tsv(retry_task(self.config, polaris_task_type_ids), POLARIS_DB, table="retry_task")
+        self.write_to_tsv(
+            task_type_key_value(
+                polaris_task_type_ids, generate_polaris_type_key_values(self.config), self.config.account_holders
+            ),
+            POLARIS_DB,
+            table="task_type_key_value",
         )
 
     @staticmethod
@@ -65,6 +114,9 @@ class TSVHandler:
         """
 
         execute_id = next(execution_order)
+
+        if not os.path.isdir(TSV_BASE_DIR):
+            os.mkdir(TSV_BASE_DIR)
 
         tsv_name = os.path.join(TSV_BASE_DIR, f"tsv-{db}-{execute_id}-{table}.tsv")
 
