@@ -112,68 +112,59 @@ class PolarisGenerators:
 
     def account_holder_reward(self) -> list:
         """
-        Generates account_holder_rewards. Total required defined in config (rewards_per_retailer).
-        There is a limitation on the account_holder_id column as this need to match the number of rows
-        in the account_holder tabe.
+        Generates account_holder_rewards (1-1 w/ account_holders)
         """
         account_holder_rewards = []
         total_account_holders = self.data_config.account_holders  # 2000
         total_retailers = self.data_config.retailers  # 10
-        total_rewards_required_per_retailer = self.data_config.rewards_per_retailer  # 3000
-        total_rewards_per_account = math.ceil(
-            total_rewards_required_per_retailer / total_account_holders
-        )  # 1.5 rounded up to 2
         rewards_populated_count = 0
 
-        for retailer_count in range(1, total_retailers + 1):
-            for account_holder_count in range(1, total_account_holders + 1):
-                for count in range(1, total_rewards_per_account + 1):
-                    rewards_populated_count += 1
-                    account_holder_rewards.append(
-                        [
-                            self.now,  # created_at
-                            self.now,  # updated_at
-                            str(uuid.uuid4()),  # reward_uuids
-                            random_ascii(),  # code
-                            self.now,  # issued_date
-                            self.now + timedelta(days=30),  # expiry_date
-                            choice(["ISSUED", "CANCELLED", "REDEEMED"]),  # status
-                            self.now,
-                            self.now,
-                            f"perftest-reward-slug-{count}",  # reward_slug
-                            f"retailer_{retailer_count}",  # retailer_slug
-                            str(uuid.uuid4()),  # idempotency_token
-                            account_holder_count,  # account_holder_id
-                            rewards_populated_count,  # id
-                        ]
-                    )
+        for account_holder_count in range(1, total_account_holders + 1):
+            rewards_populated_count += 1
+            account_holder_rewards.append(
+                [
+                    self.now,  # created_at
+                    self.now,  # updated_at
+                    str(uuid.uuid4()),  # reward_uuids
+                    random_ascii(),  # code
+                    self.now,  # issued_date
+                    self.now + timedelta(days=30),  # expiry_date
+                    choice(["ISSUED", "CANCELLED", "REDEEMED"]),  # status
+                    self.now,
+                    self.now,
+                    "perftest-reward-slug",  # reward_slug
+                    f"retailer_{randint(1, total_retailers)}",  # retailer_slug
+                    str(uuid.uuid4()),  # idempotency_token
+                    account_holder_count,  # account_holder_id
+                    rewards_populated_count,  # id
+                ]
+            )
         return account_holder_rewards
 
     def account_holder_pending_reward(self) -> list:
         """
-        Generates account_holder_pending_rewards (1-1 w/(account_holders * total_retailers)))
+        Generates account_holder_pending_rewards (1-1 w/ account_holders)
         """
         account_holder_pending_rewards = []
         total_account_holders = self.data_config.account_holders  # 2000
         total_retailers = self.data_config.retailers  # 10
         pending_rewards_populated_count = 0
 
-        for retailer_count in range(1, total_retailers + 1):
-            for count in range(1, total_account_holders + 1):
-                pending_rewards_populated_count += 1
-                account_holder_pending_rewards.append(
-                    [
-                        self.now,  # created_at
-                        self.now,  # updated_at
-                        pending_rewards_populated_count,  # id
-                        self.now,  # created_date
-                        self.now + timedelta(days=30),  # conversion_date
-                        randint(500, 1000),  # value
-                        "perftest-campaign",
-                        f"pending-reward-slug-{count}",  # reward_slug
-                        f"retailer_{retailer_count}",  # retailer_slug
-                        str(uuid.uuid4()),  # idempotency_token
-                        count,  # account_holder_id
-                    ]
-                )
+        for account_holder_count in range(1, total_account_holders + 1):
+            pending_rewards_populated_count += 1
+            account_holder_pending_rewards.append(
+                [
+                    self.now,  # created_at
+                    self.now,  # updated_at
+                    pending_rewards_populated_count,  # id
+                    self.now,  # created_date
+                    self.now + timedelta(days=30),  # conversion_date
+                    randint(500, 1000),  # value
+                    "perftest-campaign",
+                    "pending-reward-slug",  # reward_slug
+                    f"retailer_{randint(1, total_retailers)}",  # retailer_slug
+                    str(uuid.uuid4()),  # idempotency_token
+                    account_holder_count,  # account_holder_id
+                ]
+            )
         return account_holder_pending_rewards
