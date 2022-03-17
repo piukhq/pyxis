@@ -3,6 +3,7 @@ from random import choice, randint
 from uuid import uuid4
 
 from data_population.common.utils import random_ascii
+from data_population.data_config import DataConfig
 
 carina_task_type_ids = {
     "reward-issuance": 1,
@@ -12,11 +13,11 @@ carina_task_type_ids = {
 }
 
 
-def generate_carina_type_key_values(config) -> dict[int, str]:
+def generate_carina_type_key_values(config: DataConfig) -> dict[int, dict]:
     total_retailers = config.retailers
     total_rewards = total_retailers * config.rewards_per_retailer
     total_reward_config_ids = total_retailers * config.campaigns_per_retailer
-    carina_task_type_key_values = {
+    carina_task_type_key_values: dict[int, dict] = {
         carina_task_type_ids["reward-issuance"]: {
             1: "https://exampleurl/random/",  # account_url
             2: datetime.utcnow(),  # issued_date

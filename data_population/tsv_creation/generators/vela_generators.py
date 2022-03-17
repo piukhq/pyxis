@@ -4,14 +4,15 @@ from typing import Optional
 from uuid import uuid4
 
 from data_population.common.utils import id_generator
+from data_population.data_config import DataConfig
 
 
 class VelaGenerators:
-    def __init__(self, data_config):
+    def __init__(self, data_config: DataConfig) -> None:
         self.now = datetime.utcnow()
         self.end_date = self.now + timedelta(weeks=100)
         self.data_config = data_config
-        self.retailer_ids = []
+        self.retailer_ids: list = []
 
     def retailer_rewards(self) -> list:
         retailers = []
@@ -103,7 +104,7 @@ class VelaGenerators:
                     retailer_id,  # retailer_rewards.id fkey
                 ]
                 if bool(additionals):
-                    data.extend(additionals)
+                    data.extend(additionals)  # type: ignore
                 transactions.append(data)
         return transactions
 

@@ -26,14 +26,14 @@ logger = logging.getLogger("TSVHandler")
 class TSVHandler:
     """Handles whole TSV creation journey for all databases."""
 
-    def __init__(self, data_config: DataConfig):
+    def __init__(self, data_config: DataConfig) -> None:
         self.id = 0
         self.config = data_config
         self.polaris_generator = PolarisGenerators(data_config=data_config)
         self.vela_generator = VelaGenerators(data_config=data_config)
         self.carina_generator = CarinaGenerators(data_config=data_config)
 
-    def create_tsv_files(self):
+    def create_tsv_files(self) -> None:
         """
         Writes generated table data to tsvs for all databases, in execution order.
 
@@ -47,10 +47,10 @@ class TSVHandler:
         self.write_to_tsv(self.vela_generator.reward_rule(), VELA_DB, table="reward_rule")
         self.write_to_tsv(self.vela_generator.transaction(), VELA_DB, table="transaction")
         self.write_to_tsv(self.vela_generator.processed_transaction(), VELA_DB, table="processed_transaction")
-        self.write_to_tsv(retry_task(self.config, vela_task_type_ids), VELA_DB, table="retry_task")
+        self.write_to_tsv(retry_task(self.config.transactions, vela_task_type_ids), VELA_DB, table="retry_task")
         self.write_to_tsv(
             task_type_key_value(
-                vela_task_type_ids, generate_vela_type_key_values(self.config), self.config.transactions
+                self.config.transactions, vela_task_type_ids, generate_vela_type_key_values(self.config)
             ),
             VELA_DB,
             table="task_type_key_value",
@@ -63,10 +63,10 @@ class TSVHandler:
         self.write_to_tsv(self.carina_generator.reward_config(), CARINA_DB, table="reward_config")
         self.write_to_tsv(self.carina_generator.reward(), CARINA_DB, table="reward")
         self.write_to_tsv(self.carina_generator.reward_update(), CARINA_DB, table="reward_update")
-        self.write_to_tsv(retry_task(self.config, carina_task_type_ids), CARINA_DB, table="retry_task")
+        self.write_to_tsv(retry_task(self.config.reward_updates, carina_task_type_ids), CARINA_DB, table="retry_task")
         self.write_to_tsv(
             task_type_key_value(
-                carina_task_type_ids, generate_carina_type_key_values(self.config), self.config.reward_updates
+                self.config.reward_updates, carina_task_type_ids, generate_carina_type_key_values(self.config)
             ),
             CARINA_DB,
             table="task_type_key_value",
@@ -94,17 +94,19 @@ class TSVHandler:
         self.write_to_tsv(
             self.polaris_generator.account_holder_pending_reward(), POLARIS_DB, table="account_holder_pending_reward"
         )
-        self.write_to_tsv(retry_task(self.config, polaris_task_type_ids), POLARIS_DB, table="retry_task")
+        self.write_to_tsv(
+            retry_task(self.config.account_holders, polaris_task_type_ids), POLARIS_DB, table="retry_task"
+        )
         self.write_to_tsv(
             task_type_key_value(
-                polaris_task_type_ids, generate_polaris_type_key_values(self.config), self.config.account_holders
+                self.config.account_holders, polaris_task_type_ids, generate_polaris_type_key_values(self.config)
             ),
             POLARIS_DB,
             table="task_type_key_value",
         )
 
     @staticmethod
-    def write_to_tsv(data: list, db: str, table: str):
+    def write_to_tsv(data: list, db: str, table: str) -> None:
         """
         Writes data to tsv with filename containing all information needed for upload (including order).
 

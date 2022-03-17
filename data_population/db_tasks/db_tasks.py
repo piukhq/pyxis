@@ -13,7 +13,7 @@ logger = logging.getLogger("DataTaskHandler")
 class DataTaskHandler:
     """Handles whole Data Upload journey for all databases."""
 
-    def repopulate_all_databases(self):
+    def repopulate_all_databases(self) -> None:
         """Sorts all_tsv_info per database and executes per-database truncation and copy tasks."""
 
         polaris_tsvs = []
@@ -35,7 +35,7 @@ class DataTaskHandler:
         self.truncate_and_repopulate_all_tables(tsv_info_list=polaris_tsvs, db_name=POLARIS_DB)
 
     @staticmethod
-    def truncate_and_repopulate_all_tables(tsv_info_list: list, db_name: str):
+    def truncate_and_repopulate_all_tables(tsv_info_list: list, db_name: str) -> None:
         """
         (Per table/tsv): Truncates table and then copies in new data from tsv.
 
@@ -90,7 +90,7 @@ class DataTaskHandler:
         logger.info(f"{db_name.upper()}: All tables successfully repopulated")
 
     @property
-    def all_tsv_info(self) -> dict:
+    def all_tsv_info(self) -> list:
         """
         :return: list of dictionaries containing information about which table and database each tsv should
          be loaded to, and in what order.

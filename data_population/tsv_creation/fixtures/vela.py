@@ -1,6 +1,8 @@
 from random import choice, randint
 from uuid import uuid4
 
+from data_population.data_config import DataConfig
+
 vela_task_type_ids = {
     "reward-adjustment": 1,
     "reward-status-adjustment": 2,
@@ -9,12 +11,12 @@ vela_task_type_ids = {
 }
 
 
-def generate_vela_type_key_values(config) -> dict[int, str]:
+def generate_vela_type_key_values(config: DataConfig) -> dict[int, dict]:
     total_retailers = config.retailers
     total_campaigns = config.campaigns_per_retailer
     total_transactions = config.transactions
     total_rewards = total_retailers * config.rewards_per_retailer
-    vela_task_type_keys = {
+    vela_task_type_keys: dict[int, dict] = {
         vela_task_type_ids["reward-adjustment"]: {
             1: uuid4(),  # account_holder_uuid
             2: f"perf-test-retailer-{randint(1, total_retailers)}",  # retailer_slug

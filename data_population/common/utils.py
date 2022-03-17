@@ -3,8 +3,10 @@ import random
 import string
 import time
 
+from typing import Iterable
 
-def id_generator(starting_num: int = 0) -> int:
+
+def id_generator(starting_num: int = 0) -> Iterable[int]:
     """Python generator used by table-data generators to produce sequential ids."""
     num = starting_num
     while True:
@@ -12,10 +14,10 @@ def id_generator(starting_num: int = 0) -> int:
         num += 1
 
 
-def timed_function(func):
+def timed_function(func):  # type: ignore
     """Times functions...!"""
 
-    def inner(*args, **kwargs):
+    def inner(*args, **kwargs):  # type: ignore
 
         logger = logging.getLogger("FunctionTimer")
 
@@ -28,6 +30,6 @@ def timed_function(func):
     return inner
 
 
-def random_ascii(length: int = 10):
+def random_ascii(length: int = 10) -> str:
     """Generate a random ascii string of n length"""
     return "".join(random.choice(string.ascii_lowercase) for i in range(length))

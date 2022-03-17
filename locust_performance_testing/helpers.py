@@ -5,28 +5,28 @@ from functools import wraps
 
 import psycopg2
 
-from locust.exception import StopUser
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
 from locust import task
+from locust.exception import StopUser
 
 from settings import DB_CONNECTION_URI, POLARIS_AUTH_KEY_NAME, VAULT_URL, VELA_AUTH_KEY_NAME
 
-repeat_tasks = {}  # value assigned by locustfile
+repeat_tasks: dict = {}  # value assigned by locustfile
 
-all_secrets = {}  # value assigned by load_secrets()
+all_secrets: dict = {}  # value assigned by load_secrets()
 retailer_count = None  # value assigned by get_polaris_retailer_count()
 
-headers = {}  # value assigned by get_headers()
+headers: dict = {}  # value assigned by get_headers()
 
 logger = logging.getLogger("LocustHandler")
 
 
-def repeatable_task():
-    def decorator(func):
+def repeatable_task():  # type: ignore
+    def decorator(func):  # type: ignore
         @wraps(func)
         @task
-        def wrapper(*args, **kwargs):
+        def wrapper(*args, **kwargs):  # type:ignore
             num = repeat_tasks.get(func.__name__, 0)
             for _ in range(num):
                 func(*args, **kwargs)
@@ -37,12 +37,12 @@ def repeatable_task():
     return decorator
 
 
-def set_task_repeats(repeats: dict):
+def set_task_repeats(repeats: dict) -> None:
     global repeat_tasks
     repeat_tasks = repeats
 
 
-def load_secrets():
+def load_secrets() -> dict:
     global all_secrets
 
     if not all_secrets:
@@ -92,7 +92,7 @@ def get_polaris_retailer_count() -> int:
     return retailer_count
 
 
-def get_headers():
+def get_headers() -> dict:
     global headers
     global all_secrets
 
@@ -145,6 +145,6 @@ def get_account_holder_information_via_cursor(email: str, timeout: int, retry_pe
                         f"Timeout ({timeout})s on direct fetch of account_holder information with email {email}"
                     )
                 time.sleep(retry_period)
-                total_retry_time += retry_period
+                total_retry_time += retry_period  # type: ignore
 
             return "", ""  # only if timeout occurs

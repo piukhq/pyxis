@@ -32,7 +32,7 @@ DATA_CONFIGURATION_HELP = (
     required=True,
     help=DATA_CONFIGURATION_HELP,
 )
-def main(task_name: str, data_configuration: str):
+def main(task_name: str, data_configuration: str) -> None:
     """Parses cli command -> tasks.py"""
 
     tasks[task_name](data_configuration)
