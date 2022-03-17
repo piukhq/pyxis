@@ -3,14 +3,15 @@ from random import choice
 from uuid import uuid4
 
 from data_population.common.utils import id_generator
+from data_population.data_config import DataConfig
 
 
 class CarinaGenerators:
-    def __init__(self, data_config):
+    def __init__(self, data_config: DataConfig) -> None:
         self.now = datetime.utcnow()
         self.end_date = self.now + timedelta(weeks=100)
         self.data_config = data_config
-        self.reward_ids = {}
+        self.reward_ids: dict = {}
 
     def retailer(self) -> list:
         """Generates n retailers (n defined in data_config)"""

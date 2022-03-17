@@ -26,14 +26,14 @@ logger = logging.getLogger("TSVHandler")
 class TSVHandler:
     """Handles whole TSV creation journey for all databases."""
 
-    def __init__(self, data_config: DataConfig):
+    def __init__(self, data_config: DataConfig) -> None:
         self.id = 0
         self.config = data_config
         self.polaris_generator = PolarisGenerators(data_config=data_config)
         self.vela_generator = VelaGenerators(data_config=data_config)
         self.carina_generator = CarinaGenerators(data_config=data_config)
 
-    def create_tsv_files(self):
+    def create_tsv_files(self) -> None:
         """
         Writes generated table data to tsvs for all databases, in execution order.
 
@@ -106,7 +106,7 @@ class TSVHandler:
         )
 
     @staticmethod
-    def write_to_tsv(data: list, db: str, table: str):
+    def write_to_tsv(data: list, db: str, table: str) -> None:
         """
         Writes data to tsv with filename containing all information needed for upload (including order).
 

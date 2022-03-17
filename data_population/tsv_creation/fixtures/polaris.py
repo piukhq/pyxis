@@ -3,6 +3,7 @@ from random import randint
 from uuid import uuid4
 
 from data_population.common.utils import random_ascii
+from data_population.data_config import DataConfig
 
 profile_config = {
     "email": {"required": "true", "label": "email"},
@@ -44,12 +45,12 @@ polaris_task_type_ids = {
 }
 
 
-def generate_polaris_type_key_values(config) -> dict[int, str]:
+def generate_polaris_type_key_values(config: DataConfig) -> dict[int, dict]:
     total_account_holders = config.account_holders
     total_retailers = config.retailers
     total_campaigns = config.campaigns_per_retailer
     total_rewards = total_retailers * config.rewards_per_retailer
-    polaris_task_type_keys = {
+    polaris_task_type_keys: dict[int, dict] = {
         polaris_task_type_ids["enrolment-callback"]: {
             1: str(uuid4()),  # account_holder_uuid
             2: f"{random_ascii(10)}",  # third_party_identifier

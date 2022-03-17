@@ -7,7 +7,7 @@ import os
 import re
 
 
-def read_env():
+def read_env() -> None:
     """Pulled from Honcho code with minor updates, reads local default
     environment variables from a .env file located in the project root
     directory.
@@ -31,7 +31,7 @@ def read_env():
             os.environ.setdefault(key, val)
 
 
-def env_var(key, default=None):
+def env_var(key, default=None):  # type: ignore
     """Retrieves env vars and makes Python boolean replacements"""
     val = os.environ.get(key, default)
     if val == "True":

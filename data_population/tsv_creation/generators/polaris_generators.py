@@ -1,16 +1,16 @@
-import math
 import uuid
 
 from datetime import datetime, timedelta
 from random import choice, randint
 
 from data_population.common.utils import random_ascii
+from data_population.data_config import DataConfig
 from data_population.tsv_creation.fixtures.polaris import AccountHolderStatuses, marketing_preferences, profile_config
 from settings import fake
 
 
 class PolarisGenerators:
-    def __init__(self, data_config):
+    def __init__(self, data_config: DataConfig) -> None:
         self.now = datetime.utcnow()
         self.data_config = data_config
 

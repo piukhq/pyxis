@@ -7,7 +7,7 @@ from data_population.common.utils import id_generator
 from data_population.tsv_creation.fixtures.common import audit_data
 
 
-def retry_task(tasks, task_type_ids_dict) -> list:
+def retry_task(tasks: int, task_type_ids_dict: dict) -> list:
     task_type_ids = task_type_ids_dict.values()
     id_gen = id_generator(1)
     retry_tasks = []
@@ -28,11 +28,11 @@ def retry_task(tasks, task_type_ids_dict) -> list:
     return retry_tasks
 
 
-def task_type_key_value(tasks, task_type_ids_dict, task_type_keys_dict) -> list:
-    # tasks = 2000 or config.account_holder or config.reward_updates or config.transactions
-    task_type_ids = task_type_ids_dict.values()  # 7 for polaris
+def task_type_key_value(tasks: int, task_type_ids_dict: dict, task_type_keys_dict: dict) -> list:
+    # tasks = DataConfig.account_holder or DataConfig.reward_updates or DataConfig.transactions
+    task_type_ids = task_type_ids_dict.values()
     task_type_key_value_rows = []
-    for count in range(1, tasks + 1):  # 2000 iterations
+    for count in range(1, tasks + 1):
         task_type_id = randint(1, len(task_type_ids))
         for task_type_key_id, value in task_type_keys_dict[task_type_id].items():
             now = datetime.utcnow()

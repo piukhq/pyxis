@@ -1,6 +1,7 @@
 import random
 
 from datetime import datetime
+
 from faker import Faker
 from locust import SequentialTaskSet
 from locust.exception import StopUser
@@ -23,7 +24,7 @@ class UserTasks(SequentialTaskSet):
     dictionary in the parent locustfile.
     """
 
-    def __init__(self, parent):
+    def __init__(self, parent) -> None:  # type: ignore
         super().__init__(parent)
         self.url_prefix = "/bpl"
         self.keys = load_secrets()
@@ -40,7 +41,7 @@ class UserTasks(SequentialTaskSet):
     # ---------------------------------POLARIS ENDPOINTS---------------------------------
 
     @repeatable_task()
-    def post_account_holder(self):
+    def post_account_holder(self) -> None:
 
         data = {
             "credentials": {
@@ -70,7 +71,7 @@ class UserTasks(SequentialTaskSet):
                 self.account_number, self.account_uuid = get_account_holder_information_via_cursor(self.email, 10, 0.5)
 
     @repeatable_task()
-    def post_get_by_credentials(self):
+    def post_get_by_credentials(self) -> None:
 
         data = {"email": self.email, "account_number": self.account_number}
 
@@ -82,7 +83,7 @@ class UserTasks(SequentialTaskSet):
         )
 
     @repeatable_task()
-    def get_account(self):
+    def get_account(self) -> None:
 
         self.client.get(
             f"{self.url_prefix}/loyalty/{self.retailer_slug}/accounts/{self.account_uuid}",
@@ -91,7 +92,7 @@ class UserTasks(SequentialTaskSet):
         )
 
     @repeatable_task()
-    def get_marketing_unsubscribe(self):
+    def get_marketing_unsubscribe(self) -> None:
 
         self.client.get(
             f"{self.url_prefix}/loyalty/{self.retailer_slug}/marketing/unsubscribe?u={self.account_uuid}",
@@ -100,7 +101,7 @@ class UserTasks(SequentialTaskSet):
         )
 
     @repeatable_task()
-    def post_transaction(self):
+    def post_transaction(self) -> None:
 
         data = {
             "id": f"TX{self.fake.pyint()}",
@@ -119,7 +120,7 @@ class UserTasks(SequentialTaskSet):
 
     #  endpoint not yet implemented but leaving for later
     @repeatable_task()
-    def delete_account(self):
+    def delete_account(self) -> None:
 
         self.client.delete(
             f"{self.url_prefix}/loyalty/{self.retailer_slug}/accounts/{self.account_uuid}",
@@ -130,5 +131,5 @@ class UserTasks(SequentialTaskSet):
     # ---------------------------------SPECIAL TASKS---------------------------------
 
     @repeatable_task()
-    def stop_locust_after_test_suite(self):
+    def stop_locust_after_test_suite(self) -> None:
         raise StopUser()

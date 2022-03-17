@@ -9,7 +9,7 @@ logger = logging.getLogger("TaskController")
 
 
 @timed_function
-def populate_all(data_configuration: str):
+def populate_all(data_configuration: str) -> None:
     """
     Populates all databases.
 
