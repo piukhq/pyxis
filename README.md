@@ -1,7 +1,7 @@
 # Database Population:
 For local database population, `.env` should contain:
 ```
-DB_CONNECTION_URI=postgresql://<username>:<password>@localhost:5432/postgres
+DB_CONNECTION_URI=postgresql://<username>:<password>@localhost:5432/perf_bpl_DATABASE
 ```
 
 To run database population (from root dir):
