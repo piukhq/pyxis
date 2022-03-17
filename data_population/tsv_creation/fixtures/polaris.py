@@ -24,8 +24,6 @@ marketing_preferences = {
     }
 }
 
-# todo: these should be converted to yaml on write (?)
-
 
 class AccountHolderStatuses(str, Enum):
     ACTIVE = "ACTIVE"
