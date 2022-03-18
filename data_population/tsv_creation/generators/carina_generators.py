@@ -11,7 +11,7 @@ class CarinaGenerators:
         self.now = datetime.utcnow()
         self.end_date = self.now + timedelta(weeks=100)
         self.data_config = data_config
-        self.reward_ids: dict = {}
+        self.reward_ids: list = []
 
     def retailer(self) -> list:
         """Generates n retailers (n defined in data_config)"""
@@ -89,22 +89,13 @@ class CarinaGenerators:
     def reward(self) -> list:
         """
         Generates n rewards/vouchers (total n defined as retailers * campaigns * rewards per campaign)
-        Saves reward codes generated as: {<retailer_id>: [(<reward_config_id>, <reward_id: uuid>)]} for later use by
-        polaris account_holder_reward and account_holder_pending_reward tables.
-
-        ** This may turn out to be unnecessary if we don't need historical reward uuids to match between carina and
-        polaris - remove if easier once all data polulation and endpoints are working!
-        At the time of writing (14/03/2022), We're only using the reward_uuids in reward_updates table
-        reward_config_id not being used
-        **
+        Saves reward uuids generated as: [reward_uuids] for later use by reward_updates table
         """
 
         reward_config_id_gen = id_generator(1)
         rewards = []
 
         for retailer_count in range(1, self.data_config.retailers + 1):
-
-            self.reward_ids.update({retailer_count: []})
 
             for campaign_count in range(self.data_config.campaigns_per_retailer):
 
@@ -113,8 +104,7 @@ class CarinaGenerators:
                 for reward in range(self.data_config.rewards_per_retailer):
 
                     reward_id = str(uuid4())
-                    self.reward_ids[retailer_count].append((reward_config_id, reward_id))
-                    # These need to be kept for later (for polaris account_holder_rewards)
+                    self.reward_ids.append(reward_id)
 
                     rewards.append(
                         [
@@ -137,23 +127,18 @@ class CarinaGenerators:
         reward generator
         """
 
-        id_gen = id_generator(1)
         reward_updates = []
         reward_ids = self.reward_ids
-        "{<retailer_id>: [(<reward_config_id>, <reward_id: uuid>)]}"
 
-        for _, reward_uuids in reward_ids.items():  # 10 retailers
-            for _, reward in enumerate(
-                reward_uuids[: self.data_config.reward_updates]
-            ):  # 2000 reward_updates_per_retailer
-                reward_updates.append(
-                    [
-                        next(id_gen),  # id
-                        self.now,  # created_at
-                        self.now,  # updated_at
-                        self.now.date(),  # date
-                        choice(["CANCELLED", "REDEEMED", "ISSUED"]),  # allocated
-                        reward[1],  # reward_uuid
-                    ]
-                )
+        for count in range(self.data_config.reward_updates):
+            reward_updates.append(
+                [
+                    count,  # id
+                    self.now,  # created_at
+                    self.now,  # updated_at
+                    self.now.date(),  # date
+                    choice(["CANCELLED", "REDEEMED", "ISSUED"]),  # allocated
+                    choice(reward_ids),  # reward_uuid
+                ]
+            )
         return reward_updates

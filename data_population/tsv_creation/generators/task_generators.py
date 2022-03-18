@@ -8,6 +8,12 @@ from data_population.tsv_creation.fixtures.common import audit_data
 
 
 def retry_task(tasks: int, task_type_ids_dict: dict) -> list:
+    """
+    `tasks` = DataConfig.account_holder or DataConfig.reward_updates or DataConfig.transactions.
+
+    `task_type_ids_dict` refer to the fixtures that should be passed. These will be app specific to
+    polaris, carina and vela.
+    """
     task_type_ids = task_type_ids_dict.values()
     id_gen = id_generator(1)
     retry_tasks = []
@@ -29,7 +35,12 @@ def retry_task(tasks: int, task_type_ids_dict: dict) -> list:
 
 
 def task_type_key_value(tasks: int, task_type_ids_dict: dict, task_type_keys_dict: dict) -> list:
-    # tasks = DataConfig.account_holder or DataConfig.reward_updates or DataConfig.transactions
+    """
+    `tasks` = DataConfig.account_holder or DataConfig.reward_updates or DataConfig.transactions.
+
+    `task_type_ids_dict` and `task_type_keys_dict` refer to the fixtures that should be passed.
+    These will be app specific to polaris, carina and vela.
+    """
     task_type_ids = task_type_ids_dict.values()
     task_type_key_value_rows = []
     for count in range(1, tasks + 1):
