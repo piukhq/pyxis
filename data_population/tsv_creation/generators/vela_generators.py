@@ -84,6 +84,7 @@ class VelaGenerators:
         return reward_rules
 
     def transaction(self, additionals: Optional[list] = []) -> list:
+        """Generates transactions (n defined in n data_config)"""
         id_gen = id_generator(1)
         transactions = []
         retailer_ids = self.retailer_ids
@@ -109,5 +110,6 @@ class VelaGenerators:
         return transactions
 
     def processed_transaction(self) -> list:
+        """Generates processed transaction (1-1 w/ transactions in data config)"""
         additional_col = ['{"test_campaign_1", "test_campaign_2"}']  # campaign_slug, array
         return self.transaction(additionals=additional_col)

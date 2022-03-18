@@ -45,7 +45,7 @@ class PolarisGenerators:
                 [
                     f"user_{count}@performancetest.com",  # email
                     AccountHolderStatuses.ACTIVE,  # status
-                    str(fake.credit_card_number()),  # account_number
+                    f"{fake.credit_card_number()}_{count}",  # account_number
                     self.now,  # created_at
                     randint(1, self.data_config.retailers),  # retailer_id
                     self.now,  # updated_at
