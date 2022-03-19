@@ -10,7 +10,7 @@ from azure.keyvault.secrets import SecretClient
 from locust import task
 from locust.exception import StopUser
 
-from settings import DB_CONNECTION_URI, POLARIS_AUTH_KEY_NAME, VAULT_URL, VELA_AUTH_KEY_NAME
+import settings as s
 
 repeat_tasks: dict = {}  # value assigned by locustfile
 
@@ -48,20 +48,13 @@ def load_secrets() -> dict:
     if not all_secrets:
         logger = logging.getLogger("VaultHandler")
 
-        credential = DefaultAzureCredential(
-            exclude_environment_credential=True,
-            exclude_shared_token_cache_credential=True,
-            exclude_visual_studio_code_credential=True,
-            exclude_interactive_browser_credential=True,
-        )
+        client = SecretClient(vault_url=s.VAULT_URL, credential=DefaultAzureCredential())
 
-        client = SecretClient(vault_url=VAULT_URL, credential=credential)
-
-        logger.info(f"Attempting to load secrets [{POLARIS_AUTH_KEY_NAME}], [{VELA_AUTH_KEY_NAME}]")
+        logger.info(f"Attempting to load secrets [{s.POLARIS_AUTH_KEY_NAME}], [{s.VELA_AUTH_KEY_NAME}]")
         all_secrets.update(
             {
-                "polaris_key": client.get_secret(POLARIS_AUTH_KEY_NAME).value,
-                "vela_key": client.get_secret(VELA_AUTH_KEY_NAME).value,
+                "polaris_key": client.get_secret(s.POLARIS_AUTH_KEY_NAME).value,
+                "vela_key": client.get_secret(s.VELA_AUTH_KEY_NAME).value,
             }
         )
         logger.info("Successfully loaded secrets")
@@ -79,7 +72,7 @@ def get_polaris_retailer_count() -> int:
 
     if not retailer_count:
 
-        connection = DB_CONNECTION_URI.replace("DATABASE", "polaris")
+        connection = s.DB_CONNECTION_URI.replace("/postgres?", f"/{s.POLARIS_DB}?")
 
         with psycopg2.connect(connection) as connection:
             with connection.cursor() as cursor:
@@ -120,7 +113,7 @@ def get_account_holder_information_via_cursor(email: str, timeout: int, retry_pe
     :param retry_period: frequency of database query
     :return: account number, account holder uuid if account is found within timeout period. Else returns empty strings.
     """
-    connection = DB_CONNECTION_URI.replace("DATABASE", "polaris")
+    connection = s.DB_CONNECTION_URI.replace("/postgres?", f"/{s.POLARIS_DB}?")
 
     with psycopg2.connect(connection) as connection:
         with connection.cursor() as cursor:
