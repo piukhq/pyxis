@@ -1,4 +1,5 @@
 import logging
+import time
 
 from data_population.common.utils import timed_function
 from data_population.data_config import data_configs
@@ -19,11 +20,12 @@ def populate_all(data_configuration: str) -> None:
     data_config = data_configs[data_configuration]
 
     #  Create all tsvs
-    logger.info("Generating tsvs")
+    t = time.time()
     tsv_manager.TSVHandler(data_config).create_tsv_files()
-    logger.info("All tsvs successfully generated")
+    logger.info(f"All tsvs successfully generated in {time.time() - t} seconds")
 
     #  Repopulate all dbs
     logger.info("Attempting upload of all tsvs")
+    t = time.time()
     db_tasks.DataTaskHandler().repopulate_all_databases()
-    logger.info("All tsvs successfully uploaded")
+    logger.info(f"All tsvs successfully uploaded in {time.time() - t} seconds")
