@@ -1,7 +1,11 @@
 # Database Population:
 For local database population, `.env` should contain:
 ```
-DB_CONNECTION_URI=postgresql://<username>:<password>@localhost:5432/perf_bpl_DATABASE
+DB_CONNECTION_URI=postgresql://<username>:<password>@localhost:5432/postgres?
+VAULT_URL=https://bink-uksouth-perf-bpl.vault.azure.net/
+POLARIS_DB=perf_bpl_polaris
+CARINA_DB=perf_bpl_carina
+VELA_DB=perf_bpl_vela
 ```
 
 To run database population (from root dir):
