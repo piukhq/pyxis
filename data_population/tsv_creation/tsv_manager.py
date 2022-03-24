@@ -4,11 +4,10 @@ import os
 
 from data_population.common.utils import id_generator
 from data_population.data_config import DataConfig
-
 from data_population.tsv_creation.generators.carina_generators import CarinaGenerators
 from data_population.tsv_creation.generators.polaris_generators import PolarisGenerators
 from data_population.tsv_creation.generators.vela_generators import VelaGenerators
-from settings import CARINA_DB, POLARIS_DB, TSV_BASE_DIR, VELA_DB, TSV_BATCH_LIMIT
+from settings import CARINA_DB, POLARIS_DB, TSV_BASE_DIR, TSV_BATCH_LIMIT, VELA_DB
 
 execution_order = id_generator(1)
 
@@ -50,9 +49,7 @@ class TSVHandler:
 
         self.generate_and_write_to_tsv(
             generator=self.vela_generator.earn_rule,
-            total_row_count=self.data_config.retailers
-            * self.data_config.campaigns_per_retailer
-            * self.data_config.earn_rule_per_campaign,
+            total_row_count=self.data_config.retailers * self.data_config.campaigns_per_retailer,
             database_name=VELA_DB,
             table_name="earn_rule",
         )
@@ -230,7 +227,9 @@ class TSVHandler:
 
         logger.info(f"Wrote tsv {tsv_name}")
 
-    def generate_and_write_to_tsv(self, generator, total_row_count, database_name, table_name):
+    def generate_and_write_to_tsv(
+        self, generator: callable, total_row_count: int, database_name: str, table_name: str
+    ) -> None:
         """Handles per-table batching, data-generation and tsv-writing"""
 
         if total_row_count and total_row_count > TSV_BATCH_LIMIT:
@@ -247,8 +246,8 @@ class TSVHandler:
             self.write_to_tsv(data, database_name, table_name)
 
     @staticmethod
-    def split_rows(total_rows):
-        """Splits a number of rows into n sets of TXV_MAX_BATCH_SIZE rows"""
+    def split_rows(total_rows: int) -> list:
+        """Splits a number of rows into n sets of TXV_BATCH_LIMIT rows"""
         parts = []
         row_marker = 0
         while row_marker < total_rows:

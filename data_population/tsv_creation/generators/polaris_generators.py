@@ -7,13 +7,12 @@ from data_population.common.utils import random_ascii
 from data_population.data_config import DataConfig
 from data_population.tsv_creation.fixtures.polaris import (
     AccountHolderStatuses,
-    marketing_preferences,
-    profile_config,
-    polaris_task_type_ids,
     generate_polaris_type_key_values,
+    marketing_preferences,
+    polaris_task_type_ids,
+    profile_config,
 )
 from data_population.tsv_creation.generators.task_generators import retry_task, task_type_key_value
-
 from settings import fake
 
 

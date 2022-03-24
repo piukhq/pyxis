@@ -4,7 +4,7 @@ from uuid import uuid4
 
 from data_population.common.utils import id_generator
 from data_population.data_config import DataConfig
-from data_population.tsv_creation.fixtures import polaris_task_type_ids, generate_polaris_type_key_values
+from data_population.tsv_creation.fixtures import generate_polaris_type_key_values, polaris_task_type_ids
 from data_population.tsv_creation.generators.task_generators import retry_task, task_type_key_value
 
 

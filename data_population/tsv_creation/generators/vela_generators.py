@@ -5,8 +5,8 @@ from uuid import uuid4
 
 from data_population.common.utils import id_generator
 from data_population.data_config import DataConfig
+from data_population.tsv_creation.fixtures.vela import generate_vela_type_key_values, vela_task_type_ids
 from data_population.tsv_creation.generators.task_generators import retry_task, task_type_key_value
-from data_population.tsv_creation.fixtures.vela import vela_task_type_ids, generate_vela_type_key_values
 
 
 class VelaGenerators:
@@ -16,18 +16,18 @@ class VelaGenerators:
         self.data_config = data_config
         self.retailer_ids: list = []
 
-    def retailer_rewards(self) -> list:
+    def retailer_rewards(self, start, stop) -> list:
         retailers = []
-        for count in range(1, self.data_config.retailers + 1):
-            self.retailer_ids.append(count)
-            retailers.append([count, f"retailer_{count}"])  # id  # slug
+        for retailer_count in range(start, stop + 1):
+            self.retailer_ids.append(retailer_count)
+            retailers.append([retailer_count, f"retailer_{retailer_count}"])  # id  # slug
         return retailers
 
-    def campaign(self) -> list:
+    def campaign(self, start, stop) -> list:
         """Generates campaigns (n defined in data_config as retailers * campaigns per retailer)"""
-        id_gen = id_generator(1)
+        id_gen = id_generator((start - 1 * self.data_config.campaigns_per_retailer) + 1)
         campaigns = []
-        for count in range(1, self.data_config.retailers + 1):
+        for retailer_count in range(start, stop + 1):
             for campaign_count in range(1, self.data_config.campaigns_per_retailer + 1):
 
                 campaign_id = next(id_gen)
@@ -40,7 +40,7 @@ class VelaGenerators:
                         f"campaign_{campaign_id}",  # slug
                         self.now,  # created_at
                         self.now,  # updated_at
-                        count,  # retailer_id
+                        retailer_count,  # retailer_id
                         "STAMPS",  # loyalty_type
                         self.now,  # start_date
                         self.end_date,  # end_date (set to 100 weeks in the future)
@@ -48,14 +48,13 @@ class VelaGenerators:
                 )
         return campaigns
 
-    def earn_rule(self) -> list:
+    def earn_rule(self, start, stop) -> list:
         """
         Generates earn_rules (n defined in data_config as retailers * campaigns per retailer * earn_rules per campaign)
         """
-        id_gen = id_generator(1)
-        total_campaigns = self.data_config.retailers * self.data_config.campaigns_per_retailer
+        id_gen = id_generator((start - 1 * self.data_config.earn_rule_per_campaign) + 1)
         earn_rules = []
-        for campaign_count in range(1, total_campaigns + 1):
+        for campaign_count in range(start, stop + 1):
             for earn_rule_count in range(self.data_config.earn_rule_per_campaign):
                 earn_rules.append(
                     [
@@ -70,11 +69,10 @@ class VelaGenerators:
                 )
         return earn_rules
 
-    def reward_rule(self) -> list:
+    def reward_rule(self, start, stop) -> list:
         """Generates reward_rules (n defined in data_config as retailers * campaigns per retailer (1-1 w/campaigns))"""
-        total_campaigns = self.data_config.retailers * self.data_config.campaigns_per_retailer
         reward_rules = []
-        for count in range(1, total_campaigns + 1):
+        for count in range(start, stop + 1):
             reward_rules.append(
                 [
                     count,  # id
@@ -88,17 +86,16 @@ class VelaGenerators:
             )
         return reward_rules
 
-    def transaction(self, additionals: Optional[list] = None) -> list:
+    def transaction(self, start, stop, additionals: Optional[list] = None) -> list:
         """Generates transactions (n defined in n data_config)"""
-        id_gen = id_generator(1)
         transactions = []
 
-        for count in range(1, self.data_config.transactions + 1):
+        for transaction_count in range(start, stop + 1):
             data = [
-                next(id_gen),  # id
+                transaction_count,  # id
                 self.now,  # created_at
                 self.now,  # updated_at
-                f"tx_{count}",  # transaction_id
+                f"tx_{transaction_count}",  # transaction_id
                 randint(500, 1000),  # amount
                 "MID_1234",  # mid
                 self.now,  # datetime
@@ -110,18 +107,15 @@ class VelaGenerators:
             transactions.append(data)
         return transactions
 
-    def processed_transaction(self) -> list:
+    def processed_transaction(self, start, stop) -> list:
         """Generates processed transaction (1-1 w/ transactions in data config)"""
         additional_col = ['{"campaign_1", "campaign_2"}']  # campaign_slug, array
-        return self.transaction(additionals=additional_col)
+        return self.transaction(start, stop, additionals=additional_col)
 
     @staticmethod
-    def retry_task(self, start, stop) -> list:
+    def retry_task(start, stop) -> list:
         """Generates retry_tasks (1-1 w/ transactions in data config)"""
-        return retry_task(
-            start=start,
-            stop=stop,
-            task_type_ids_dict=vela_task_type_ids)
+        return retry_task(start=start, stop=stop, task_type_ids_dict=vela_task_type_ids)
 
     def task_type_key_value(self, start, stop) -> list:
         """Generates task_type_key_value data"""
