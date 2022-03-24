@@ -24,7 +24,6 @@ data_configs = {
         reward_updates=2000,
         random_task_types=False,
     ),
-
     "1m-tx": DataConfig(
         retailers=10,
         campaigns_per_retailer=1,
@@ -35,7 +34,6 @@ data_configs = {
         reward_updates=3000,
         random_task_types=False,
     ),
-
     "test": DataConfig(
         retailers=10,
         campaigns_per_retailer=1,
@@ -45,5 +43,5 @@ data_configs = {
         transactions=1000,
         reward_updates=3000,
         random_task_types=False,
-    )
+    ),
 }

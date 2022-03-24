@@ -95,7 +95,7 @@ class VelaGenerators:
                 self.now,  # updated_at
                 f"tx_{count}",  # transaction_id
                 randint(500, 1000),  # amount
-                f"MID_1234",  # mid
+                "MID_1234",  # mid
                 self.now,  # datetime
                 uuid4(),  # account_holder_uuid, not a fkey
                 randint(1, self.data_config.retailers),  # retailer_rewards.id fkey

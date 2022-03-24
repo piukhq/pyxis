@@ -35,10 +35,8 @@ def retry_task(tasks: int, task_type_ids_dict: dict) -> list:
 
 
 def task_type_key_value(
-        tasks: int,
-        task_type_ids_dict: dict,
-        task_type_keys_dict: dict,
-        random_task_types: bool) -> list:
+    tasks: int, task_type_ids_dict: dict, task_type_keys_dict: dict, random_task_types: bool
+) -> list:
     """
     `tasks` = DataConfig.account_holder or DataConfig.reward_updates or DataConfig.transactions.
 

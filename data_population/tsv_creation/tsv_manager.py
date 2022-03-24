@@ -54,7 +54,7 @@ class TSVHandler:
                 tasks=self.data_config.transactions,
                 task_type_ids_dict=vela_task_type_ids,
                 task_type_keys_dict=generate_vela_type_key_values(self.data_config),
-                random_task_types=self.data_config.random_task_types
+                random_task_types=self.data_config.random_task_types,
             ),
             VELA_DB,
             table="task_type_key_value",
@@ -68,13 +68,15 @@ class TSVHandler:
         self.write_to_tsv(self.carina_generator.reward(), CARINA_DB, table="reward")
         self.write_to_tsv(self.carina_generator.reward_update(), CARINA_DB, table="reward_update")
 
-        self.write_to_tsv(retry_task(self.data_config.reward_updates, carina_task_type_ids), CARINA_DB, table="retry_task")
+        self.write_to_tsv(
+            retry_task(self.data_config.reward_updates, carina_task_type_ids), CARINA_DB, table="retry_task"
+        )
         self.write_to_tsv(
             task_type_key_value(
                 tasks=self.data_config.reward_updates,
                 task_type_ids_dict=carina_task_type_ids,
                 task_type_keys_dict=generate_carina_type_key_values(self.data_config),
-                random_task_types=self.data_config.random_task_types
+                random_task_types=self.data_config.random_task_types,
             ),
             CARINA_DB,
             table="task_type_key_value",
@@ -111,7 +113,7 @@ class TSVHandler:
                 tasks=self.data_config.account_holders,
                 task_type_ids_dict=polaris_task_type_ids,
                 task_type_keys_dict=generate_polaris_type_key_values(self.data_config),
-                random_task_types=self.data_config.random_task_types
+                random_task_types=self.data_config.random_task_types,
             ),
             POLARIS_DB,
             table="task_type_key_value",
