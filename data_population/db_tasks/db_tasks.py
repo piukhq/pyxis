@@ -54,12 +54,14 @@ class DataTaskHandler:
 
                     table_name = tsv_info["table"]
                     file_name = tsv_info["filename"]
+                    initial = tsv_info["initial"]
 
                     # TRUNCATE
-                    logger.info(f"{db_name.upper()}: {table_name}: Attempting to truncate table")
-                    truncate_statement = f'TRUNCATE "{table_name}" CASCADE'
-                    cursor.execute(truncate_statement)
-                    logger.info(f"{db_name.upper()}: {table_name}: Successfully truncated table")
+                    if initial:
+                        logger.info(f"{db_name.upper()}: {table_name}: Attempting to truncate table")
+                        truncate_statement = f'TRUNCATE "{table_name}" CASCADE'
+                        cursor.execute(truncate_statement)
+                        logger.info(f"{db_name.upper()}: {table_name}: Successfully truncated table")
 
                     # UPLOAD/COPY
                     logger.info(f"{db_name.upper()}: {table_name}: Attempting to copy data into table")
@@ -99,7 +101,9 @@ class DataTaskHandler:
 
         for tsv in [f for f in os.listdir(settings.PROJECT_ROOT + "/" + TSV_BASE_DIR) if f[-4:] == ".tsv"]:
             tsv_parts = tsv.replace(".tsv", "").split("-")
-            tsv_data.append({"filename": tsv, "db": tsv_parts[1], "table": tsv_parts[3], "order": int(tsv_parts[2])})
+            table_name = (tsv_parts[3].split("__"))
+            tsv_data.append({"filename": tsv, "db": tsv_parts[1], "table": table_name[0], "order": int(tsv_parts[2]),
+                             "initial": True if table_name[1] in ["*", "1"] else False})
 
         tsv_data.sort(key=lambda i: i["order"])  # tables sorted and populated in order they were created
 

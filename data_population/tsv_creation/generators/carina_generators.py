@@ -4,7 +4,7 @@ from uuid import uuid4
 
 from data_population.common.utils import id_generator
 from data_population.data_config import DataConfig
-from data_population.tsv_creation.fixtures import generate_polaris_type_key_values, polaris_task_type_ids
+from data_population.tsv_creation.fixtures import carina_task_type_ids, generate_carina_type_key_values
 from data_population.tsv_creation.generators.task_generators import retry_task, task_type_key_value
 
 
@@ -15,11 +15,11 @@ class CarinaGenerators:
         self.data_config = data_config
         self.reward_ids: list = []
 
-    def retailer(self) -> list:
+    def retailer(self, start, stop) -> list:
         """Generates n retailers (n defined in data_config)"""
         retailers = []
 
-        for retailer_count in range(1, self.data_config.retailers + 1):
+        for retailer_count in range(start, stop + 1):
             retailers.append(
                 [
                     self.now,  # created_at
@@ -30,7 +30,7 @@ class CarinaGenerators:
             )
         return retailers
 
-    def fetch_type(self) -> list:
+    def fetch_type(self, _, __) -> list:
         """Generates n fetch types (fixed n - can add more if needed)"""
         fetch_types = [
             [
@@ -44,11 +44,11 @@ class CarinaGenerators:
         ]
         return fetch_types
 
-    def retailer_fetch_type(self) -> list:
+    def retailer_fetch_type(self, start, stop) -> list:
         """Generates n retailer<->fetch_type links (1 per retailer (fetch type 1 only))"""
         retailer_fetch_types = []
 
-        for retailer_count in range(1, self.data_config.retailers + 1):
+        for retailer_count in range(start, stop + 1):
             retailer_fetch_types.append(
                 [
                     self.now,  # created_at
@@ -141,13 +141,15 @@ class CarinaGenerators:
 
     @staticmethod
     def retry_task(start: int, stop: int) -> list:
-        return retry_task(start=start, stop=stop, task_type_ids_dict=polaris_task_type_ids)
+        """Generates retry_tasks (1-1 w/ transactions in data config)"""
+        return retry_task(start=start, stop=stop, task_type_ids_dict=carina_task_type_ids)
 
     def task_type_key_value(self, start: int, stop: int) -> list:
+        """Generates task_type_key_value data"""
         return task_type_key_value(
             start=start,
             stop=stop,
-            task_type_ids_dict=polaris_task_type_ids,
-            task_type_keys_dict=generate_polaris_type_key_values(self.data_config),
+            task_type_ids_dict=carina_task_type_ids,
+            task_type_keys_dict=generate_carina_type_key_values(self.data_config),
             random_task_types=self.data_config.random_task_types,
         )

@@ -1,6 +1,7 @@
 import csv
 import logging
 import os
+import settings
 
 from data_population.common.utils import id_generator
 from data_population.data_config import DataConfig
@@ -30,6 +31,8 @@ class TSVHandler:
 
         N.b. tables will later be written to the db in the order below.
         """
+
+        self.clear_tsvs()
 
         # ------------------------------------------- VELA --------------------------------------------
 
@@ -140,7 +143,7 @@ class TSVHandler:
             generator=self.carina_generator.task_type_key_value,
             total_row_count=self.data_config.reward_updates,
             database_name=CARINA_DB,
-            table_name="task_type_key_valuek",
+            table_name="task_type_key_value",
         )
 
         # ------------------------------------------- POLARIS --------------------------------------------
@@ -219,7 +222,7 @@ class TSVHandler:
 
         batch_info = str(batch_number) if batch_number is not None else "*"
 
-        tsv_name = os.path.join(TSV_BASE_DIR, f"tsv-{db}-{execute_id}-{table}_{batch_info}.tsv")
+        tsv_name = os.path.join(TSV_BASE_DIR, f"tsv-{db}-{execute_id}-{table}__{batch_info}.tsv")
 
         with open(tsv_name, "w+") as f:
             tsv_writer = csv.writer(f, delimiter="\t", quoting=csv.QUOTE_NONE, escapechar="", quotechar="")
@@ -258,3 +261,10 @@ class TSVHandler:
             parts.append((start, end))
 
         return parts
+
+    def clear_tsvs(self):
+        dir = settings.PROJECT_ROOT + "/" + TSV_BASE_DIR
+        files = os.listdir(dir)
+        for f in files:
+            os.remove(os.path.join(dir, f))
+        logger.info("Successfully removed old .tsvs")

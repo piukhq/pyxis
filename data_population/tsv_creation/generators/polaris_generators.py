@@ -124,10 +124,9 @@ class PolarisGenerators:
         """
         account_holder_rewards = []
         total_retailers = self.data_config.retailers  # 10
-        rewards_populated_count = 0
 
         for account_holder_count in range(start, stop + 1):
-            rewards_populated_count += 1
+
             account_holder_rewards.append(
                 [
                     self.now,  # created_at
@@ -143,7 +142,7 @@ class PolarisGenerators:
                     f"retailer_{randint(1, total_retailers)}",  # retailer_slug
                     str(uuid.uuid4()),  # idempotency_token
                     account_holder_count,  # account_holder_id
-                    rewards_populated_count,  # id
+                    account_holder_count,  # id
                 ]
             )
         return account_holder_rewards
@@ -155,15 +154,13 @@ class PolarisGenerators:
         account_holder_pending_rewards = []
         total_retailers = self.data_config.retailers
         total_campaigns = self.data_config.retailers * self.data_config.campaigns_per_retailer
-        pending_rewards_populated_count = 0
 
         for account_holder_count in range(start, stop + 1):
-            pending_rewards_populated_count += 1
             account_holder_pending_rewards.append(
                 [
                     self.now,  # created_at
                     self.now,  # updated_at
-                    pending_rewards_populated_count,  # id
+                    account_holder_count,  # id
                     self.now,  # created_date
                     self.now + timedelta(days=30),  # conversion_date
                     randint(500, 1000),  # value
@@ -178,9 +175,11 @@ class PolarisGenerators:
 
     @staticmethod
     def retry_task(start: int, stop: int) -> list:
+        """Generates retry_tasks (1-1 w/ transactions in data config)"""
         return retry_task(start=start, stop=stop, task_type_ids_dict=polaris_task_type_ids)
 
     def task_type_key_value(self, start: int, stop: int) -> list:
+        """Generates task_type_key_value data"""
         return task_type_key_value(
             start=start,
             stop=stop,
