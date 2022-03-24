@@ -8,6 +8,7 @@ from data_population.tsv_creation import tsv_manager
 
 logger = logging.getLogger("TaskController")
 
+data_config = None
 
 @timed_function
 def populate_all(data_configuration: str) -> None:
@@ -17,6 +18,7 @@ def populate_all(data_configuration: str) -> None:
     :param data_configuration: data_configuration name as passed in cli command
     """
 
+    global data_config
     data_config = data_configs[data_configuration]
 
     #  Create all tsvs

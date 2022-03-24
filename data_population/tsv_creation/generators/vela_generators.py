@@ -5,6 +5,8 @@ from uuid import uuid4
 
 from data_population.common.utils import id_generator
 from data_population.data_config import DataConfig
+from data_population.tsv_creation.generators.task_generators import retry_task, task_type_key_value
+from data_population.tsv_creation.fixtures.vela import vela_task_type_ids, generate_vela_type_key_values
 
 
 class VelaGenerators:
@@ -112,3 +114,19 @@ class VelaGenerators:
         """Generates processed transaction (1-1 w/ transactions in data config)"""
         additional_col = ['{"campaign_1", "campaign_2"}']  # campaign_slug, array
         return self.transaction(additionals=additional_col)
+
+    def retry_task(self) -> list:
+        """Generates retry_tasks (1-1 w/ transactions in data config)"""
+        return retry_task(
+            tasks=self.data_config.transactions,
+            task_type_ids_dict=vela_task_type_ids)
+
+    def task_type_key_value(self) -> list:
+        """Generates task_type_key_value data"""
+        return task_type_key_value(
+            tasks=self.data_config.transactions,
+            task_type_ids_dict=vela_task_type_ids,
+            task_type_keys_dict=generate_vela_type_key_values(self.data_config),
+            random_task_types=self.data_config.random_task_types,
+        )
+

@@ -41,24 +41,55 @@ class TSVHandler:
         """
 
         # VELA GENERATION
-        self.write_to_tsv(self.vela_generator.retailer_rewards(), VELA_DB, table="retailer_rewards")
-        self.write_to_tsv(self.vela_generator.campaign(), VELA_DB, table="campaign")
-        self.write_to_tsv(self.vela_generator.earn_rule(), VELA_DB, table="earn_rule")
-        self.write_to_tsv(self.vela_generator.reward_rule(), VELA_DB, table="reward_rule")
-        self.write_to_tsv(self.vela_generator.transaction(), VELA_DB, table="transaction")
-        self.write_to_tsv(self.vela_generator.processed_transaction(), VELA_DB, table="processed_transaction")
 
-        self.write_to_tsv(retry_task(self.data_config.transactions, vela_task_type_ids), VELA_DB, table="retry_task")
-        self.write_to_tsv(
-            task_type_key_value(
-                tasks=self.data_config.transactions,
-                task_type_ids_dict=vela_task_type_ids,
-                task_type_keys_dict=generate_vela_type_key_values(self.data_config),
-                random_task_types=self.data_config.random_task_types,
-            ),
-            VELA_DB,
-            table="task_type_key_value",
-        )
+        self.generate_and_write_to_tsv(
+            generator=self.vela_generator.retailer_rewards,
+            batch_split_on=self.data_config.retailers,
+            database_name=VELA_DB,
+            table_name="retailer_rewards")
+
+        self.generate_and_write_to_tsv(
+            generator=self.vela_generator.campaign,
+            batch_split_on=self.data_config.retailers * self.data_config.campaigns_per_retailer,
+            database_name=VELA_DB,
+            table_name="campaign")
+
+        self.generate_and_write_to_tsv(
+            generator=self.vela_generator.earn_rule,
+            batch_split_on=self.data_config.retailers * self.data_config.campaigns_per_retailer * self.data_config.earn_rule_per_campaign,
+            database_name=VELA_DB,
+            table_name="earn_rule")
+
+        self.generate_and_write_to_tsv(
+            generator=self.vela_generator.reward_rule,
+            batch_split_on=self.data_config.retailers * self.data_config.campaigns_per_retailer,
+            database_name=VELA_DB,
+            table_name="reward_rule")
+
+        self.generate_and_write_to_tsv(
+            generator=self.vela_generator.transaction,
+            batch_split_on=self.data_config.transactions,
+            database_name=VELA_DB,
+            table_name="transaction")
+
+        self.generate_and_write_to_tsv(
+            generator=self.vela_generator.processed_transaction,
+            batch_split_on=self.data_config.transactions,
+            database_name=VELA_DB,
+            table_name="processed_transaction")
+
+        self.generate_and_write_to_tsv(
+            generator=retry_task,
+            batch_split_on=self.data_config.transactions,
+            database_name=VELA_DB,
+            table_name="retry_task")
+
+        self.generate_and_write_to_tsv(
+            generator=task_type_key_value,
+            batch_split_on=self.data_config.transactions,
+            database_name=VELA_DB,
+            table_name="task_type_key_value"
+            )
 
         # CARINA GENERATION
         self.write_to_tsv(self.carina_generator.retailer(), CARINA_DB, table="retailer")
@@ -141,3 +172,11 @@ class TSVHandler:
             tsv_writer.writerows(data)
 
         logger.info(f"Wrote tsv {tsv_name}")
+
+    def generate_and_write_to_tsv(self, generator, batch_split_on, database_name, table_name):
+
+        # split into [(start, stop), (start, stop)]
+        #
+        # p.map (function, [])
+
+        pass
