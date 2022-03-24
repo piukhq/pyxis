@@ -27,12 +27,15 @@ class VelaGenerators:
         campaigns = []
         for count in range(1, self.data_config.retailers + 1):
             for campaign_count in range(1, self.data_config.campaigns_per_retailer + 1):
+
+                campaign_id = next(id_gen)
+
                 campaigns.append(
                     [
-                        next(id_gen),  # id
+                        campaign_id,  # id
                         "ACTIVE",  # status
-                        f"Retailer {count} Campaign {campaign_count}",  # name
-                        f"retailer_{count}_campaign_{campaign_count}",  # slug
+                        f"Campaign {campaign_id}",  # name
+                        f"campaign_{campaign_id}",  # slug
                         self.now,  # created_at
                         self.now,  # updated_at
                         count,  # retailer_id
@@ -83,33 +86,29 @@ class VelaGenerators:
             )
         return reward_rules
 
-    def transaction(self, additionals: Optional[list] = []) -> list:
+    def transaction(self, additionals: Optional[list] = None) -> list:
         """Generates transactions (n defined in n data_config)"""
         id_gen = id_generator(1)
         transactions = []
-        retailer_ids = self.retailer_ids
-        total_retailers = len(retailer_ids)
-        tx_per_retailer = int(self.data_config.transactions / total_retailers)
 
-        for retailer_id in retailer_ids:
-            for count in range(1, tx_per_retailer + 1):
-                data = [
-                    next(id_gen),  # id
-                    self.now,  # created_at
-                    self.now,  # updated_at
-                    f"tx_{count}",  # transaction_id
-                    randint(500, 1000),  # amount
-                    f"mid_{randint(1, self.data_config.transactions)}",  # mid
-                    self.now,  # datetime
-                    uuid4(),  # account_holder_uuid, not a fkey
-                    retailer_id,  # retailer_rewards.id fkey
-                ]
-                if bool(additionals):
-                    data.extend(additionals)  # type: ignore
-                transactions.append(data)
+        for count in range(1, self.data_config.transactions + 1):
+            data = [
+                next(id_gen),  # id
+                self.now,  # created_at
+                self.now,  # updated_at
+                f"tx_{count}",  # transaction_id
+                randint(500, 1000),  # amount
+                "MID_1234",  # mid
+                self.now,  # datetime
+                uuid4(),  # account_holder_uuid, not a fkey
+                randint(1, self.data_config.retailers),  # retailer_rewards.id fkey
+            ]
+            if additionals is not None:
+                data.extend(additionals)  # type: ignore
+            transactions.append(data)
         return transactions
 
     def processed_transaction(self) -> list:
         """Generates processed transaction (1-1 w/ transactions in data config)"""
-        additional_col = ['{"test_campaign_1", "test_campaign_2"}']  # campaign_slug, array
+        additional_col = ['{"campaign_1", "campaign_2"}']  # campaign_slug, array
         return self.transaction(additionals=additional_col)

@@ -43,11 +43,10 @@ polaris_task_type_ids = {
 }
 
 
-def generate_polaris_type_key_values(config: DataConfig) -> dict[int, dict]:
-    total_account_holders = config.account_holders
-    total_retailers = config.retailers
-    total_campaigns = config.campaigns_per_retailer
-    total_rewards = total_retailers * config.rewards_per_retailer
+def generate_polaris_type_key_values(data_config: DataConfig) -> dict[int, dict]:
+    total_account_holders = data_config.account_holders
+    total_retailers = data_config.retailers
+    total_campaigns = data_config.retailers * data_config.campaigns_per_retailer
     polaris_task_type_keys: dict[int, dict] = {
         polaris_task_type_ids["enrolment-callback"]: {
             1: str(uuid4()),  # account_holder_uuid
@@ -60,26 +59,26 @@ def generate_polaris_type_key_values(config: DataConfig) -> dict[int, dict]:
             14: randint(1, total_account_holders),  # welcome_email_retry_task_id
         },
         polaris_task_type_ids["delete-campaign-balances"]: {
-            6: f"perf-test-retailer-{randint(1, total_retailers)}",  # retailer_slug
-            7: f"perf-test-campaign-{randint(1, total_campaigns)}",  # campaign_slug
+            6: f"retailer_{randint(1, total_retailers)}",  # retailer_slug
+            7: f"campaign_{randint(1, total_campaigns)}",  # campaign_slug
         },
         polaris_task_type_ids["create-campaign-balances"]: {
-            8: f"perf-test-retailer-{randint(1, total_retailers)}",  # retailer_slug,
-            9: f"perf-test-campaign-{randint(1, total_retailers)}",  # campaign_slug
+            8: f"retailer_{randint(1, total_retailers)}",  # retailer_slug,
+            9: f"campaign_{randint(1, total_retailers)}",  # campaign_slug
         },
         polaris_task_type_ids["cancel-rewards"]: {
-            10: f"perf-test-retailer-{randint(1, total_retailers)}",  # retailer_slug
-            11: f"perf-reward-slug-{randint(1, total_rewards)}",  # reward_slug
+            10: f"retailer_{randint(1, total_retailers)}",  # retailer_slug
+            11: f"reward_{randint(1, total_campaigns)}",  # reward_slug
         },
         polaris_task_type_ids["send-welcome-email"]: {
             12: str(uuid4()),  # account_holder_uuid
             13: f"perf-{random_ascii(5)}@test-email.com",  # email
         },
         polaris_task_type_ids["pending-reward-allocation"]: {
-            15: f"perf-test-retailer-{randint(1, total_retailers)}",  # retailer_slug
-            16: f"perf-reward-slug-{randint(1, total_rewards)}",  # reward_slug
+            15: f"retailer_{randint(1, total_retailers)}",  # retailer_slug
+            16: f"reward_{randint(1, total_campaigns)}",  # reward_slug
             17: str(uuid4()),  # account_holder_uuid,
-            18: randint(1, total_rewards),  # pending_reward_id,
+            18: randint(1, data_config.rewards),  # pending_reward_id,
         },
     }
     return polaris_task_type_keys

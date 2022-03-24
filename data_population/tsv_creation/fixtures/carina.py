@@ -13,17 +13,16 @@ carina_task_type_ids = {
 }
 
 
-def generate_carina_type_key_values(config: DataConfig) -> dict[int, dict]:
-    total_retailers = config.retailers
-    total_rewards = total_retailers * config.rewards_per_retailer
-    total_reward_config_ids = total_retailers * config.campaigns_per_retailer
+def generate_carina_type_key_values(data_config: DataConfig) -> dict[int, dict]:
+    total_retailers = data_config.retailers
+    total_reward_configs = total_retailers * data_config.campaigns_per_retailer
     carina_task_type_key_values: dict[int, dict] = {
         carina_task_type_ids["reward-issuance"]: {
             1: "https://exampleurl/random/",  # account_url
             2: datetime.utcnow(),  # issued_date
             3: datetime.utcnow(),  # expiry_date
-            4: randint(1, total_reward_config_ids),  # reward_config_id
-            5: f"perf-reward-slug-{randint(1, total_rewards)}",  # reward_slug
+            4: randint(1, total_reward_configs),  # reward_config_id
+            5: f"reward_{randint(1, total_reward_configs)}",  # reward_slug
             6: str(uuid4()),  # reward_uuid
             7: random_ascii(10),  # code
             12: str(uuid4()),  # idempotency_token
@@ -36,12 +35,12 @@ def generate_carina_type_key_values(config: DataConfig) -> dict[int, dict]:
             11: choice(["ACTIVE", "CANCELLED", "ENDED"]),
         },
         carina_task_type_ids["cancel-rewards"]: {
-            13: f"perf-test-retailer-{randint(1, total_retailers)}",  # retailer_slug
-            14: f"perf-reward-slug-{randint(1, total_rewards)}",  # reward_slug
+            13: f"retailer_{randint(1, total_retailers)}",  # retailer_slug
+            14: f"reward_{randint(1, total_reward_configs)}",  # reward_slug
         },
         carina_task_type_ids["delete-unallocated-rewards"]: {
-            15: f"perf-test-retailer-{randint(1, total_retailers)}",  # retailer_slug
-            16: f"perf-reward-slug-{randint(1, total_rewards)}",  # reward_slug
+            15: f"retailer_{randint(1, total_retailers)}",  # retailer_slug
+            16: f"reward_{randint(1, total_reward_configs)}",  # reward_slug
         },
     }
     return carina_task_type_key_values
