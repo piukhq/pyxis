@@ -1,6 +1,7 @@
 import csv
 import logging
 import os
+
 import settings
 
 from data_population.common.utils import id_generator
@@ -108,7 +109,7 @@ class TSVHandler:
         )
         self.generate_and_write_to_tsv(
             generator=self.carina_generator.retailer_fetch_type,
-            total_row_count=0,
+            total_row_count=self.data_config.retailers,
             database_name=CARINA_DB,
             table_name="retailer_fetch_type",
         )

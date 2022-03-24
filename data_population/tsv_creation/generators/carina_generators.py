@@ -97,7 +97,7 @@ class CarinaGenerators:
         reward_configs = self.data_config.retailers * self.data_config.campaigns_per_retailer
         rewards = []
 
-        for reward in range(start, stop + 1):
+        for reward_count in range(start, stop + 1):
 
             reward_id = str(uuid4())
             self.reward_ids.append(reward_id)
@@ -126,10 +126,10 @@ class CarinaGenerators:
         reward_updates = []
         reward_ids = self.reward_ids
 
-        for count in range(start, stop + 1):
+        for reward_update_count in range(start, stop + 1):
             reward_updates.append(
                 [
-                    count,  # id
+                    reward_update_count,  # id
                     self.now,  # created_at
                     self.now,  # updated_at
                     self.now.date(),  # date

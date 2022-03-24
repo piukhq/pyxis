@@ -101,9 +101,16 @@ class DataTaskHandler:
 
         for tsv in [f for f in os.listdir(settings.PROJECT_ROOT + "/" + TSV_BASE_DIR) if f[-4:] == ".tsv"]:
             tsv_parts = tsv.replace(".tsv", "").split("-")
-            table_name = (tsv_parts[3].split("__"))
-            tsv_data.append({"filename": tsv, "db": tsv_parts[1], "table": table_name[0], "order": int(tsv_parts[2]),
-                             "initial": True if table_name[1] in ["*", "1"] else False})
+            table_name = tsv_parts[3].split("__")
+            tsv_data.append(
+                {
+                    "filename": tsv,
+                    "db": tsv_parts[1],
+                    "table": table_name[0],
+                    "order": int(tsv_parts[2]),
+                    "initial": True if table_name[1] in ["*", "1"] else False,
+                }
+            )
 
         tsv_data.sort(key=lambda i: i["order"])  # tables sorted and populated in order they were created
 

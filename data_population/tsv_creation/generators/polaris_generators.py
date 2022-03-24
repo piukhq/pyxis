@@ -24,13 +24,13 @@ class PolarisGenerators:
     def retailer_config(self, start, stop) -> list:
         """Generates n retailer_configs (n defined in data_config)"""
         retailer_configs = []
-        for count in range(start, stop + 1):
+        for retailer_count in range(start, stop + 1):
             retailer_configs.append(
                 [
-                    count,  # id
-                    f"Retailer {count}",  # name
-                    f"retailer_{count}",  # slug
-                    str(count).zfill(4),  # account_number_prefix (e.g. '0013')
+                    retailer_count,  # id
+                    f"Retailer {retailer_count}",  # name
+                    f"retailer_{retailer_count}",  # slug
+                    str(retailer_count).zfill(4),  # account_number_prefix (e.g. '0013')
                     10,  # account_number_length
                     self.now,  # created_at
                     profile_config,  # profile_config
@@ -47,17 +47,17 @@ class PolarisGenerators:
     def account_holder(self, start, stop) -> list:
         """Generates n account_holders (n defined in data_config)"""
         account_holders = []
-        for count in range(start, stop + 1):
+        for account_holder_count in range(start, stop + 1):
             account_holders.append(
                 [
-                    f"user_{count}@performancetest.com",  # email
+                    f"user_{account_holder_count}@performancetest.com",  # email
                     AccountHolderStatuses.ACTIVE,  # status
-                    f"{fake.credit_card_number()}_{count}",  # account_number
+                    f"{fake.credit_card_number()}_{account_holder_count}",  # account_number
                     self.now,  # created_at
                     randint(1, self.data_config.retailers),  # retailer_id
                     self.now,  # updated_at
                     uuid.uuid4(),  # account_holder_uuid
-                    count,  # id
+                    account_holder_count,  # id
                     uuid.uuid4(),  # opt_out_token
                 ]
             )
@@ -66,7 +66,7 @@ class PolarisGenerators:
     def account_holder_profile(self, start, stop) -> list:
         """Generates n account_holder_profiles (n defined in data_config (1-1 w/account_holders))"""
         account_holder_profiles = []
-        for count in range(start, stop + 1):
+        for account_holder_count in range(start, stop + 1):
             account_holder_profiles.append(
                 [
                     fake.first_name(),  # first name
@@ -77,8 +77,8 @@ class PolarisGenerators:
                     "Fake_second_line_address",  # address_line2
                     "Fake_postcode",  # retailer_id
                     "Fake_city",  # city
-                    count,  # account_holder_id
-                    count,  # id
+                    account_holder_count,  # account_holder_id
+                    account_holder_count,  # id
                     "",  # custom
                 ]
             )
@@ -87,13 +87,13 @@ class PolarisGenerators:
     def account_holder_marketing_preference(self, start, stop) -> list:
         """Generates account_holder_marketing_preferences (n defined in data_config (1-1 w/account_holders))"""
         account_holder_marketing_preferences = []
-        for count in range(start, stop + 1):
+        for account_holder_count in range(start, stop + 1):
             account_holder_marketing_preferences.append(
                 [
                     self.now,  # created_at
                     self.now,  # updated_at
-                    count,  # id
-                    count,  # account_holder_id
+                    account_holder_count,  # id
+                    account_holder_count,  # account_holder_id
                     "marketing_pref",  # key_name
                     "True",  # value
                     "BOOLEAN",  # value_type
@@ -105,15 +105,15 @@ class PolarisGenerators:
         """Generates account_holder_campaign_balances (n defined in data_config (1-1 w/account_holders))"""
         account_holder_campaign_balances = []
         total_campaigns = self.data_config.retailers * self.data_config.campaigns_per_retailer
-        for count in range(start, stop + 1):
+        for account_holder_count in range(start, stop + 1):
             account_holder_campaign_balances.append(
                 [
                     self.now,  # created_at
                     self.now,  # updated_at
-                    count,  # id
+                    account_holder_count,  # id
                     f"campaign_{randint(1, total_campaigns)}",  # campaign_slug
                     randint(100, 1000),  # balance
-                    count,  # account_holder_id
+                    account_holder_count,  # account_holder_id
                 ]
             )
         return account_holder_campaign_balances
