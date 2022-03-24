@@ -97,13 +97,14 @@ class PolarisGenerators:
     def account_holder_campaign_balance(self) -> list:
         """Generates account_holder_campaign_balances (n defined in data_config (1-1 w/account_holders))"""
         account_holder_campaign_balances = []
+        total_campaigns = self.data_config.retailers * self.data_config.campaigns_per_retailer
         for count in range(1, self.data_config.account_holders + 1):
             account_holder_campaign_balances.append(
                 [
                     self.now,  # created_at
                     self.now,  # updated_at
                     count,  # id
-                    "perftest-campaign",  # mock campaign slug
+                    f"campaign_{randint(1, total_campaigns)}",  # campaign_slug
                     randint(100, 1000),  # balance
                     count,  # account_holder_id
                 ]
@@ -146,8 +147,9 @@ class PolarisGenerators:
         Generates account_holder_pending_rewards (1-1 w/ account_holders)
         """
         account_holder_pending_rewards = []
-        total_account_holders = self.data_config.account_holders  # 2000
-        total_retailers = self.data_config.retailers  # 10
+        total_account_holders = self.data_config.account_holders
+        total_retailers = self.data_config.retailers
+        total_campaigns = self.data_config.retailers * self.data_config.campaigns_per_retailer
         pending_rewards_populated_count = 0
 
         for account_holder_count in range(1, total_account_holders + 1):
@@ -160,8 +162,8 @@ class PolarisGenerators:
                     self.now,  # created_date
                     self.now + timedelta(days=30),  # conversion_date
                     randint(500, 1000),  # value
-                    "perftest-campaign",
-                    "pending-reward-slug",  # reward_slug
+                    f"campaign_{randint(1,total_campaigns)}",
+                    f"reward_{randint(1,total_campaigns)}",  # reward_slug
                     f"retailer_{randint(1, total_retailers)}",  # retailer_slug
                     str(uuid.uuid4()),  # idempotency_token
                     account_holder_count,  # account_holder_id

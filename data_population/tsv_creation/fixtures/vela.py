@@ -13,15 +13,14 @@ vela_task_type_ids = {
 
 def generate_vela_type_key_values(data_config: DataConfig) -> dict[int, dict]:
     total_retailers = data_config.retailers
-    total_campaigns = data_config.campaigns_per_retailer
+    total_campaigns = data_config.retailers * data_config.campaigns_per_retailer
     total_transactions = data_config.transactions
-    total_rewards = data_config.rewards
     vela_task_type_keys: dict[int, dict] = {
         vela_task_type_ids["reward-adjustment"]: {
             1: uuid4(),  # account_holder_uuid
-            2: f"perf-test-retailer-{randint(1, total_retailers)}",  # retailer_slug
+            2: f"retailer_{randint(1, total_retailers)}",  # retailer_slug
             3: randint(1, total_transactions),  # processed_transaction_id
-            4: f"perf-test-campaign-{randint(1, total_campaigns)}",  # campaign_slug
+            4: f"campaign_{randint(1, total_campaigns)}",  # campaign_slug
             5: randint(100, 1000),  # adjustment_amount
             6: f"test-pre-alloc-token-{randint(1, total_transactions)}",  # pre_allocation_token
             14: f"test-post-alloc-token-{randint(1, total_transactions)}",  # post_allocation_token
@@ -30,17 +29,17 @@ def generate_vela_type_key_values(data_config: DataConfig) -> dict[int, dict]:
             17: randint(1, total_transactions),  # secondary_reward_retry_task_id
         },
         vela_task_type_ids["reward-status-adjustment"]: {
-            7: f"perf-test-retailer-{randint(1, total_retailers)}",  # retailer_slug
-            8: f"perf-reward-slug-{randint(1, total_rewards)}",  # reward_slug
+            7: f"retailer_{randint(1, total_retailers)}",  # retailer_slug
+            8: f"reward_{randint(1, total_campaigns)}",  # reward_slug
             9: choice(["active", "cancelled", "ended"]),  # status
         },
         vela_task_type_ids["create-campaign-balances"]: {
-            10: f"perf-test-retailer-{randint(1, total_retailers)}",  # retailer_slug
-            11: f"perf-test-campaign-{randint(1, total_campaigns)}",  # campaign_slug
+            10: f"retailer_{randint(1, total_retailers)}",  # retailer_slug
+            11: f"campaign_{randint(1, total_campaigns)}",  # campaign_slug
         },
         vela_task_type_ids["delete-campaign-balances"]: {
-            12: f"perf-test-retailer-{randint(1, total_retailers)}",  # retailer_slug
-            13: f"perf-test-campaign-{randint(1, total_campaigns)}",  # campaign_slug
+            12: f"retailer_{randint(1, total_retailers)}",  # retailer_slug
+            13: f"campaign_{randint(1, total_campaigns)}",  # campaign_slug
         },
     }
     return vela_task_type_keys

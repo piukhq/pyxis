@@ -31,8 +31,8 @@ class VelaGenerators:
                     [
                         next(id_gen),  # id
                         "ACTIVE",  # status
-                        f"Retailer {count} Campaign {campaign_count}",  # name
-                        f"retailer_{count}_campaign_{campaign_count}",  # slug
+                        f"Campaign {campaign_count}",  # name
+                        f"campaign_{campaign_count}",  # slug
                         self.now,  # created_at
                         self.now,  # updated_at
                         count,  # retailer_id
@@ -107,5 +107,5 @@ class VelaGenerators:
 
     def processed_transaction(self) -> list:
         """Generates processed transaction (1-1 w/ transactions in data config)"""
-        additional_col = ['{"test_campaign_1", "test_campaign_2"}']  # campaign_slug, array
+        additional_col = ['{"campaign_1", "campaign_2"}']  # campaign_slug, array
         return self.transaction(additionals=additional_col)
