@@ -27,12 +27,15 @@ class VelaGenerators:
         campaigns = []
         for count in range(1, self.data_config.retailers + 1):
             for campaign_count in range(1, self.data_config.campaigns_per_retailer + 1):
+
+                campaign_id = next(id_gen)
+
                 campaigns.append(
                     [
-                        next(id_gen),  # id
+                        campaign_id,  # id
                         "ACTIVE",  # status
-                        f"Campaign {campaign_count}",  # name
-                        f"campaign_{campaign_count}",  # slug
+                        f"Campaign {campaign_id}",  # name
+                        f"campaign_{campaign_id}",  # slug
                         self.now,  # created_at
                         self.now,  # updated_at
                         count,  # retailer_id
