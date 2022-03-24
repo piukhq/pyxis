@@ -5,7 +5,15 @@ from random import choice, randint
 
 from data_population.common.utils import random_ascii
 from data_population.data_config import DataConfig
-from data_population.tsv_creation.fixtures.polaris import AccountHolderStatuses, marketing_preferences, profile_config
+from data_population.tsv_creation.fixtures.polaris import (
+    AccountHolderStatuses,
+    marketing_preferences,
+    profile_config,
+    polaris_task_type_ids,
+    generate_polaris_type_key_values,
+)
+from data_population.tsv_creation.generators.task_generators import retry_task, task_type_key_value
+
 from settings import fake
 
 
@@ -14,10 +22,10 @@ class PolarisGenerators:
         self.now = datetime.utcnow()
         self.data_config = data_config
 
-    def retailer_config(self) -> list:
+    def retailer_config(self, start, stop) -> list:
         """Generates n retailer_configs (n defined in data_config)"""
         retailer_configs = []
-        for count in range(1, self.data_config.retailers + 1):
+        for count in range(start, stop + 1):
             retailer_configs.append(
                 [
                     count,  # id
@@ -37,10 +45,10 @@ class PolarisGenerators:
             )
         return retailer_configs
 
-    def account_holder(self) -> list:
+    def account_holder(self, start, stop) -> list:
         """Generates n account_holders (n defined in data_config)"""
         account_holders = []
-        for count in range(1, self.data_config.account_holders + 1):
+        for count in range(start, stop + 1):
             account_holders.append(
                 [
                     f"user_{count}@performancetest.com",  # email
@@ -56,10 +64,10 @@ class PolarisGenerators:
             )
         return account_holders
 
-    def account_holder_profile(self) -> list:
+    def account_holder_profile(self, start, stop) -> list:
         """Generates n account_holder_profiles (n defined in data_config (1-1 w/account_holders))"""
         account_holder_profiles = []
-        for count in range(1, self.data_config.account_holders + 1):
+        for count in range(start, stop + 1):
             account_holder_profiles.append(
                 [
                     fake.first_name(),  # first name
@@ -77,10 +85,10 @@ class PolarisGenerators:
             )
         return account_holder_profiles
 
-    def account_holder_marketing_preference(self) -> list:
+    def account_holder_marketing_preference(self, start, stop) -> list:
         """Generates account_holder_marketing_preferences (n defined in data_config (1-1 w/account_holders))"""
         account_holder_marketing_preferences = []
-        for count in range(1, self.data_config.account_holders + 1):
+        for count in range(start, stop + 1):
             account_holder_marketing_preferences.append(
                 [
                     self.now,  # created_at
@@ -94,11 +102,11 @@ class PolarisGenerators:
             )
         return account_holder_marketing_preferences
 
-    def account_holder_campaign_balance(self) -> list:
+    def account_holder_campaign_balance(self, start, stop) -> list:
         """Generates account_holder_campaign_balances (n defined in data_config (1-1 w/account_holders))"""
         account_holder_campaign_balances = []
         total_campaigns = self.data_config.retailers * self.data_config.campaigns_per_retailer
-        for count in range(1, self.data_config.account_holders + 1):
+        for count in range(start, stop + 1):
             account_holder_campaign_balances.append(
                 [
                     self.now,  # created_at
@@ -111,16 +119,15 @@ class PolarisGenerators:
             )
         return account_holder_campaign_balances
 
-    def account_holder_reward(self) -> list:
+    def account_holder_reward(self, start, stop) -> list:
         """
         Generates account_holder_rewards (1-1 w/ account_holders)
         """
         account_holder_rewards = []
-        total_account_holders = self.data_config.account_holders  # 2000
         total_retailers = self.data_config.retailers  # 10
         rewards_populated_count = 0
 
-        for account_holder_count in range(1, total_account_holders + 1):
+        for account_holder_count in range(start, stop + 1):
             rewards_populated_count += 1
             account_holder_rewards.append(
                 [
@@ -142,17 +149,16 @@ class PolarisGenerators:
             )
         return account_holder_rewards
 
-    def account_holder_pending_reward(self) -> list:
+    def account_holder_pending_reward(self, start, stop) -> list:
         """
         Generates account_holder_pending_rewards (1-1 w/ account_holders)
         """
         account_holder_pending_rewards = []
-        total_account_holders = self.data_config.account_holders
         total_retailers = self.data_config.retailers
         total_campaigns = self.data_config.retailers * self.data_config.campaigns_per_retailer
         pending_rewards_populated_count = 0
 
-        for account_holder_count in range(1, total_account_holders + 1):
+        for account_holder_count in range(start, stop + 1):
             pending_rewards_populated_count += 1
             account_holder_pending_rewards.append(
                 [
@@ -170,3 +176,16 @@ class PolarisGenerators:
                 ]
             )
         return account_holder_pending_rewards
+
+    @staticmethod
+    def retry_task(start: int, stop: int) -> list:
+        return retry_task(start=start, stop=stop, task_type_ids_dict=polaris_task_type_ids)
+
+    def task_type_key_value(self, start: int, stop: int) -> list:
+        return task_type_key_value(
+            start=start,
+            stop=stop,
+            task_type_ids_dict=polaris_task_type_ids,
+            task_type_keys_dict=generate_polaris_type_key_values(self.data_config),
+            random_task_types=self.data_config.random_task_types,
+        )

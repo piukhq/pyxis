@@ -10,6 +10,7 @@ logger = logging.getLogger("TaskController")
 
 data_config = None
 
+
 @timed_function
 def populate_all(data_configuration: str) -> None:
     """

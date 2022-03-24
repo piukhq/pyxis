@@ -115,18 +115,20 @@ class VelaGenerators:
         additional_col = ['{"campaign_1", "campaign_2"}']  # campaign_slug, array
         return self.transaction(additionals=additional_col)
 
-    def retry_task(self) -> list:
+    @staticmethod
+    def retry_task(self, start, stop) -> list:
         """Generates retry_tasks (1-1 w/ transactions in data config)"""
         return retry_task(
-            tasks=self.data_config.transactions,
+            start=start,
+            stop=stop,
             task_type_ids_dict=vela_task_type_ids)
 
-    def task_type_key_value(self) -> list:
+    def task_type_key_value(self, start, stop) -> list:
         """Generates task_type_key_value data"""
         return task_type_key_value(
-            tasks=self.data_config.transactions,
+            start=start,
+            stop=stop,
             task_type_ids_dict=vela_task_type_ids,
             task_type_keys_dict=generate_vela_type_key_values(self.data_config),
             random_task_types=self.data_config.random_task_types,
         )
-

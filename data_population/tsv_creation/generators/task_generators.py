@@ -7,7 +7,7 @@ from data_population.common.utils import id_generator
 from data_population.tsv_creation.fixtures.common import audit_data
 
 
-def retry_task(tasks: int, task_type_ids_dict: dict) -> list:
+def retry_task(start: int, stop: int, task_type_ids_dict: dict) -> list:
     """
     `tasks` = DataConfig.account_holder or DataConfig.reward_updates or DataConfig.transactions.
 
@@ -15,9 +15,9 @@ def retry_task(tasks: int, task_type_ids_dict: dict) -> list:
     polaris, carina and vela.
     """
     task_type_ids = task_type_ids_dict.values()
-    id_gen = id_generator(1)
+    id_gen = id_generator(start)
     retry_tasks = []
-    for _ in range(1, tasks + 1):
+    for _ in range(start, stop + 1):
         now = datetime.utcnow()
         retry_tasks.append(
             [
@@ -35,7 +35,7 @@ def retry_task(tasks: int, task_type_ids_dict: dict) -> list:
 
 
 def task_type_key_value(
-    tasks: int, task_type_ids_dict: dict, task_type_keys_dict: dict, random_task_types: bool
+    start: int, stop: int, task_type_ids_dict: dict, task_type_keys_dict: dict, random_task_types: bool
 ) -> list:
     """
     `tasks` = DataConfig.account_holder or DataConfig.reward_updates or DataConfig.transactions.
@@ -45,7 +45,7 @@ def task_type_key_value(
     """
     task_type_ids = task_type_ids_dict.values()
     task_type_key_value_rows = []
-    for count in range(1, tasks + 1):
+    for count in range(start, stop + 1):
         task_type_id = randint(1, len(task_type_ids)) if random_task_types else 1
         for task_type_key_id, value in task_type_keys_dict[task_type_id].items():
             now = datetime.utcnow()
