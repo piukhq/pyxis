@@ -105,7 +105,7 @@ class PolarisGenerators:
                     count,  # id
                     "perftest-campaign",  # mock campaign slug
                     randint(100, 1000),  # balance
-                    count,  # account_holder_id TODO: Revisit this
+                    count,  # account_holder_id
                 ]
             )
         return account_holder_campaign_balances

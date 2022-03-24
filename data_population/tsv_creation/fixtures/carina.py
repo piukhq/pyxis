@@ -13,10 +13,10 @@ carina_task_type_ids = {
 }
 
 
-def generate_carina_type_key_values(config: DataConfig) -> dict[int, dict]:
-    total_retailers = config.retailers
-    total_rewards = total_retailers * config.rewards_per_retailer
-    total_reward_config_ids = total_retailers * config.campaigns_per_retailer
+def generate_carina_type_key_values(data_config: DataConfig) -> dict[int, dict]:
+    total_retailers = data_config.retailers
+    total_rewards = data_config.rewards
+    total_reward_config_ids = total_retailers * data_config.campaigns_per_retailer
     carina_task_type_key_values: dict[int, dict] = {
         carina_task_type_ids["reward-issuance"]: {
             1: "https://exampleurl/random/",  # account_url

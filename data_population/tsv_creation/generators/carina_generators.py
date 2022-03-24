@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from random import choice
+from random import choice, randint
 from uuid import uuid4
 
 from data_population.common.utils import id_generator
@@ -88,36 +88,30 @@ class CarinaGenerators:
 
     def reward(self) -> list:
         """
-        Generates n rewards/vouchers (total n defined as retailers * campaigns * rewards per campaign)
+        Generates n rewards/vouchers (total n defined as rewards in data_config)
         Saves reward uuids generated as: [reward_uuids] for later use by reward_updates table
         """
 
-        reward_config_id_gen = id_generator(1)
+        reward_configs = self.data_config.retailers * self.data_config.campaigns_per_retailer
         rewards = []
 
-        for retailer_count in range(1, self.data_config.retailers + 1):
+        for reward in range(self.data_config.rewards):
 
-            for campaign_count in range(self.data_config.campaigns_per_retailer):
+            reward_id = str(uuid4())
+            self.reward_ids.append(reward_id)
 
-                reward_config_id = next(reward_config_id_gen)
-
-                for reward in range(self.data_config.rewards_per_retailer):
-
-                    reward_id = str(uuid4())
-                    self.reward_ids.append(reward_id)
-
-                    rewards.append(
-                        [
-                            self.now,  # created_at
-                            self.now,  # updated_at
-                            reward_id,  # id
-                            str(uuid4()),  # code
-                            False,  # allocated
-                            reward_config_id,  # reward_config_id
-                            False,  # deleted
-                            retailer_count,  # retailer_id
-                        ]
-                    )
+            rewards.append(
+                [
+                    self.now,  # created_at
+                    self.now,  # updated_at
+                    reward_id,  # id
+                    str(uuid4()),  # code
+                    False,  # allocated
+                    randint(1, reward_configs),  # reward_config_id
+                    False,  # deleted
+                    randint(1, self.data_config.retailers),  # retailer_id
+                ]
+            )
         return rewards
 
     def reward_update(self) -> list:

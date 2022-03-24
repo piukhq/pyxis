@@ -11,11 +11,11 @@ vela_task_type_ids = {
 }
 
 
-def generate_vela_type_key_values(config: DataConfig) -> dict[int, dict]:
-    total_retailers = config.retailers
-    total_campaigns = config.campaigns_per_retailer
-    total_transactions = config.transactions
-    total_rewards = total_retailers * config.rewards_per_retailer
+def generate_vela_type_key_values(data_config: DataConfig) -> dict[int, dict]:
+    total_retailers = data_config.retailers
+    total_campaigns = data_config.campaigns_per_retailer
+    total_transactions = data_config.transactions
+    total_rewards = data_config.rewards
     vela_task_type_keys: dict[int, dict] = {
         vela_task_type_ids["reward-adjustment"]: {
             1: uuid4(),  # account_holder_uuid

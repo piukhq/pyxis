@@ -83,30 +83,26 @@ class VelaGenerators:
             )
         return reward_rules
 
-    def transaction(self, additionals: Optional[list] = []) -> list:
+    def transaction(self, additionals: Optional[list] = None) -> list:
         """Generates transactions (n defined in n data_config)"""
         id_gen = id_generator(1)
         transactions = []
-        retailer_ids = self.retailer_ids
-        total_retailers = len(retailer_ids)
-        tx_per_retailer = int(self.data_config.transactions / total_retailers)
 
-        for retailer_id in retailer_ids:
-            for count in range(1, tx_per_retailer + 1):
-                data = [
-                    next(id_gen),  # id
-                    self.now,  # created_at
-                    self.now,  # updated_at
-                    f"tx_{count}",  # transaction_id
-                    randint(500, 1000),  # amount
-                    f"mid_{randint(1, self.data_config.transactions)}",  # mid
-                    self.now,  # datetime
-                    uuid4(),  # account_holder_uuid, not a fkey
-                    retailer_id,  # retailer_rewards.id fkey
-                ]
-                if bool(additionals):
-                    data.extend(additionals)  # type: ignore
-                transactions.append(data)
+        for count in range(1, self.data_config.transactions + 1):
+            data = [
+                next(id_gen),  # id
+                self.now,  # created_at
+                self.now,  # updated_at
+                f"tx_{count}",  # transaction_id
+                randint(500, 1000),  # amount
+                f"MID_1234",  # mid
+                self.now,  # datetime
+                uuid4(),  # account_holder_uuid, not a fkey
+                randint(1, self.data_config.retailers),  # retailer_rewards.id fkey
+            ]
+            if additionals is not None:
+                data.extend(additionals)  # type: ignore
+            transactions.append(data)
         return transactions
 
     def processed_transaction(self) -> list:

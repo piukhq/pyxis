@@ -34,7 +34,11 @@ def retry_task(tasks: int, task_type_ids_dict: dict) -> list:
     return retry_tasks
 
 
-def task_type_key_value(tasks: int, task_type_ids_dict: dict, task_type_keys_dict: dict) -> list:
+def task_type_key_value(
+        tasks: int,
+        task_type_ids_dict: dict,
+        task_type_keys_dict: dict,
+        random_task_types: bool) -> list:
     """
     `tasks` = DataConfig.account_holder or DataConfig.reward_updates or DataConfig.transactions.
 
@@ -44,7 +48,7 @@ def task_type_key_value(tasks: int, task_type_ids_dict: dict, task_type_keys_dic
     task_type_ids = task_type_ids_dict.values()
     task_type_key_value_rows = []
     for count in range(1, tasks + 1):
-        task_type_id = randint(1, len(task_type_ids))
+        task_type_id = randint(1, len(task_type_ids)) if random_task_types else 1
         for task_type_key_id, value in task_type_keys_dict[task_type_id].items():
             now = datetime.utcnow()
             task_type_key_value_rows.append(
