@@ -11,7 +11,6 @@ class DataConfig:
     transactions: int
     reward_updates: int
 
-
 data_configs = {
     "benchmark": DataConfig(
         retailers=10,
