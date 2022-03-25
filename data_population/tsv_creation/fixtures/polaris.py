@@ -91,3 +91,11 @@ def generate_polaris_type_key_values(data_config: DataConfig) -> dict[int, dict]
         },
     }
     return polaris_task_type_keys
+
+
+def get_polaris_type_key_count(data_config: DataConfig):
+    total_keys = 0
+    key_dict = generate_polaris_type_key_values(data_config)
+    for task_type in polaris_retry_task_types_to_populate:
+        total_keys += len(key_dict[polaris_task_type_ids[task_type]].keys())
+    return total_keys

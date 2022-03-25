@@ -16,6 +16,8 @@ fake = Faker("en_GB")
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 
 TSV_BASE_DIR = env_var("TSV_BASE_DIR", "data_population/data")
+TSV_BATCH_LIMIT = env_var("TSV_BATCH_LIMIT", 100000)
+BATCHING = env_var("BATCHING", False)
 
 VAULT_URL = env_var("VAULT_URL", "")
 POLARIS_AUTH_KEY_NAME = env_var("POLARIS_AUTH_KEY_NAME", "bpl-polaris-api-auth-token")

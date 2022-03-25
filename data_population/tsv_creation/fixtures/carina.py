@@ -12,8 +12,10 @@ carina_task_type_ids = {
     "delete-unallocated-rewards": 4,
 }
 
-#  We will generate <data_config.rewards> retry rows for each of the following task types:
-carina_retry_task_types_to_populate = ["reward-issuance"]
+#  We will generate <data_config.account_holders> retry rows for each of the following task types:
+carina_retry_task_types_to_populate = [
+    "reward-issuance",
+]
 
 
 def generate_carina_type_key_values(data_config: DataConfig) -> dict[int, dict]:
@@ -47,3 +49,11 @@ def generate_carina_type_key_values(data_config: DataConfig) -> dict[int, dict]:
         },
     }
     return carina_task_type_key_values
+
+
+def get_carina_task_type_key_count(data_config: DataConfig):
+    total_keys = 0
+    key_dict = generate_carina_type_key_values(data_config)
+    for task_type in carina_retry_task_types_to_populate:
+        total_keys += len(key_dict[carina_task_type_ids[task_type]].keys())
+    return total_keys

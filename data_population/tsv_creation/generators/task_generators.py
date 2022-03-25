@@ -7,16 +7,16 @@ from data_population.common.utils import id_generator
 from data_population.tsv_creation.fixtures.common import audit_data
 
 
-def retry_task(tasks: int, task_type_ids_dict: dict, task_types_to_populate: list) -> list:
+def retry_task(start: int, stop: int, task_type_ids_dict: dict, task_types_to_populate: list) -> list:
     """
     `tasks` = DataConfig.account_holder or DataConfig.reward_updates or DataConfig.transactions.
 
     `task_type_ids_dict` refer to the fixtures that should be passed. These will be app specific to
     polaris, carina and vela.
     """
-    id_gen = id_generator(1)
+    id_gen = id_generator(((start - 1) * len(task_types_to_populate)) + 1)
     retry_tasks = []
-    for _ in range(1, tasks + 1):
+    for _ in range(start, stop + 1):
         for task_type in task_types_to_populate:
             task_type_id = task_type_ids_dict[task_type]
             now = datetime.utcnow()
@@ -36,7 +36,7 @@ def retry_task(tasks: int, task_type_ids_dict: dict, task_types_to_populate: lis
 
 
 def task_type_key_value(
-    tasks: int, task_type_ids_dict: dict, task_type_keys_dict: dict, task_types_to_populate: list
+    start: int, stop: int, task_type_ids_dict: dict, task_type_keys_dict: dict, task_types_to_populate: list
 ) -> list:
     """
     `tasks` = DataConfig.account_holder or DataConfig.reward_updates or DataConfig.transactions.
@@ -44,15 +44,11 @@ def task_type_key_value(
     `task_type_ids_dict` and `task_type_keys_dict` refer to the fixtures that should be passed.
     These will be app specific to polaris, carina and vela.
     """
-
-    retry_task_id_gen = id_generator(1)
-
+    retry_task_id_gen = id_generator(((start - 1) * len(task_types_to_populate)) + 1)
     task_type_key_value_rows = []
-    for count in range(1, tasks + 1):
+    for count in range(start, stop + 1):
         for task_type in task_types_to_populate:
-
             retry_task_id = next(retry_task_id_gen)
-
             for task_type_key_id, value in task_type_keys_dict[task_type_ids_dict[task_type]].items():
                 now = datetime.utcnow()
                 task_type_key_value_rows.append(
