@@ -4,12 +4,6 @@ from uuid import uuid4
 
 from data_population.common.utils import id_generator
 from data_population.data_config import DataConfig
-from data_population.tsv_creation.fixtures import (
-    carina_retry_task_types_to_populate,
-    carina_task_type_ids,
-    generate_carina_type_key_values,
-)
-from data_population.tsv_creation.generators.task_generators import retry_task, task_type_key_value
 
 
 class CarinaGenerators:
@@ -19,11 +13,11 @@ class CarinaGenerators:
         self.data_config = data_config
         self.reward_ids: list = []
 
-    def retailer(self, start: int, stop: int) -> list:
+    def retailer(self) -> list:
         """Generates n retailers (n defined in data_config)"""
         retailers = []
 
-        for retailer_count in range(start, stop + 1):
+        for retailer_count in range(1, self.data_config.retailers + 1):
             retailers.append(
                 [
                     self.now,  # created_at
@@ -34,7 +28,7 @@ class CarinaGenerators:
             )
         return retailers
 
-    def fetch_type(self, _, __) -> list:
+    def fetch_type(self) -> list:
         """Generates n fetch types (fixed n - can add more if needed)"""
         fetch_types = [
             [
@@ -48,11 +42,11 @@ class CarinaGenerators:
         ]
         return fetch_types
 
-    def retailer_fetch_type(self, start: int, stop: int) -> list:
+    def retailer_fetch_type(self) -> list:
         """Generates n retailer<->fetch_type links (1 per retailer (fetch type 1 only))"""
         retailer_fetch_types = []
 
-        for retailer_count in range(start, stop + 1):
+        for retailer_count in range(1, self.data_config.retailers + 1):
             retailer_fetch_types.append(
                 [
                     self.now,  # created_at
@@ -64,16 +58,16 @@ class CarinaGenerators:
             )
         return retailer_fetch_types
 
-    def reward_config(self, start: int, stop: int) -> list:
+    def reward_config(self) -> list:
         """
         Generates n reward_configs (n defined in data_config as retailers * campaigns per retailer)
         Assumes a 121 relationship between reward_config (CARINA) and reward_rule/campaign (VELA) (i.e. only one config
         per campaign)
         """
-        id_gen = id_generator(((start - 1) * self.data_config.campaigns_per_retailer) + 1)
+        id_gen = id_generator(1)
         reward_configs = []
 
-        for retailer_count in range(start, stop + 1):
+        for retailer_count in range(1, self.data_config.retailers + 1):
             for campaign_count in range(self.data_config.campaigns_per_retailer):
 
                 reward_id = next(id_gen)
@@ -92,7 +86,7 @@ class CarinaGenerators:
                 )
         return reward_configs
 
-    def reward(self, start: int, stop: int) -> list:
+    def reward(self) -> list:
         """
         Generates n rewards/vouchers (total n defined as rewards in data_config)
         Saves reward uuids generated as: [reward_uuids] for later use by reward_updates table
@@ -101,7 +95,7 @@ class CarinaGenerators:
         reward_configs = self.data_config.retailers * self.data_config.campaigns_per_retailer
         rewards = []
 
-        for reward_count in range(start, stop + 1):
+        for reward in range(self.data_config.rewards):
 
             reward_id = str(uuid4())
             self.reward_ids.append(reward_id)
@@ -120,7 +114,7 @@ class CarinaGenerators:
             )
         return rewards
 
-    def reward_update(self, start: int, stop: int) -> list:
+    def reward_update(self) -> list:
         """
         Generates n reward_updates. n is defined at the dataconfig
         Note: This re-uses uuids from self.reward_id. So must be run after
@@ -130,10 +124,10 @@ class CarinaGenerators:
         reward_updates = []
         reward_ids = self.reward_ids
 
-        for reward_update_count in range(start, stop + 1):
+        for count in range(self.data_config.reward_updates):
             reward_updates.append(
                 [
-                    reward_update_count,  # id
+                    count,  # id
                     self.now,  # created_at
                     self.now,  # updated_at
                     self.now.date(),  # date
@@ -142,23 +136,3 @@ class CarinaGenerators:
                 ]
             )
         return reward_updates
-
-    @staticmethod
-    def retry_task(start: int, stop: int) -> list:
-        """Generates retry_tasks (1-1 w/ transactions in data config)"""
-        return retry_task(
-            start=start,
-            stop=stop,
-            task_type_ids_dict=carina_task_type_ids,
-            task_types_to_populate=carina_retry_task_types_to_populate,
-        )
-
-    def task_type_key_value(self, start: int, stop: int) -> list:
-        """Generates task_type_key_value data"""
-        return task_type_key_value(
-            start=start,
-            stop=stop,
-            task_type_ids_dict=carina_task_type_ids,
-            task_type_keys_dict=generate_carina_type_key_values(self.data_config),
-            task_types_to_populate=carina_retry_task_types_to_populate,
-        )

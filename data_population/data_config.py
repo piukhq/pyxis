@@ -20,7 +20,7 @@ data_configs = {
         account_holders=200000,
         rewards=3000,
         transactions=2000,
-        reward_updates=0,
+        reward_updates=2000,
     ),
     "peak": DataConfig(
         retailers=5,
@@ -38,7 +38,7 @@ data_configs = {
         account_holders=10000,
         rewards=1000,
         transactions=1000000,
-        reward_updates=0,
+        reward_updates=1000,
     ),
     "500k-tx": DataConfig(
         retailers=10,
@@ -47,7 +47,7 @@ data_configs = {
         account_holders=10000,
         rewards=1000,
         transactions=500000,
-        reward_updates=0,
+        reward_updates=1000,
     ),
     "750k-tx": DataConfig(
         retailers=10,
@@ -56,7 +56,7 @@ data_configs = {
         account_holders=10000,
         rewards=1000,
         transactions=500000,
-        reward_updates=0,
+        reward_updates=1000,
     ),
     "test": DataConfig(
         retailers=10,

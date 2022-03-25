@@ -54,19 +54,15 @@ class DataTaskHandler:
 
                     table_name = tsv_info["table"]
                     file_name = tsv_info["filename"]
-                    initial = tsv_info["initial"]
 
                     # TRUNCATE
-                    if initial:
-                        logger.info(f"{db_name.upper()}: {table_name}: Attempting to truncate table")
-                        truncate_statement = f'TRUNCATE "{table_name}" CASCADE'
-                        cursor.execute(truncate_statement)
-                        logger.info(f"{db_name.upper()}: {table_name}: Successfully truncated table")
+                    logger.info(f"{db_name.upper()}: {table_name}: Attempting to truncate table")
+                    truncate_statement = f'TRUNCATE "{table_name}" CASCADE'
+                    cursor.execute(truncate_statement)
+                    logger.info(f"{db_name.upper()}: {table_name}: Successfully truncated table")
 
                     # UPLOAD/COPY
-                    logger.info(
-                        f"{db_name.upper()}: {table_name}: Attempting to copy data into table from <{file_name}>"
-                    )
+                    logger.info(f"{db_name.upper()}: {table_name}: Attempting to copy data into table")
                     with open(os.path.join(TSV_BASE_DIR, file_name)) as f:
                         cursor.copy_from(f, table_name, sep="\t", null="NULL")
                     logger.info(f"{db_name.upper()}: {table_name}: Successfully uploaded data")
@@ -103,16 +99,7 @@ class DataTaskHandler:
 
         for tsv in [f for f in os.listdir(settings.PROJECT_ROOT + "/" + TSV_BASE_DIR) if f[-4:] == ".tsv"]:
             tsv_parts = tsv.replace(".tsv", "").split("-")
-            table_name = tsv_parts[3].split("__")
-            tsv_data.append(
-                {
-                    "filename": tsv,
-                    "db": tsv_parts[1],
-                    "table": table_name[0],
-                    "order": int(tsv_parts[2]),
-                    "initial": True if table_name[1] in ["*", "1"] else False,
-                }
-            )
+            tsv_data.append({"filename": tsv, "db": tsv_parts[1], "table": tsv_parts[3], "order": int(tsv_parts[2])})
 
         tsv_data.sort(key=lambda i: i["order"])  # tables sorted and populated in order they were created
 
