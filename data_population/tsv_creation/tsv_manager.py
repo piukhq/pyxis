@@ -141,3 +141,5 @@ class TSVHandler:
             tsv_writer.writerows(data)
 
         logger.info(f"Wrote tsv {tsv_name}")
+
+# Pre-batching save
