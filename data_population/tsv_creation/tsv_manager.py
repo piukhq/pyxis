@@ -5,7 +5,6 @@ import multiprocessing
 
 import settings
 
-from dataclasses import dataclass
 from data_population.common.utils import id_generator
 from data_population.data_config import DataConfig
 from data_population.tsv_creation.fixtures.carina import (
@@ -27,14 +26,6 @@ execution_order = id_generator(1)
 logger = logging.getLogger("TSVHandler")
 
 cores = multiprocessing.cpu_count()
-
-@dataclass
-class MultiprocessingJob:
-    generator: callable
-    start: int
-    stop: int
-    database_name:
-    table
 
 
 class TSVHandler:
