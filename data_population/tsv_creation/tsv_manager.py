@@ -1,6 +1,7 @@
 import csv
 import logging
 import os
+import multiprocessing
 
 import settings
 
@@ -23,6 +24,8 @@ from settings import BATCHING, CARINA_DB, POLARIS_DB, TSV_BASE_DIR, TSV_BATCH_LI
 execution_order = id_generator(1)
 
 logger = logging.getLogger("TSVHandler")
+
+cores = multiprocessing.cpu_count()
 
 
 class TSVHandler:
@@ -272,6 +275,10 @@ class TSVHandler:
         else:
             data = generator(1, base_iterator)
             self.write_to_tsv(data, database_name, table_name)
+
+    def generate_and_write_to_tsv_job(self, generator, start, stop, database_name, table_name, batch_number):
+
+
 
     @staticmethod
     def split_rows(base_iterator: int, total_rows: int) -> list:
