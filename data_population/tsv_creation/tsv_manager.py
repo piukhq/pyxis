@@ -271,10 +271,10 @@ class TSVHandler:
 
             for start, stop in parts:
                 batch_number += 1
-                all_jobs.append ((generator, start, stop, database_name, table_name, batch_number))
+                all_jobs.append((generator, start, stop, database_name, table_name, batch_number))
 
-            p = multiprocessing.Pool()
-            p.map(self.generate_and_write_to_tsv_job, all_jobs)
+            with multiprocessing.Pool(cores) as p:
+                p.starmap(self.generate_and_write_to_tsv_job, all_jobs)
 
         else:
             data = generator(1, base_iterator)
