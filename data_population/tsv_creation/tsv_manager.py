@@ -135,14 +135,14 @@ class TSVHandler:
 
         self.generate_and_write_to_tsv(
             generator=self.carina_generator.retry_task,
-            total_row_count=self.data_config.reward_updates,
+            total_row_count=self.data_config.rewards,
             database_name=CARINA_DB,
             table_name="retry_task",
         )
 
         self.generate_and_write_to_tsv(
             generator=self.carina_generator.task_type_key_value,
-            total_row_count=self.data_config.reward_updates,
+            total_row_count=self.data_config.rewards,
             database_name=CARINA_DB,
             table_name="task_type_key_value",
         )
