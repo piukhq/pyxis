@@ -16,14 +16,14 @@ class VelaGenerators:
         self.data_config = data_config
         self.retailer_ids: list = []
 
-    def retailer_rewards(self, start, stop) -> list:
+    def retailer_rewards(self, start: int, stop: int) -> list:
         retailers = []
         for retailer_count in range(start, stop + 1):
             self.retailer_ids.append(retailer_count)
             retailers.append([retailer_count, f"retailer_{retailer_count}"])  # id  # slug
         return retailers
 
-    def campaign(self, start, stop) -> list:
+    def campaign(self, start: int, stop: int) -> list:
         """Generates campaigns (n defined in data_config as retailers * campaigns per retailer)"""
         id_gen = id_generator((start - 1 * self.data_config.campaigns_per_retailer) + 1)
         campaigns = []
@@ -48,7 +48,7 @@ class VelaGenerators:
                 )
         return campaigns
 
-    def earn_rule(self, start, stop) -> list:
+    def earn_rule(self, start: int, stop: int) -> list:
         """
         Generates earn_rules (n defined in data_config as retailers * campaigns per retailer * earn_rules per campaign)
         """
@@ -69,7 +69,7 @@ class VelaGenerators:
                 )
         return earn_rules
 
-    def reward_rule(self, start, stop) -> list:
+    def reward_rule(self, start: int, stop: int) -> list:
         """Generates reward_rules (n defined in data_config as retailers * campaigns per retailer (1-1 w/campaigns))"""
         reward_rules = []
         for count in range(start, stop + 1):
@@ -86,7 +86,7 @@ class VelaGenerators:
             )
         return reward_rules
 
-    def transaction(self, start, stop, additionals: Optional[list] = None) -> list:
+    def transaction(self, start: int, stop: int, additionals: Optional[list] = None) -> list:
         """Generates transactions (n defined in n data_config)"""
         transactions = []
 
@@ -107,17 +107,17 @@ class VelaGenerators:
             transactions.append(data)
         return transactions
 
-    def processed_transaction(self, start, stop) -> list:
+    def processed_transaction(self, start: int, stop: int) -> list:
         """Generates processed transaction (1-1 w/ transactions in data config)"""
         additional_col = ['{"campaign_1", "campaign_2"}']  # campaign_slug, array
         return self.transaction(start, stop, additionals=additional_col)
 
     @staticmethod
-    def retry_task(start, stop) -> list:
+    def retry_task(self, start: int, stop: int) -> list:
         """Generates retry_tasks (1-1 w/ transactions in data config)"""
         return retry_task(start=start, stop=stop, task_type_ids_dict=vela_task_type_ids)
 
-    def task_type_key_value(self, start, stop) -> list:
+    def task_type_key_value(self, start: int, stop: int) -> list:
         """Generates task_type_key_value data"""
         return task_type_key_value(
             start=start,

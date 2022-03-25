@@ -21,7 +21,7 @@ class PolarisGenerators:
         self.now = datetime.utcnow()
         self.data_config = data_config
 
-    def retailer_config(self, start, stop) -> list:
+    def retailer_config(self, start: int, stop: int) -> list:
         """Generates n retailer_configs (n defined in data_config)"""
         retailer_configs = []
         for retailer_count in range(start, stop + 1):
@@ -44,7 +44,7 @@ class PolarisGenerators:
             )
         return retailer_configs
 
-    def account_holder(self, start, stop) -> list:
+    def account_holder(self, start: int, stop: int) -> list:
         """Generates n account_holders (n defined in data_config)"""
         account_holders = []
         for account_holder_count in range(start, stop + 1):
@@ -63,7 +63,7 @@ class PolarisGenerators:
             )
         return account_holders
 
-    def account_holder_profile(self, start, stop) -> list:
+    def account_holder_profile(self, start: int, stop: int) -> list:
         """Generates n account_holder_profiles (n defined in data_config (1-1 w/account_holders))"""
         account_holder_profiles = []
         for account_holder_count in range(start, stop + 1):
@@ -84,7 +84,7 @@ class PolarisGenerators:
             )
         return account_holder_profiles
 
-    def account_holder_marketing_preference(self, start, stop) -> list:
+    def account_holder_marketing_preference(self, start: int, stop: int) -> list:
         """Generates account_holder_marketing_preferences (n defined in data_config (1-1 w/account_holders))"""
         account_holder_marketing_preferences = []
         for account_holder_count in range(start, stop + 1):
@@ -101,7 +101,7 @@ class PolarisGenerators:
             )
         return account_holder_marketing_preferences
 
-    def account_holder_campaign_balance(self, start, stop) -> list:
+    def account_holder_campaign_balance(self, start: int, stop: int) -> list:
         """Generates account_holder_campaign_balances (n defined in data_config (1-1 w/account_holders))"""
         account_holder_campaign_balances = []
         total_campaigns = self.data_config.retailers * self.data_config.campaigns_per_retailer
@@ -118,7 +118,7 @@ class PolarisGenerators:
             )
         return account_holder_campaign_balances
 
-    def account_holder_reward(self, start, stop) -> list:
+    def account_holder_reward(self, start: int, stop: int) -> list:
         """
         Generates account_holder_rewards (1-1 w/ account_holders)
         """
@@ -147,7 +147,7 @@ class PolarisGenerators:
             )
         return account_holder_rewards
 
-    def account_holder_pending_reward(self, start, stop) -> list:
+    def account_holder_pending_reward(self, start: int, stop: int) -> list:
         """
         Generates account_holder_pending_rewards (1-1 w/ account_holders)
         """

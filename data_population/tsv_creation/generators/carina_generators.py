@@ -15,7 +15,7 @@ class CarinaGenerators:
         self.data_config = data_config
         self.reward_ids: list = []
 
-    def retailer(self, start, stop) -> list:
+    def retailer(self, start: int, stop: int) -> list:
         """Generates n retailers (n defined in data_config)"""
         retailers = []
 
@@ -44,7 +44,7 @@ class CarinaGenerators:
         ]
         return fetch_types
 
-    def retailer_fetch_type(self, start, stop) -> list:
+    def retailer_fetch_type(self, start: int, stop: int) -> list:
         """Generates n retailer<->fetch_type links (1 per retailer (fetch type 1 only))"""
         retailer_fetch_types = []
 
@@ -60,7 +60,7 @@ class CarinaGenerators:
             )
         return retailer_fetch_types
 
-    def reward_config(self, start, stop) -> list:
+    def reward_config(self, start: int, stop: int) -> list:
         """
         Generates n reward_configs (n defined in data_config as retailers * campaigns per retailer)
         Assumes a 121 relationship between reward_config (CARINA) and reward_rule/campaign (VELA) (i.e. only one config
@@ -88,7 +88,7 @@ class CarinaGenerators:
                 )
         return reward_configs
 
-    def reward(self, start, stop) -> list:
+    def reward(self, start: int, stop: int) -> list:
         """
         Generates n rewards/vouchers (total n defined as rewards in data_config)
         Saves reward uuids generated as: [reward_uuids] for later use by reward_updates table
@@ -116,7 +116,7 @@ class CarinaGenerators:
             )
         return rewards
 
-    def reward_update(self, start, stop) -> list:
+    def reward_update(self, start: int, stop: int) -> list:
         """
         Generates n reward_updates. n is defined at the dataconfig
         Note: This re-uses uuids from self.reward_id. So must be run after
