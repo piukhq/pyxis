@@ -12,6 +12,11 @@ carina_task_type_ids = {
     "delete-unallocated-rewards": 4,
 }
 
+#  We will generate <data_config.rewards> retry rows for each of the following task types:
+carina_retry_task_types_to_populate = [
+    "reward-issuance"
+    ]
+
 
 def generate_carina_type_key_values(data_config: DataConfig) -> dict[int, dict]:
     total_retailers = data_config.retailers
