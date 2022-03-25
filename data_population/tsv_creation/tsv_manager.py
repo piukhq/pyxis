@@ -69,11 +69,11 @@ class TSVHandler:
         self.write_to_tsv(self.carina_generator.reward_update(), CARINA_DB, table="reward_update")
 
         self.write_to_tsv(
-            retry_task(self.data_config.reward_updates, carina_task_type_ids), CARINA_DB, table="retry_task"
+            retry_task(self.data_config.rewards, carina_task_type_ids), CARINA_DB, table="retry_task"
         )
         self.write_to_tsv(
             task_type_key_value(
-                tasks=self.data_config.reward_updates,
+                tasks=self.data_config.rewards,
                 task_type_ids_dict=carina_task_type_ids,
                 task_type_keys_dict=generate_carina_type_key_values(self.data_config),
                 random_task_types=self.data_config.random_task_types,
