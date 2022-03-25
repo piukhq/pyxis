@@ -5,6 +5,7 @@ import multiprocessing
 
 import settings
 
+from dataclasses import dataclass
 from data_population.common.utils import id_generator
 from data_population.data_config import DataConfig
 from data_population.tsv_creation.fixtures.carina import (
@@ -26,6 +27,14 @@ execution_order = id_generator(1)
 logger = logging.getLogger("TSVHandler")
 
 cores = multiprocessing.cpu_count()
+
+@dataclass
+class MultiprocessingJob:
+    generator: callable
+    start: int
+    stop: int
+    database_name:
+    table
 
 
 class TSVHandler:
@@ -264,21 +273,48 @@ class TSVHandler:
             total_row_count = base_iterator
 
         if BATCHING and total_row_count > TSV_BATCH_LIMIT:
-            parts = self.split_rows(base_iterator, total_row_count)
+            parts = self.split_by_cores(base_iterator)
             batch_number = 0
+
+            all_jobs = []
 
             for start, stop in parts:
                 batch_number += 1
-                data = generator(start, stop)
-                self.write_to_tsv(data, database_name, table_name, batch_number)
+                all_jobs.append ((generator, start, stop, database_name, table_name, batch_number))
+
+            p = multiprocessing.Pool()
+            p.map(self.generate_and_write_to_tsv_job, all_jobs)
 
         else:
             data = generator(1, base_iterator)
             self.write_to_tsv(data, database_name, table_name)
 
     def generate_and_write_to_tsv_job(self, generator, start, stop, database_name, table_name, batch_number):
+        data = generator(start, stop)
+        self.write_to_tsv(data, database_name, table_name, batch_number)
 
+    @staticmethod
+    def split_by_cores(base_iterator: int) -> list:
+        """
+        Splits a number into <n=number of cores> parts.
+        """
 
+        quotient, remainder = divmod(base_iterator, cores)
+
+        row_marker = 1
+
+        parts = []
+
+        for i in range(cores):
+            start = row_marker
+            row_marker += (quotient - 1)
+            end = row_marker
+            row_marker += 1
+            if i == cores - 1:
+                end += remainder
+            parts.append((start, end))
+
+        return parts
 
     @staticmethod
     def split_rows(base_iterator: int, total_rows: int) -> list:
