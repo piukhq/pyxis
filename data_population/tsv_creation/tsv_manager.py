@@ -230,7 +230,7 @@ class TSVHandler:
         )
 
     @staticmethod
-    def write_to_tsv(data: list, db: str, table: str, batch_number: int = None) -> None:
+    def write_to_tsv(data: list, db: str, table: str, execution_id: int, batch_number: int = None) -> None:
         """
         Writes data to tsv with filename containing all information needed for upload (including order).
 
@@ -240,14 +240,12 @@ class TSVHandler:
         :param batch_number: number of batch for this table
         """
 
-        execute_id = next(execution_order)
-
         if not os.path.isdir(TSV_BASE_DIR):
             os.mkdir(TSV_BASE_DIR)
 
         batch_info = str(batch_number) if batch_number is not None else "*"
 
-        tsv_name = os.path.join(TSV_BASE_DIR, f"tsv-{db}-{execute_id}-{table}__{batch_info}.tsv")
+        tsv_name = os.path.join(TSV_BASE_DIR, f"tsv-{db}-{execution_id}-{table}__{batch_info}.tsv")
 
         with open(tsv_name, "w+") as f:
             tsv_writer = csv.writer(f, delimiter="\t", quoting=csv.QUOTE_NONE, escapechar="", quotechar="")
@@ -270,19 +268,21 @@ class TSVHandler:
             all_jobs = []
 
             for start, stop in parts:
+                execution_id = next(execution_order)
                 batch_number += 1
-                all_jobs.append((generator, start, stop, database_name, table_name, batch_number))
+                all_jobs.append((generator, start, stop, database_name, table_name, batch_number, execution_id))
 
             with multiprocessing.Pool(cores) as p:
                 p.starmap(self.generate_and_write_to_tsv_job, all_jobs)
 
         else:
+            execution_id = next(execution_order)
             data = generator(1, base_iterator)
-            self.write_to_tsv(data, database_name, table_name)
+            self.write_to_tsv(data, database_name, table_name, execution_id)
 
-    def generate_and_write_to_tsv_job(self, generator, start, stop, database_name, table_name, batch_number):
+    def generate_and_write_to_tsv_job(self, generator, start, stop, database_name, table_name, batch_number, execution_id):
         data = generator(start, stop)
-        self.write_to_tsv(data, database_name, table_name, batch_number)
+        self.write_to_tsv(data=data, db=database_name, table=table_name, batch_number=batch_number, execution_id=execution_id)
 
     @staticmethod
     def split_by_cores(base_iterator: int) -> list:
