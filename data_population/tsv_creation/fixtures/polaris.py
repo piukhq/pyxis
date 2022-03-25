@@ -48,8 +48,8 @@ polaris_retry_task_types_to_populate = [
     "account-holder-activation",
     "create-campaign-balances",
     "send-welcome-email",
-    "pending-reward-allocation"
-    ]
+    "pending-reward-allocation",
+]
 
 
 def generate_polaris_type_key_values(data_config: DataConfig) -> dict[int, dict]:
