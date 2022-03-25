@@ -64,7 +64,9 @@ class DataTaskHandler:
                         logger.info(f"{db_name.upper()}: {table_name}: Successfully truncated table")
 
                     # UPLOAD/COPY
-                    logger.info(f"{db_name.upper()}: {table_name}: Attempting to copy data into table from <{file_name}>")
+                    logger.info(
+                        f"{db_name.upper()}: {table_name}: Attempting to copy data into table from <{file_name}>"
+                    )
                     with open(os.path.join(TSV_BASE_DIR, file_name)) as f:
                         cursor.copy_from(f, table_name, sep="\t", null="NULL")
                     logger.info(f"{db_name.upper()}: {table_name}: Successfully uploaded data")

@@ -6,13 +6,19 @@ import settings
 
 from data_population.common.utils import id_generator
 from data_population.data_config import DataConfig
+from data_population.tsv_creation.fixtures.carina import (
+    carina_retry_task_types_to_populate,
+    get_carina_task_type_key_count,
+)
+from data_population.tsv_creation.fixtures.polaris import (
+    get_polaris_type_key_count,
+    polaris_retry_task_types_to_populate,
+)
+from data_population.tsv_creation.fixtures.vela import get_vela_type_key_count, vela_retry_task_types_to_populate
 from data_population.tsv_creation.generators.carina_generators import CarinaGenerators
 from data_population.tsv_creation.generators.polaris_generators import PolarisGenerators
 from data_population.tsv_creation.generators.vela_generators import VelaGenerators
-from data_population.tsv_creation.fixtures.vela import vela_retry_task_types_to_populate, get_vela_type_key_count
-from data_population.tsv_creation.fixtures.carina import carina_retry_task_types_to_populate, get_carina_task_type_key_count
-from data_population.tsv_creation.fixtures.polaris import polaris_retry_task_types_to_populate, get_polaris_type_key_count
-from settings import CARINA_DB, POLARIS_DB, TSV_BASE_DIR, TSV_BATCH_LIMIT, VELA_DB, BATCHING
+from settings import BATCHING, CARINA_DB, POLARIS_DB, TSV_BASE_DIR, TSV_BATCH_LIMIT, VELA_DB
 
 execution_order = id_generator(1)
 
@@ -87,7 +93,7 @@ class TSVHandler:
             base_iterator=self.data_config.transactions,
             database_name=VELA_DB,
             table_name="retry_task",
-            total_row_count=self.data_config.account_holders * len(vela_retry_task_types_to_populate)
+            total_row_count=self.data_config.account_holders * len(vela_retry_task_types_to_populate),
         )
 
         self.generate_and_write_to_tsv(
@@ -96,8 +102,8 @@ class TSVHandler:
             database_name=VELA_DB,
             table_name="task_type_key_value",
             total_row_count=self.data_config.account_holders
-                            * len(vela_retry_task_types_to_populate)
-                            * get_vela_type_key_count(self.data_config)
+            * len(vela_retry_task_types_to_populate)
+            * get_vela_type_key_count(self.data_config),
         )
 
         # ------------------------------------------- CARINA --------------------------------------------
@@ -145,8 +151,7 @@ class TSVHandler:
             base_iterator=self.data_config.rewards * len(carina_retry_task_types_to_populate),
             database_name=CARINA_DB,
             table_name="retry_task",
-            total_row_count=self.data_config.account_holders
-                            * len(carina_retry_task_types_to_populate)
+            total_row_count=self.data_config.account_holders * len(carina_retry_task_types_to_populate),
         )
 
         self.generate_and_write_to_tsv(
@@ -155,8 +160,8 @@ class TSVHandler:
             database_name=CARINA_DB,
             table_name="task_type_key_value",
             total_row_count=self.data_config.account_holders
-                            * len(carina_retry_task_types_to_populate)
-                            * get_carina_task_type_key_count(self.data_config)
+            * len(carina_retry_task_types_to_populate)
+            * get_carina_task_type_key_count(self.data_config),
         )
 
         # ------------------------------------------- POLARIS --------------------------------------------
@@ -208,8 +213,7 @@ class TSVHandler:
             base_iterator=self.data_config.account_holders,
             database_name=POLARIS_DB,
             table_name="retry_task",
-            total_row_count=self.data_config.account_holders
-                            * len(polaris_retry_task_types_to_populate)
+            total_row_count=self.data_config.account_holders * len(polaris_retry_task_types_to_populate),
         )
 
         self.generate_and_write_to_tsv(
@@ -218,8 +222,8 @@ class TSVHandler:
             database_name=POLARIS_DB,
             table_name="task_type_key_value",
             total_row_count=self.data_config.account_holders
-                            * len(polaris_retry_task_types_to_populate)
-                            * get_polaris_type_key_count(self.data_config)
+            * len(polaris_retry_task_types_to_populate)
+            * get_polaris_type_key_count(self.data_config),
         )
 
     @staticmethod
@@ -249,8 +253,7 @@ class TSVHandler:
         logger.info(f"Wrote tsv {tsv_name}")
 
     def generate_and_write_to_tsv(
-        self, generator: callable, base_iterator: int, database_name: str, table_name: str,
-            total_row_count=None
+        self, generator: callable, base_iterator: int, database_name: str, table_name: str, total_row_count=None
     ) -> None:
         """Handles per-table batching, data-generation and tsv-writing"""
 
@@ -304,7 +307,7 @@ class TSVHandler:
         else:
             converted_parts = []
             for start, end in parts:
-                start_converted = check_validity(round((start/total_rows) * base_iterator))
+                start_converted = check_validity(round((start / total_rows) * base_iterator))
                 end_converted = check_validity(round((end / total_rows) * base_iterator))
                 converted_parts.append((start_converted, end_converted))
             return converted_parts

@@ -14,7 +14,7 @@ def retry_task(start: int, stop: int, task_type_ids_dict: dict, task_types_to_po
     `task_type_ids_dict` refer to the fixtures that should be passed. These will be app specific to
     polaris, carina and vela.
     """
-    id_gen = id_generator(((start - 1) * len(task_types_to_populate))+1)
+    id_gen = id_generator(((start - 1) * len(task_types_to_populate)) + 1)
     retry_tasks = []
     for _ in range(start, stop + 1):
         for task_type in task_types_to_populate:
