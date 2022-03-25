@@ -44,18 +44,23 @@ def task_type_key_value(
     `task_type_ids_dict` and `task_type_keys_dict` refer to the fixtures that should be passed.
     These will be app specific to polaris, carina and vela.
     """
+
+    retry_task_id_gen = id_generator(1)
+
     task_type_key_value_rows = []
     for count in range(1, tasks + 1):
         for task_type in task_types_to_populate:
+
+            retry_task_id = next(retry_task_id_gen)
+
             for task_type_key_id, value in task_type_keys_dict[task_type_ids_dict[task_type]].items():
-                value = task_type_ids_dict[task_type_key_id]
                 now = datetime.utcnow()
                 task_type_key_value_rows.append(
                     [
                         now,  # created_at
                         now,  # updated_at
                         value,  # task_type_key_value
-                        count,  # retry_task_id
+                        retry_task_id,  # retry_task_id
                         task_type_key_id,  # task_type_key_id
                     ]
                 )
