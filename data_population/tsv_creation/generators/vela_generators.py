@@ -5,7 +5,7 @@ from uuid import uuid4
 
 from data_population.common.utils import id_generator
 from data_population.data_config import DataConfig
-from data_population.tsv_creation.fixtures.vela import generate_vela_type_key_values, vela_task_type_ids
+from data_population.tsv_creation.fixtures.vela import generate_vela_type_key_values, vela_task_type_ids, vela_retry_task_types_to_populate
 from data_population.tsv_creation.generators.task_generators import retry_task, task_type_key_value
 
 
@@ -113,9 +113,9 @@ class VelaGenerators:
         return self.transaction(start, stop, additionals=additional_col)
 
     @staticmethod
-    def retry_task(self, start: int, stop: int) -> list:
+    def retry_task(start: int, stop: int) -> list:
         """Generates retry_tasks (1-1 w/ transactions in data config)"""
-        return retry_task(start=start, stop=stop, task_type_ids_dict=vela_task_type_ids)
+        return retry_task(start=start, stop=stop, task_type_ids_dict=vela_task_type_ids, task_types_to_populate=vela_retry_task_types_to_populate)
 
     def task_type_key_value(self, start: int, stop: int) -> list:
         """Generates task_type_key_value data"""
@@ -124,5 +124,5 @@ class VelaGenerators:
             stop=stop,
             task_type_ids_dict=vela_task_type_ids,
             task_type_keys_dict=generate_vela_type_key_values(self.data_config),
-            random_task_types=self.data_config.random_task_types,
+            task_types_to_populate=vela_retry_task_types_to_populate
         )

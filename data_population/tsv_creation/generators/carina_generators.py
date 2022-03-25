@@ -4,7 +4,7 @@ from uuid import uuid4
 
 from data_population.common.utils import id_generator
 from data_population.data_config import DataConfig
-from data_population.tsv_creation.fixtures import carina_task_type_ids, generate_carina_type_key_values
+from data_population.tsv_creation.fixtures import carina_task_type_ids, generate_carina_type_key_values, carina_retry_task_types_to_populate
 from data_population.tsv_creation.generators.task_generators import retry_task, task_type_key_value
 
 
@@ -142,7 +142,9 @@ class CarinaGenerators:
     @staticmethod
     def retry_task(start: int, stop: int) -> list:
         """Generates retry_tasks (1-1 w/ transactions in data config)"""
-        return retry_task(start=start, stop=stop, task_type_ids_dict=carina_task_type_ids)
+        return retry_task(start=start, stop=stop, task_type_ids_dict=carina_task_type_ids,
+                          task_types_to_populate=carina_retry_task_types_to_populate
+                          )
 
     def task_type_key_value(self, start: int, stop: int) -> list:
         """Generates task_type_key_value data"""
@@ -151,5 +153,5 @@ class CarinaGenerators:
             stop=stop,
             task_type_ids_dict=carina_task_type_ids,
             task_type_keys_dict=generate_carina_type_key_values(self.data_config),
-            random_task_types=self.data_config.random_task_types,
+            task_types_to_populate=carina_retry_task_types_to_populate
         )

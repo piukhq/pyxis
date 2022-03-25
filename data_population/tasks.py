@@ -5,6 +5,7 @@ from data_population.common.utils import timed_function
 from data_population.data_config import data_configs
 from data_population.db_tasks import db_tasks
 from data_population.tsv_creation import tsv_manager
+from settings import BATCHING, TSV_BATCH_LIMIT
 
 logger = logging.getLogger("TaskController")
 
@@ -18,6 +19,9 @@ def populate_all(data_configuration: str) -> None:
     """
 
     data_config = data_configs[data_configuration]
+
+    logger.info(f"Batching is set to {BATCHING}")
+    logger.info(f"Batch limit set to {TSV_BATCH_LIMIT}")
 
     #  Create all tsvs
     t = time.time()

@@ -34,6 +34,10 @@ def read_env() -> None:
 def env_var(key, default=None):  # type: ignore
     """Retrieves env vars and makes Python boolean replacements"""
     val = os.environ.get(key, default)
+    try:
+        val = int(val)
+    except ValueError:
+        pass
     if val == "True":
         val = True
     elif val == "False":
