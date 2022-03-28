@@ -86,7 +86,10 @@ class UserTasks(SequentialTaskSet):
     @repeatable_task()
     def post_get_by_credentials(self) -> None:
 
-        data = {"email": self.email, "account_number": self.account_number}
+        account_holder_email = random.choice(list(self.accounts.keys()))
+        account_number = self.accounts[account_holder_email]["account_number"]
+
+        data = {"email": account_holder_email, "account_number": account_number}
 
         self.client.post(
             f"{self.url_prefix}/loyalty/{self.retailer_slug}/accounts/getbycredentials",
@@ -98,8 +101,11 @@ class UserTasks(SequentialTaskSet):
     @repeatable_task()
     def get_account(self) -> None:
 
+        account_holder_email = random.choice(list(self.accounts.keys()))
+        account_holder_uuid = self.accounts[account_holder_email]["account_holder_uuid"]
+
         self.client.get(
-            f"{self.url_prefix}/loyalty/{self.retailer_slug}/accounts/{self.account_uuid}",
+            f"{self.url_prefix}/loyalty/{self.retailer_slug}/accounts/{account_holder_uuid}",
             headers=self.headers["polaris_key"],
             name=f"{self.url_prefix}/loyalty/<retailer_slug>/accounts/<account_uuid>",
         )
@@ -107,8 +113,11 @@ class UserTasks(SequentialTaskSet):
     @repeatable_task()
     def get_marketing_unsubscribe(self) -> None:
 
+        account_holder_email = random.choice(list(self.accounts.keys()))
+        account_holder_uuid = self.accounts[account_holder_email]["account_holder_uuid"]
+
         self.client.get(
-            f"{self.url_prefix}/loyalty/{self.retailer_slug}/marketing/unsubscribe?u={self.account_uuid}",
+            f"{self.url_prefix}/loyalty/{self.retailer_slug}/marketing/unsubscribe?u={account_holder_uuid}",
             headers=self.headers["polaris_key"],
             name=f"{self.url_prefix}/loyalty/<retailer_slug>/marketing/unsubscribe?u=<account_uuid>",
         )
@@ -116,12 +125,15 @@ class UserTasks(SequentialTaskSet):
     @repeatable_task()
     def post_transaction(self) -> None:
 
+        account_holder_email = random.choice(list(self.accounts.keys()))
+        account_holder_uuid = self.accounts[account_holder_email]["account_holder_uuid"]
+
         data = {
             "id": f"TX{self.fake.pyint()}",
             "transaction_total": random.randint(1000, 9999),
             "datetime": self.now,
             "MID": "1234",
-            "loyalty_id": self.account_uuid,
+            "loyalty_id": account_holder_uuid,
         }
 
         self.client.post(
@@ -135,11 +147,16 @@ class UserTasks(SequentialTaskSet):
     @repeatable_task()
     def delete_account(self) -> None:
 
-        self.client.delete(
-            f"{self.url_prefix}/loyalty/{self.retailer_slug}/accounts/{self.account_uuid}",
+        account_holder_email = random.choice(list(self.accounts.keys()))
+        account_holder_uuid = self.accounts[account_holder_email]["account_holder_uuid"]
+
+        with self.client.delete(
+            f"{self.url_prefix}/loyalty/{self.retailer_slug}/accounts/{account_holder_uuid}",
             headers=self.headers["polaris_key"],
             name=f"{self.url_prefix}/loyalty/<retailer_slug>/accounts/<account_uuid>",
-        )
+        ) as response:
+            if response.status_code == 200:
+                self.accounts.pop(account_holder_email)
 
     # ---------------------------------SPECIAL TASKS---------------------------------
 

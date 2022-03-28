@@ -127,14 +127,16 @@ def get_account_holder_information_via_cursor(all_accounts_to_fetch: list, timeo
 
             while total_retry_time < timeout and accounts_to_fetch:
 
-                query = "SELECT email, account_number, account_holder_uuid from account_holder WHERE email = %s ;"
+                query = "SELECT email, account_number, account_holder_uuid from account_holder WHERE email IN %s ;"
 
                 try:
-                    results = cursor.execute(query, (tuple(accounts_to_fetch),))
+                    cursor.execute(query, (tuple(accounts_to_fetch),))
+                    results = cursor.fetchall()
                 except Exception:
                     raise StopUser("Unable to direct fetch account_holder information from db")
 
                 for result in results:
+                    print(result)
                     if result[1] is not None and result[2] is not None:
                         # need to ensure we have both account_number and account_holder_uuid
                         email = result[0]
@@ -144,7 +146,7 @@ def get_account_holder_information_via_cursor(all_accounts_to_fetch: list, timeo
                             {
                                 email: {
                                     "account_number": account_number,
-                                    "account_holder_id": account_holder_id
+                                    "account_holder_uuid": account_holder_id
                                 }
                             }
                         )
