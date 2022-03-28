@@ -75,13 +75,11 @@ class UserTasks(SequentialTaskSet):
                 self.accounts_to_fetch.append(email)
 
     @task
-    def update_account_information(self):
+    def internal_update_account_information(self):
         """
-        Helper function to populate account data by direct db query (replaces BPL callback)
+        Helper function (not endpoint function) to populate account data by direct db query (replaces BPL callback)
         """
-        t = time.time()
         self.accounts = get_account_holder_information_via_cursor(self.accounts_to_fetch, 10, 0.5)
-        print(f"Fetched data {self.accounts} in {time.time()-t} seconds.")
 
     @repeatable_task()
     def post_get_by_credentials(self) -> None:

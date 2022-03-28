@@ -13,7 +13,7 @@ class WebsiteUser(HttpUser):
     """
 
     repeats = {
-        "post_account_holder": 5,  # will 409 if set to > 1
+        "post_account_holder": 16,  # will 409 if set to > 1
         "post_get_by_credentials": 2,
         "get_account": 65,
         "get_marketing_unsubscribe": 16,

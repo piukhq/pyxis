@@ -108,12 +108,14 @@ def get_account_holder_information_via_cursor(all_accounts_to_fetch: list, timeo
     """
     Tries to get account holder information directly from polaris in a retry loop.
 
-    :param email: account holder email
+    :param all_accounts_to_fetch: array of account_holder_emails to be used as pk for data query
     :param timeout: maximum amount of time for which we continue to ask for information from the db
     :param retry_period: frequency of database query
-    :return: account number, account holder uuid if account is found within timeout period. Else returns empty strings.
+    :return: dictionary of {account_holder_email: {account_number: 1234, account_holder_uuid: 1a2b3c}}.
     """
     logger.info(f"Fetching accounts {all_accounts_to_fetch}")
+
+    t = time.time()
 
     accounts_to_fetch = all_accounts_to_fetch
     account_data = {}
@@ -136,19 +138,13 @@ def get_account_holder_information_via_cursor(all_accounts_to_fetch: list, timeo
                     raise StopUser("Unable to direct fetch account_holder information from db")
 
                 for result in results:
-                    print(result)
                     if result[1] is not None and result[2] is not None:
                         # need to ensure we have both account_number and account_holder_uuid
                         email = result[0]
                         account_number = result[1]
                         account_holder_id = result[2]
                         account_data.update(
-                            {
-                                email: {
-                                    "account_number": account_number,
-                                    "account_holder_uuid": account_holder_id
-                                }
-                            }
+                            {email: {"account_number": account_number, "account_holder_uuid": account_holder_id}}
                         )
 
                         accounts_to_fetch.remove(email)
@@ -158,7 +154,11 @@ def get_account_holder_information_via_cursor(all_accounts_to_fetch: list, timeo
 
                 if total_retry_time >= timeout:
                     logger.info(
-                        f"Timeout ({timeout})s on direct fetch of account_holder information with emails: {accounts}"
+                        f"Timeout ({timeout})s on direct fetch of account_holder information with remaining emails: "
+                        f"{accounts_to_fetch}"
                     )  # only if timeout occurs
+
+                if not accounts_to_fetch:
+                    logger.info(f"Successfully fetched all accounts in {time.time() - t} seconds")
 
             return account_data
