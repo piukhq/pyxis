@@ -6,8 +6,12 @@ from faker import Faker
 from locust import SequentialTaskSet, task
 from locust.exception import StopUser
 
+import settings
+
 from locust_performance_testing.helpers import (
-    get_account_holder_information_via_cursor,
+    AccountHolder,
+    get_account_holder_information_via_cursor_bulk,
+    get_account_holder_information_via_cursor_sequential,
     get_headers,
     get_polaris_retailer_count,
     load_secrets,
@@ -35,9 +39,15 @@ class UserTasks(SequentialTaskSet):
         self.account_uuid = ""
         self.now = int(datetime.timestamp(datetime.now()))
         self.accounts_to_fetch = []
-        self.accounts = {}
+        self.accounts = []
 
     # ---------------------------------POLARIS ENDPOINTS---------------------------------
+
+    def get_account_holder(self):
+        if self.accounts:
+            return random.choice(list(self.accounts))
+        else:
+            return AccountHolder("", "", "")
 
     @repeatable_task()
     def post_account_holder(self) -> None:
@@ -71,22 +81,25 @@ class UserTasks(SequentialTaskSet):
         ) as response:
 
             if response.status_code == 202:
-                self.accounts_to_fetch.append(email)
+                if settings.FETCH_BULK:
+                    self.accounts_to_fetch.append(email)
+                else:
+                    self.accounts.append(get_account_holder_information_via_cursor_sequential(email, 10, 0.5))
 
     @task
     def internal_update_account_information(self):
         """
         Helper function (not endpoint function) to populate account data by direct db query (replaces BPL callback)
         """
-        self.accounts = get_account_holder_information_via_cursor(self.accounts_to_fetch, 10, 0.5)
+        if settings.FETCH_BULK:
+            self.accounts = get_account_holder_information_via_cursor_bulk(self.accounts_to_fetch, 30, 0.8)
 
     @repeatable_task()
     def post_get_by_credentials(self) -> None:
 
-        account_holder_email = random.choice(list(self.accounts.keys()))
-        account_number = self.accounts[account_holder_email]["account_number"]
+        account = self.get_account_holder()
 
-        data = {"email": account_holder_email, "account_number": account_number}
+        data = {"email": account.email, "account_number": account.account_number}
 
         self.client.post(
             f"{self.url_prefix}/loyalty/{self.retailer_slug}/accounts/getbycredentials",
@@ -98,11 +111,10 @@ class UserTasks(SequentialTaskSet):
     @repeatable_task()
     def get_account(self) -> None:
 
-        account_holder_email = random.choice(list(self.accounts.keys()))
-        account_holder_uuid = self.accounts[account_holder_email]["account_holder_uuid"]
+        account = self.get_account_holder()
 
         self.client.get(
-            f"{self.url_prefix}/loyalty/{self.retailer_slug}/accounts/{account_holder_uuid}",
+            f"{self.url_prefix}/loyalty/{self.retailer_slug}/accounts/{account.account_holder_uuid}",
             headers=self.headers["polaris_key"],
             name=f"{self.url_prefix}/loyalty/<retailer_slug>/accounts/<account_uuid>",
         )
@@ -110,11 +122,10 @@ class UserTasks(SequentialTaskSet):
     @repeatable_task()
     def get_marketing_unsubscribe(self) -> None:
 
-        account_holder_email = random.choice(list(self.accounts.keys()))
-        account_holder_uuid = self.accounts[account_holder_email]["account_holder_uuid"]
+        account = self.get_account_holder()
 
         self.client.get(
-            f"{self.url_prefix}/loyalty/{self.retailer_slug}/marketing/unsubscribe?u={account_holder_uuid}",
+            f"{self.url_prefix}/loyalty/{self.retailer_slug}/marketing/unsubscribe?u={account.account_holder_uuid}",
             headers=self.headers["polaris_key"],
             name=f"{self.url_prefix}/loyalty/<retailer_slug>/marketing/unsubscribe?u=<account_uuid>",
         )
@@ -122,15 +133,14 @@ class UserTasks(SequentialTaskSet):
     @repeatable_task()
     def post_transaction(self) -> None:
 
-        account_holder_email = random.choice(list(self.accounts.keys()))
-        account_holder_uuid = self.accounts[account_holder_email]["account_holder_uuid"]
+        account = self.get_account_holder()
 
         data = {
             "id": f"TX{self.fake.pyint()}",
             "transaction_total": random.randint(1000, 9999),
             "datetime": self.now,
             "MID": "1234",
-            "loyalty_id": account_holder_uuid,
+            "loyalty_id": account.account_holder_uuid,
         }
 
         self.client.post(
@@ -144,20 +154,15 @@ class UserTasks(SequentialTaskSet):
     @repeatable_task()
     def delete_account(self) -> None:
 
-        if self.accounts:
-            account_holder_email = random.choice(list(self.accounts.keys()))
-            account_holder_uuid = self.accounts[account_holder_email]["account_holder_uuid"]
-        else:
-            account_holder_uuid = ""
-            account_holder_email = ""
+        account = self.get_account_holder()
 
         with self.client.delete(
-            f"{self.url_prefix}/loyalty/{self.retailer_slug}/accounts/{account_holder_uuid}",
+            f"{self.url_prefix}/loyalty/{self.retailer_slug}/accounts/{account.account_holder_uuid}",
             headers=self.headers["polaris_key"],
             name=f"{self.url_prefix}/loyalty/<retailer_slug>/accounts/<account_uuid>",
         ) as response:
-            if response.status_code == 200 and self.accounts:
-                self.accounts.pop(account_holder_email)
+            if response.status_code == 200:
+                self.accounts.remove(account)
 
     # ---------------------------------SPECIAL TASKS---------------------------------
 

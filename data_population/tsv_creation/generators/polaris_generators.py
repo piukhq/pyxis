@@ -116,11 +116,10 @@ class PolarisGenerators:
         Generates account_holder_rewards (1-1 w/ account_holders)
         """
         account_holder_rewards = []
-        total_account_holders = self.data_config.account_holders  # 2000
         total_retailers = self.data_config.retailers  # 10
         rewards_populated_count = 0
 
-        for account_holder_count in range(1, total_account_holders + 1):
+        for account_holder_count in range(1, self.data_config.rewards + 1):
             rewards_populated_count += 1
             account_holder_rewards.append(
                 [
@@ -136,7 +135,7 @@ class PolarisGenerators:
                     "perftest-reward-slug",  # reward_slug
                     f"retailer_{randint(1, total_retailers)}",  # retailer_slug
                     str(uuid.uuid4()),  # idempotency_token
-                    account_holder_count,  # account_holder_id
+                    randint(1, self.data_config.account_holders + 1),  # account_holder_id
                     rewards_populated_count,  # id
                 ]
             )
