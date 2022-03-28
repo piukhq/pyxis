@@ -43,13 +43,13 @@ polaris_task_type_ids = {
 }
 
 #  We will generate <data_config.account_holders> retry rows for each of the following task types:
-polaris_retry_task_types_to_populate = [
-    "enrolment-callback",
-    "account-holder-activation",
-    "create-campaign-balances",
-    "send-welcome-email",
-    "pending-reward-allocation",
-]
+polaris_retry_task_types_to_populate = {
+    "enrolment-callback": "account_holders",
+    "account-holder-activation": "account_holders",
+    "create-campaign-balances": "account_holders",
+    "send-welcome-email": "account_holders",
+    "pending-reward-allocation": "rewards",
+}
 
 
 def generate_polaris_type_key_values(data_config: DataConfig) -> dict[int, dict]:
