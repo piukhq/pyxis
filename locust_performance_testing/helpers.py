@@ -7,6 +7,7 @@ import psycopg2
 
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
+from dataclasses import dataclass
 from locust import task
 from locust.exception import StopUser
 
@@ -62,6 +63,13 @@ def load_secrets() -> dict:
     return all_secrets
 
 
+@dataclass
+class AccountHolder:
+    email: str
+    account_number: str
+    account_holder_uuid: str
+
+
 def get_polaris_retailer_count() -> int:
     """
     Returns current retailer count in Polaris. Only contacts db on first execution.
@@ -104,15 +112,22 @@ def get_headers() -> dict:
     return headers
 
 
-def get_account_holder_information_via_cursor(email: str, timeout: int, retry_period: float) -> tuple[str, str]:
+def get_account_holder_information_via_cursor(all_accounts_to_fetch: list, timeout: int, retry_period: float) -> list[AccountHolder]:
     """
     Tries to get account holder information directly from polaris in a retry loop.
 
-    :param email: account holder email
+    :param all_accounts_to_fetch: array of account_holder_emails to be used as pk for data query
     :param timeout: maximum amount of time for which we continue to ask for information from the db
     :param retry_period: frequency of database query
-    :return: account number, account holder uuid if account is found within timeout period. Else returns empty strings.
+    :return: dictionary of {account_holder_email: {account_number: 1234, account_holder_uuid: 1a2b3c}}.
     """
+    logger.info(f"Fetching account information for {len(all_accounts_to_fetch)} accounts")
+
+    t = time.time()
+
+    accounts_to_fetch = all_accounts_to_fetch
+    account_data = []
+
     connection = s.DB_CONNECTION_URI.replace("/postgres?", f"/{s.POLARIS_DB}?")
 
     with psycopg2.connect(connection) as connection:
@@ -120,24 +135,36 @@ def get_account_holder_information_via_cursor(email: str, timeout: int, retry_pe
 
             total_retry_time = 0
 
-            while total_retry_time <= timeout:
+            while total_retry_time < timeout and accounts_to_fetch:
 
-                query = "SELECT account_number, account_holder_uuid, email from account_holder WHERE email = %s ;"
+                query = "SELECT email, account_number, account_holder_uuid from account_holder WHERE email IN %s ;"
 
                 try:
-                    cursor.execute(query, (email,))
-                    results = cursor.fetchone()
+                    cursor.execute(query, (tuple(accounts_to_fetch),))
+                    results = cursor.fetchall()
                 except Exception:
                     raise StopUser("Unable to direct fetch account_holder information from db")
 
-                if None not in results:  # need to test that all fields are populated
-                    return results[0], results[1]
+                for result in results:
+                    if result[1] is not None and result[2] is not None:
+                        # need to ensure we have both account_number and account_holder_uuid
+                        email = result[0]
+                        account_number = result[1]
+                        account_holder_id = result[2]
+                        account_data.append(AccountHolder(email, account_number, account_holder_id))
+                        accounts_to_fetch.remove(email)
+                        logger.info(f"Found information for user {email} and removed from fetch list")
 
-                if total_retry_time >= timeout:
-                    logger.info(
-                        f"Timeout ({timeout})s on direct fetch of account_holder information with email {email}"
-                    )
                 time.sleep(retry_period)
                 total_retry_time += retry_period  # type: ignore
 
-            return "", ""  # only if timeout occurs
+                if total_retry_time >= timeout:
+                    logger.info(
+                        f"Timeout ({timeout})s on direct fetch of account information with remaining emails: "
+                        f"{accounts_to_fetch}"
+                    )  # only if timeout occurs
+
+                if not accounts_to_fetch:
+                    logger.info(f"Successfully fetched all account information from db in {time.time() - t} seconds")
+
+            return account_data
