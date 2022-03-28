@@ -161,8 +161,8 @@ class UserTasks(SequentialTaskSet):
             headers=self.headers["polaris_key"],
             name=f"{self.url_prefix}/loyalty/<retailer_slug>/accounts/<account_uuid>",
         ) as response:
-            if response.status_code == 200 and self.accounts:
-                self.accounts.pop(account.account_holder_email)
+            if response.status_code == 200:
+                self.accounts.remove(account)
 
     # ---------------------------------SPECIAL TASKS---------------------------------
 
