@@ -63,8 +63,8 @@ data_configs = {
         campaigns_per_retailer=1,
         earn_rule_per_campaign=1,
         account_holders=1000,
-        rewards=1000,
-        transactions=1000,
+        rewards=500,
+        transactions=2000,
         reward_updates=0,
     ),
 }

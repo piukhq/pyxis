@@ -4,10 +4,11 @@ from datetime import datetime, timedelta
 from random import choice, randint
 
 from data_population.common.utils import id_generator
+from data_population.data_config import DataConfig
 from data_population.tsv_creation.fixtures.common import audit_data
 
 
-def retry_task(task_type_ids_dict: dict, task_types_to_populate: dict) -> list:
+def retry_task(task_type_ids_dict: dict, task_types_to_populate: dict, data_config: DataConfig) -> list:
     """
     `tasks` = DataConfig.account_holder or DataConfig.reward_updates or DataConfig.transactions.
 
@@ -16,8 +17,8 @@ def retry_task(task_type_ids_dict: dict, task_types_to_populate: dict) -> list:
     """
     id_gen = id_generator(1)
     retry_tasks = []
-    for task_type, rowcount in list(task_types_to_populate.items()):
-        for _ in range(1, rowcount + 1):
+    for task_type, rowcount in task_types_to_populate.items():
+        for _ in range(1, getattr(data_config, rowcount) + 1):
             task_type_id = task_type_ids_dict[task_type]
             now = datetime.utcnow()
             retry_tasks.append(
@@ -35,7 +36,9 @@ def retry_task(task_type_ids_dict: dict, task_types_to_populate: dict) -> list:
     return retry_tasks
 
 
-def task_type_key_value(task_type_ids_dict: dict, task_type_keys_dict: dict, task_types_to_populate: list) -> list:
+def task_type_key_value(
+    task_type_ids_dict: dict, task_type_keys_dict: dict, task_types_to_populate: dict, data_config: DataConfig
+) -> list:
     """
     `tasks` = DataConfig.account_holder or DataConfig.reward_updates or DataConfig.transactions.
 
@@ -46,8 +49,8 @@ def task_type_key_value(task_type_ids_dict: dict, task_type_keys_dict: dict, tas
     retry_task_id_gen = id_generator(1)
 
     task_type_key_value_rows = []
-    for task_type, rowcount in task_types_to_populate:
-        for count in range(1, rowcount + 1):
+    for task_type, rowcount in task_types_to_populate.items():
+        for count in range(1, getattr(data_config, rowcount) + 1):
 
             retry_task_id = next(retry_task_id_gen)
 

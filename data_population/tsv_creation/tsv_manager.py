@@ -52,7 +52,7 @@ class TSVHandler:
         self.write_to_tsv(self.vela_generator.processed_transaction(), VELA_DB, table="processed_transaction")
 
         self.write_to_tsv(
-            retry_task(vela_task_type_ids, vela_retry_task_types_to_populate),
+            retry_task(vela_task_type_ids, vela_retry_task_types_to_populate, data_config=self.data_config),
             VELA_DB,
             table="retry_task",
         )
@@ -61,6 +61,7 @@ class TSVHandler:
                 task_type_ids_dict=vela_task_type_ids,
                 task_type_keys_dict=generate_vela_type_key_values(self.data_config),
                 task_types_to_populate=vela_retry_task_types_to_populate,
+                data_config=self.data_config,
             ),
             VELA_DB,
             table="task_type_key_value",
@@ -75,7 +76,7 @@ class TSVHandler:
         self.write_to_tsv(self.carina_generator.reward_update(), CARINA_DB, table="reward_update")
 
         self.write_to_tsv(
-            retry_task(carina_task_type_ids, carina_retry_task_types_to_populate),
+            retry_task(carina_task_type_ids, carina_retry_task_types_to_populate, data_config=self.data_config),
             CARINA_DB,
             table="retry_task",
         )
@@ -84,6 +85,7 @@ class TSVHandler:
                 task_type_ids_dict=carina_task_type_ids,
                 task_type_keys_dict=generate_carina_type_key_values(self.data_config),
                 task_types_to_populate=carina_retry_task_types_to_populate,
+                data_config=self.data_config,
             ),
             CARINA_DB,
             table="task_type_key_value",
@@ -113,7 +115,7 @@ class TSVHandler:
         )
 
         self.write_to_tsv(
-            retry_task(polaris_task_type_ids, polaris_retry_task_types_to_populate),
+            retry_task(polaris_task_type_ids, polaris_retry_task_types_to_populate, data_config=self.data_config),
             POLARIS_DB,
             table="retry_task",
         )
@@ -122,6 +124,7 @@ class TSVHandler:
                 task_type_ids_dict=polaris_task_type_ids,
                 task_type_keys_dict=generate_polaris_type_key_values(self.data_config),
                 task_types_to_populate=polaris_retry_task_types_to_populate,
+                data_config=self.data_config,
             ),
             POLARIS_DB,
             table="task_type_key_value",
