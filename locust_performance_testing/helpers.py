@@ -113,7 +113,7 @@ def get_account_holder_information_via_cursor(all_accounts_to_fetch: list, timeo
     :param retry_period: frequency of database query
     :return: dictionary of {account_holder_email: {account_number: 1234, account_holder_uuid: 1a2b3c}}.
     """
-    logger.info(f"Fetching accounts {all_accounts_to_fetch}")
+    logger.info(f"Fetching account information for {len(all_accounts_to_fetch)} accounts")
 
     t = time.time()
 
@@ -154,11 +154,11 @@ def get_account_holder_information_via_cursor(all_accounts_to_fetch: list, timeo
 
                 if total_retry_time >= timeout:
                     logger.info(
-                        f"Timeout ({timeout})s on direct fetch of account_holder information with remaining emails: "
+                        f"Timeout ({timeout})s on direct fetch of account information with remaining emails: "
                         f"{accounts_to_fetch}"
                     )  # only if timeout occurs
 
                 if not accounts_to_fetch:
-                    logger.info(f"Successfully fetched all accounts in {time.time() - t} seconds")
+                    logger.info(f"Successfully fetched all account information from db in {time.time() - t} seconds")
 
             return account_data
