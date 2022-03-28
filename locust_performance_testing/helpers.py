@@ -104,7 +104,7 @@ def get_headers() -> dict:
     return headers
 
 
-def get_account_holder_information_via_cursor(email: str, timeout: int, retry_period: float) -> tuple[str, str]:
+def get_account_holder_information_via_cursor(all_accounts_to_fetch: list, timeout: int, retry_period: float) -> dict:
     """
     Tries to get account holder information directly from polaris in a retry loop.
 
@@ -113,6 +113,11 @@ def get_account_holder_information_via_cursor(email: str, timeout: int, retry_pe
     :param retry_period: frequency of database query
     :return: account number, account holder uuid if account is found within timeout period. Else returns empty strings.
     """
+    logger.info(f"Fetching accounts {all_accounts_to_fetch}")
+
+    accounts_to_fetch = all_accounts_to_fetch
+    account_data = {}
+
     connection = s.DB_CONNECTION_URI.replace("/postgres?", f"/{s.POLARIS_DB}?")
 
     with psycopg2.connect(connection) as connection:
@@ -120,24 +125,38 @@ def get_account_holder_information_via_cursor(email: str, timeout: int, retry_pe
 
             total_retry_time = 0
 
-            while total_retry_time <= timeout:
+            while total_retry_time < timeout and accounts_to_fetch:
 
-                query = "SELECT account_number, account_holder_uuid, email from account_holder WHERE email = %s ;"
+                query = "SELECT email, account_number, account_holder_uuid from account_holder WHERE email = %s ;"
 
                 try:
-                    cursor.execute(query, (email,))
-                    results = cursor.fetchone()
+                    results = cursor.execute(query, (tuple(accounts_to_fetch),))
                 except Exception:
                     raise StopUser("Unable to direct fetch account_holder information from db")
 
-                if None not in results:  # need to test that all fields are populated
-                    return results[0], results[1]
+                for result in results:
+                    if result[1] is not None and result[2] is not None:
+                        # need to ensure we have both account_number and account_holder_uuid
+                        email = result[0]
+                        account_number = result[1]
+                        account_holder_id = result[2]
+                        account_data.update(
+                            {
+                                email: {
+                                    "account_number": account_number,
+                                    "account_holder_id": account_holder_id
+                                }
+                            }
+                        )
 
-                if total_retry_time >= timeout:
-                    logger.info(
-                        f"Timeout ({timeout})s on direct fetch of account_holder information with email {email}"
-                    )
+                        accounts_to_fetch.remove(email)
+
                 time.sleep(retry_period)
                 total_retry_time += retry_period  # type: ignore
 
-            return "", ""  # only if timeout occurs
+                if total_retry_time >= timeout:
+                    logger.info(
+                        f"Timeout ({timeout})s on direct fetch of account_holder information with emails: {accounts}"
+                    )  # only if timeout occurs
+
+            return account_data

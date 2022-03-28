@@ -1,9 +1,10 @@
 import random
+import time
 
 from datetime import datetime
 
 from faker import Faker
-from locust import SequentialTaskSet
+from locust import SequentialTaskSet, task
 from locust.exception import StopUser
 
 from locust_performance_testing.helpers import (
@@ -31,23 +32,26 @@ class UserTasks(SequentialTaskSet):
         self.headers = get_headers()
         self.retailer_slug = f"retailer_{random.randint(1, get_polaris_retailer_count())}"
         self.fake = Faker()
-        self.first_name = self.fake.first_name()
-        self.last_name = self.fake.last_name()
-        self.email = f"{self.first_name}_{self.last_name}_{str(self.fake.pyint())[:5]}@performance.com".lower()
         self.account_number = ""
         self.account_uuid = ""
         self.now = int(datetime.timestamp(datetime.now()))
+        self.accounts_to_fetch = []
+        self.accounts = {}
 
     # ---------------------------------POLARIS ENDPOINTS---------------------------------
 
     @repeatable_task()
     def post_account_holder(self) -> None:
 
+        first_name = self.fake.first_name()
+        last_name = self.fake.last_name()
+        email = f"{first_name}_{last_name}_{str(self.fake.pyint())[:5]}@performance.com".lower()
+
         data = {
             "credentials": {
-                "email": self.email,
-                "first_name": self.first_name,
-                "last_name": self.last_name,
+                "email": email,
+                "first_name": first_name,
+                "last_name": last_name,
                 "date_of_birth": "010101",
                 "phone": "000000000000",
                 "address_line1": "address1",
@@ -68,7 +72,16 @@ class UserTasks(SequentialTaskSet):
         ) as response:
 
             if response.status_code == 202:
-                self.account_number, self.account_uuid = get_account_holder_information_via_cursor(self.email, 10, 0.5)
+                self.accounts_to_fetch.append(email)
+
+    @task
+    def update_account_information(self):
+        """
+        Helper function to populate account data by direct db query (replaces BPL callback)
+        """
+        t = time.time()
+        self.accounts = get_account_holder_information_via_cursor(self.accounts_to_fetch, 10, 0.5)
+        print(f"Fetched data {self.accounts} in {time.time()-t} seconds.")
 
     @repeatable_task()
     def post_get_by_credentials(self) -> None:

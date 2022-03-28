@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-locust = "*"
+locust = "==1.5.2"
 click = "*"
 faker = "*"
 psycopg2-binary = "*"
