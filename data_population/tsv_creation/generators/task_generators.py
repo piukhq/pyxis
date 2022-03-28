@@ -35,9 +35,7 @@ def retry_task(task_type_ids_dict: dict, task_types_to_populate: dict) -> list:
     return retry_tasks
 
 
-def task_type_key_value(
-    task_type_ids_dict: dict, task_type_keys_dict: dict, task_types_to_populate: list
-) -> list:
+def task_type_key_value(task_type_ids_dict: dict, task_type_keys_dict: dict, task_types_to_populate: list) -> list:
     """
     `tasks` = DataConfig.account_holder or DataConfig.reward_updates or DataConfig.transactions.
 

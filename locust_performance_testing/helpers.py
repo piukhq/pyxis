@@ -1,13 +1,13 @@
 import logging
 import time
 
+from dataclasses import dataclass
 from functools import wraps
 
 import psycopg2
 
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
-from dataclasses import dataclass
 from locust import task
 from locust.exception import StopUser
 
@@ -68,6 +68,7 @@ class AccountHolder:
     email: str
     account_number: str
     account_holder_uuid: str
+    marketing: bool = True
 
 
 def get_polaris_retailer_count() -> int:
@@ -112,7 +113,9 @@ def get_headers() -> dict:
     return headers
 
 
-def get_account_holder_information_via_cursor(all_accounts_to_fetch: list, timeout: int, retry_period: float) -> list[AccountHolder]:
+def get_account_holder_information_via_cursor_bulk(
+    all_accounts_to_fetch: list, timeout: int, retry_period: float
+) -> list[AccountHolder]:
     """
     Tries to get account holder information directly from polaris in a retry loop.
 
@@ -168,3 +171,50 @@ def get_account_holder_information_via_cursor(all_accounts_to_fetch: list, timeo
                     logger.info(f"Successfully fetched all account information from db in {time.time() - t} seconds")
 
             return account_data
+
+
+def get_account_holder_information_via_cursor_sequential(
+    email: str, timeout: int, retry_period: float
+) -> AccountHolder:
+    """
+    Tries to get account holder information directly from polaris in a retry loop.
+
+    :param email: account_holder_email to be used as pk for data query
+    :param timeout: maximum amount of time for which we continue to ask for information from the db
+    :param retry_period: frequency of database query
+    :return: dictionary of {account_holder_email: {account_number: 1234, account_holder_uuid: 1a2b3c}}.
+    """
+    logger.info(f"Fetching account information for {email}")
+
+    connection = s.DB_CONNECTION_URI.replace("/postgres?", f"/{s.POLARIS_DB}?")
+
+    with psycopg2.connect(connection) as connection:
+        with connection.cursor() as cursor:
+
+            total_retry_time = 0
+
+            while total_retry_time < timeout:
+
+                query = "SELECT email, account_number, account_holder_uuid from account_holder WHERE email = %s ;"
+
+                try:
+                    cursor.execute(query, (email,))
+                    result = cursor.fetchone()
+                except Exception:
+                    raise StopUser("Unable to direct fetch account_holder information from db")
+
+                if result[1] is not None and result[2] is not None:
+                    # need to ensure we have both account_number and account_holder_uuid
+                    email = result[0]
+                    account_number = result[1]
+                    account_holder_id = result[2]
+                    return AccountHolder(email, account_number, account_holder_id)
+
+                time.sleep(retry_period)
+                total_retry_time += retry_period  # type: ignore
+
+                if total_retry_time >= timeout:
+                    logger.info(
+                        f"Timeout ({timeout})s on direct fetch of account information with email: " f"{email}"
+                    )  # only if timeout occurs
+                    return AccountHolder("", "", "")

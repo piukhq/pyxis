@@ -6,13 +6,16 @@ from faker import Faker
 from locust import SequentialTaskSet, task
 from locust.exception import StopUser
 
+import settings
+
 from locust_performance_testing.helpers import (
-    get_account_holder_information_via_cursor,
+    AccountHolder,
+    get_account_holder_information_via_cursor_bulk,
+    get_account_holder_information_via_cursor_sequential,
     get_headers,
     get_polaris_retailer_count,
     load_secrets,
     repeatable_task,
-    AccountHolder
 )
 
 
@@ -46,7 +49,6 @@ class UserTasks(SequentialTaskSet):
         else:
             return AccountHolder("", "", "")
 
-
     @repeatable_task()
     def post_account_holder(self) -> None:
 
@@ -79,14 +81,18 @@ class UserTasks(SequentialTaskSet):
         ) as response:
 
             if response.status_code == 202:
-                self.accounts_to_fetch.append(email)
+                if settings.FETCH_BULK:
+                    self.accounts_to_fetch.append(email)
+                else:
+                    self.accounts.append(get_account_holder_information_via_cursor_sequential(email, 10, 0.5))
 
     @task
     def internal_update_account_information(self):
         """
         Helper function (not endpoint function) to populate account data by direct db query (replaces BPL callback)
         """
-        self.accounts = get_account_holder_information_via_cursor(self.accounts_to_fetch, 10, 1)
+        if settings.FETCH_BULK:
+            self.accounts = get_account_holder_information_via_cursor_bulk(self.accounts_to_fetch, 30, 0.8)
 
     @repeatable_task()
     def post_get_by_credentials(self) -> None:
