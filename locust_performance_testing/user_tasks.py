@@ -145,15 +145,19 @@ class UserTasks(SequentialTaskSet):
     @repeatable_task()
     def delete_account(self) -> None:
 
-        account_holder_email = random.choice(list(self.accounts.keys()))
-        account_holder_uuid = self.accounts[account_holder_email]["account_holder_uuid"]
+        if self.accounts:
+            account_holder_email = random.choice(list(self.accounts.keys()))
+            account_holder_uuid = self.accounts[account_holder_email]["account_holder_uuid"]
+        else:
+            account_holder_uuid = ""
+            account_holder_email = ""
 
         with self.client.delete(
             f"{self.url_prefix}/loyalty/{self.retailer_slug}/accounts/{account_holder_uuid}",
             headers=self.headers["polaris_key"],
             name=f"{self.url_prefix}/loyalty/<retailer_slug>/accounts/<account_uuid>",
         ) as response:
-            if response.status_code == 200:
+            if response.status_code == 200 and self.accounts:
                 self.accounts.pop(account_holder_email)
 
     # ---------------------------------SPECIAL TASKS---------------------------------
