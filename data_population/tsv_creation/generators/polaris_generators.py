@@ -116,6 +116,7 @@ class PolarisGenerators:
         Generates account_holder_rewards (1-1 w/ account_holders)
         """
         account_holder_rewards = []
+        total_account_holders = self.data_config.account_holders
         total_retailers = self.data_config.retailers  # 10
 
         for reward_count in range(1, self.data_config.rewards + 1):
@@ -133,7 +134,7 @@ class PolarisGenerators:
                     "perftest-reward-slug",  # reward_slug
                     f"retailer_{randint(1, total_retailers)}",  # retailer_slug
                     str(uuid.uuid4()),  # idempotency_token
-                    randint(1, self.data_config.account_holders),  # account_holder_id
+                    randint(1, total_account_holders),  # account_holder_id
                     reward_count,  # id
                 ]
             )
@@ -147,15 +148,13 @@ class PolarisGenerators:
         total_account_holders = self.data_config.account_holders
         total_retailers = self.data_config.retailers
         total_campaigns = self.data_config.retailers * self.data_config.campaigns_per_retailer
-        pending_rewards_populated_count = 0
 
-        for account_holder_count in range(1, total_account_holders + 1):
-            pending_rewards_populated_count += 1
+        for reward_count in range(1, self.data_config.rewards + 1):
             account_holder_pending_rewards.append(
                 [
                     self.now,  # created_at
                     self.now,  # updated_at
-                    pending_rewards_populated_count,  # id
+                    reward_count,  # id
                     self.now,  # created_date
                     self.now + timedelta(days=30),  # conversion_date
                     randint(500, 1000),  # value
@@ -163,7 +162,7 @@ class PolarisGenerators:
                     f"reward_{randint(1,total_campaigns)}",  # reward_slug
                     f"retailer_{randint(1, total_retailers)}",  # retailer_slug
                     str(uuid.uuid4()),  # idempotency_token
-                    account_holder_count,  # account_holder_id
+                    randint(1, total_account_holders),  # account_holder_id
                 ]
             )
         return account_holder_pending_rewards
