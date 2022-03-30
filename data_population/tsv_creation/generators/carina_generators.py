@@ -37,7 +37,7 @@ class CarinaGenerators:
                 1,  # id
                 "Performance Fetch Type",  # name
                 {"validity_days": "integer"},  # required_fields
-                "",  # path
+                "app.fetch_reward.pre_loaded.PreLoaded",  # path
             ]
         ]
         return fetch_types
