@@ -81,7 +81,7 @@ class CarinaGenerators:
                         "ACTIVE",  # status
                         retailer_count,  # retailer_id
                         1,  # fetch_type_id
-                        {"validity_days": "90"},  # required_fields_values
+                        {"validity_days": 90},  # required_fields_values
                     ]
                 )
         return reward_configs
