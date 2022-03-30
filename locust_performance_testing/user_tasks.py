@@ -84,7 +84,7 @@ class UserTasks(SequentialTaskSet):
                 if settings.FETCH_BULK:
                     self.accounts_to_fetch.append(email)
                 else:
-                    self.accounts.append(get_account_holder_information_via_cursor_sequential(email, 10, 0.5))
+                    self.accounts.append(get_account_holder_information_via_cursor_sequential(email, 60, 0.5))
 
     @task
     def internal_update_account_information(self):
@@ -92,7 +92,7 @@ class UserTasks(SequentialTaskSet):
         Helper function (not endpoint function) to populate account data by direct db query (replaces BPL callback)
         """
         if settings.FETCH_BULK:
-            self.accounts = get_account_holder_information_via_cursor_bulk(self.accounts_to_fetch, 30, 0.8)
+            self.accounts = get_account_holder_information_via_cursor_bulk(self.accounts_to_fetch, 60, 0.8)
 
     @repeatable_task()
     def post_get_by_credentials(self) -> None:
