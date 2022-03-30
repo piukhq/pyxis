@@ -1,6 +1,7 @@
 import random
 
 from datetime import datetime
+from uuid import uuid4
 
 from faker import Faker
 from locust import SequentialTaskSet, task
@@ -136,7 +137,7 @@ class UserTasks(SequentialTaskSet):
         account = self.get_account_holder()
 
         data = {
-            "id": f"TX{self.fake.pyint()}",
+            "id": f"TX{uuid4()}",
             "transaction_total": random.randint(1000, 9999),
             "datetime": self.now,
             "MID": "1234",
