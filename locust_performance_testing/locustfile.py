@@ -13,11 +13,11 @@ class WebsiteUser(HttpUser):
     """
 
     repeats = {
-        "post_account_holder": 10,
+        "post_account_holder": 1,
         "post_get_by_credentials": 1,
-        "get_account": 39,
-        "get_marketing_unsubscribe": 10,
-        "post_transaction": 14,
+        "get_account": 1,
+        "get_marketing_unsubscribe": 1,
+        "post_transaction": 1,
         "delete_account": 0,  # will 404 if > post_account_holder (ENDPOINT NOT IMPLEMENTED)
         "stop_locust_after_test_suite": 1,  # Should be set to 1 in most normal situations
     }
