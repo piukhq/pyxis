@@ -78,7 +78,7 @@ class UserTasks(SequentialTaskSet):
             f"{self.url_prefix}/loyalty/{self.retailer_slug}/accounts/enrolment",
             json=data,
             headers=self.headers["polaris_key"],
-            name=f"{self.url_prefix}/loyalty/<retailer_slug>/accounts/enrolment",
+            name=f"{self.url_prefix}/loyalty/[retailer_slug]/accounts/enrolment",
         ) as response:
 
             if response.status_code == 202:
@@ -106,7 +106,7 @@ class UserTasks(SequentialTaskSet):
             f"{self.url_prefix}/loyalty/{self.retailer_slug}/accounts/getbycredentials",
             json=data,
             headers=self.headers["polaris_key"],
-            name=f"{self.url_prefix}/loyalty/<retailer_slug>/accounts/getbycredentials",
+            name=f"{self.url_prefix}/loyalty/[retailer_slug]/accounts/getbycredentials",
         )
 
     @repeatable_task()
@@ -117,7 +117,7 @@ class UserTasks(SequentialTaskSet):
         self.client.get(
             f"{self.url_prefix}/loyalty/{self.retailer_slug}/accounts/{account.account_holder_uuid}",
             headers=self.headers["polaris_key"],
-            name=f"{self.url_prefix}/loyalty/<retailer_slug>/accounts/<account_uuid>",
+            name=f"{self.url_prefix}/loyalty/[retailer_slug]/accounts/[account_uuid]",
         )
 
     @repeatable_task()
@@ -128,7 +128,7 @@ class UserTasks(SequentialTaskSet):
         self.client.get(
             f"{self.url_prefix}/loyalty/{self.retailer_slug}/marketing/unsubscribe?u={account.account_holder_uuid}",
             headers=self.headers["polaris_key"],
-            name=f"{self.url_prefix}/loyalty/<retailer_slug>/marketing/unsubscribe?u=<account_uuid>",
+            name=f"{self.url_prefix}/loyalty/[retailer_slug]/marketing/unsubscribe?u=[account_uuid]",
         )
 
     @repeatable_task()
@@ -148,7 +148,7 @@ class UserTasks(SequentialTaskSet):
             f"{self.url_prefix}/retailers/{self.retailer_slug}/transaction",
             headers=self.headers["vela_key"],
             json=data,
-            name=f"{self.url_prefix}/retailers/<retailer_slug>/transaction",
+            name=f"{self.url_prefix}/retailers/[retailer_slug]/transaction",
         )
 
     #  endpoint not yet implemented but leaving for later
@@ -160,7 +160,7 @@ class UserTasks(SequentialTaskSet):
         with self.client.delete(
             f"{self.url_prefix}/loyalty/{self.retailer_slug}/accounts/{account.account_holder_uuid}",
             headers=self.headers["polaris_key"],
-            name=f"{self.url_prefix}/loyalty/<retailer_slug>/accounts/<account_uuid>",
+            name=f"{self.url_prefix}/loyalty/[retailer_slug]/accounts/[account_uuid]",
         ) as response:
             if response.status_code == 200:
                 self.accounts.remove(account)
