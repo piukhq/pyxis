@@ -48,7 +48,7 @@ polaris_retry_task_types_to_populate = {
     "account-holder-activation": "account_holders",
     "create-campaign-balances": "account_holders",
     "send-welcome-email": "account_holders",
-    "pending-reward-allocation": "rewards",
+    "pending-reward-allocation": "pending_rewards",
 }
 
 
@@ -87,7 +87,7 @@ def generate_polaris_type_key_values(data_config: DataConfig) -> dict[int, dict]
             15: f"retailer_{randint(1, total_retailers)}",  # retailer_slug
             16: f"reward_{randint(1, total_campaigns)}",  # reward_slug
             17: str(uuid4()),  # account_holder_uuid,
-            18: randint(1, data_config.rewards),  # pending_reward_id,
+            18: randint(1, data_config.pending_rewards),  # pending_reward_id,
         },
     }
     return polaris_task_type_keys
