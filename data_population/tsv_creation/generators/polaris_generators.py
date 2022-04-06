@@ -3,7 +3,6 @@ import uuid
 from datetime import datetime, timedelta
 from random import choice, randint
 
-from data_population.common.utils import random_ascii, id_generator
 from data_population.data_config import DataConfig
 from data_population.tsv_creation.fixtures.polaris import AccountHolderStatuses, marketing_preferences, profile_config
 from settings import fake
@@ -21,7 +20,9 @@ class PolarisGenerators:
     def get_account_holders_by_retailer(self):
         if not self.account_holders_by_retailer:
             for retailer in range(1, self.data_config.retailers + 1):
-                self.account_holders_by_retailer[retailer] = [k for k, v in self.all_account_holder_retailers.items() if v == retailer]
+                self.account_holders_by_retailer[retailer] = [
+                    k for k, v in self.all_account_holder_retailers.items() if v == retailer
+                ]
 
         return self.account_holders_by_retailer
 
@@ -146,17 +147,17 @@ class PolarisGenerators:
                 [
                     self.now,  # created_at
                     self.now,  # updated_at
-                    reward['reward_uuid'],  # reward_uuid
-                    reward['code'],  # code
+                    reward["reward_uuid"],  # reward_uuid
+                    reward["code"],  # code
                     self.now,  # issued_date
                     self.now + timedelta(days=30),  # expiry_date
                     choice(["ISSUED", "CANCELLED", "REDEEMED"]),  # status
-                    'NULL',  # redeemed_date
-                    'NULL',  # cancelled_date
+                    "NULL",  # redeemed_date
+                    "NULL",  # cancelled_date
                     f"reward_{reward['reward_config_id']}",  # reward_slug
                     f"retailer_{reward['retailer_id']}",  # retailer_slug
                     str(uuid.uuid4()),  # idempotency_token
-                    choice(account_holders_by_retailer[reward['retailer_id']]),  # account_holder_id
+                    choice(account_holders_by_retailer[reward["retailer_id"]]),  # account_holder_id
                     reward_count,  # id
                 ]
             )
@@ -186,7 +187,7 @@ class PolarisGenerators:
                     f"reward_{reward['reward_config_id']}",  # reward_slug
                     f"retailer_{reward['retailer_id']}",  # retailer_slug
                     str(uuid.uuid4()),  # idempotency_token
-                    choice(account_holders_by_retailer[reward['retailer_id']]),  # account_holder_id
+                    choice(account_holders_by_retailer[reward["retailer_id"]]),  # account_holder_id
                 ]
             )
         return account_holder_pending_rewards

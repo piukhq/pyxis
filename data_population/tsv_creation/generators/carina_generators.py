@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from random import choice, randint
+from random import choice
 from uuid import uuid4
 
 from data_population.common.utils import id_generator
@@ -93,15 +93,18 @@ class CarinaGenerators:
 
     def reward(self) -> list:
         """
-        Generates n rewards/vouchers (total n defined as rewards in data_config)
-        Saves reward uuids generated as: [reward_uuids] for later use by reward_updates table
+        Generates n rewards/vouchers (total n defined as allocated_rewards + pending_rewards + spare_rewards in
+        data_config).
+
+        Saves allocated_rewards and unallocated_rewards for later use by Polaris' account_holder_reward and
+        account_holder_pending_reward tables.
         """
 
         rewards = []
 
-        for reward in range(self.data_config.allocated_rewards +
-                            self.data_config.pending_rewards +
-                            self.data_config.spare_rewards):
+        for reward in range(
+            self.data_config.allocated_rewards + self.data_config.pending_rewards + self.data_config.spare_rewards
+        ):
 
             # first <allocated_rewards> rewards should be set as allocated - these will be populated in polaris
             # account_holder_reward
@@ -128,21 +131,21 @@ class CarinaGenerators:
             if allocated:
                 self.allocated_rewards.append(
                     {
-                        'reward_uuid': reward_id,
-                        'reward_config_id': reward_config_id,
-                        'retailer_id': retailer_id,
-                        'code': code,
-                        'allocated': allocated
+                        "reward_uuid": reward_id,
+                        "reward_config_id": reward_config_id,
+                        "retailer_id": retailer_id,
+                        "code": code,
+                        "allocated": allocated,
                     }
                 )
             else:
                 self.unallocated_rewards.append(
                     {
-                        'reward_uuid': reward_id,
-                        'reward_config_id': reward_config_id,
-                        'retailer_id': retailer_id,
-                        'code': code,
-                        'allocated': allocated
+                        "reward_uuid": reward_id,
+                        "reward_config_id": reward_config_id,
+                        "retailer_id": retailer_id,
+                        "code": code,
+                        "allocated": allocated,
                     }
                 )
 
@@ -156,7 +159,7 @@ class CarinaGenerators:
         """
 
         reward_updates = []
-        reward_uuids = [item['reward_uuid'] for item in self.allocated_rewards]
+        reward_uuids = [item["reward_uuid"] for item in self.allocated_rewards]
 
         for count in range(self.data_config.reward_updates):
             reward_updates.append(

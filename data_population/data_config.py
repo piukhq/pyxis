@@ -8,8 +8,8 @@ class DataConfig:
     campaigns_per_retailer: int
     earn_rule_per_campaign: int
     allocated_rewards: int  # number of rewards already allocated to account_holders
-    pending_rewards: int  # number of rewards already promised to account_holders
-    spare_rewards: int  # number of spare rewards not yet allocated or promised to an account_holder
+    pending_rewards: int  # number of rewards already promised to account_holders (pending)
+    spare_rewards: int  # number of spare rewards not yet allocated or promised to account_holders
     transactions: int
     reward_updates: int
 
@@ -42,9 +42,9 @@ data_configs = {
         campaigns_per_retailer=1,
         earn_rule_per_campaign=1,
         account_holders=1000,
-        allocated_rewards=100,
-        pending_rewards=100,
-        spare_rewards=100,
+        allocated_rewards=300,
+        pending_rewards=200,
+        spare_rewards=50,
         transactions=2000,
         reward_updates=0,
     ),
