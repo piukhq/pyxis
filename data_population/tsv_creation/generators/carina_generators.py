@@ -11,7 +11,8 @@ class CarinaGenerators:
         self.now = datetime.utcnow()
         self.end_date = self.now + timedelta(weeks=100)
         self.data_config = data_config
-        self.all_rewards: list = []
+        self.allocated_rewards: list = []
+        self.unallocated_rewards: list = []
         self.all_reward_configs: dict = {}
 
     def retailer(self) -> list:
@@ -100,7 +101,11 @@ class CarinaGenerators:
 
         for reward in range(self.data_config.allocated_rewards +
                             self.data_config.pending_rewards +
-                            self.data_config.unallocated_rewards):
+                            self.data_config.spare_rewards):
+
+            # first <allocated_rewards> rewards should be set as allocated - these will be populated in polaris
+            # account_holder_reward
+            allocated = True if reward < self.data_config.allocated_rewards else False
 
             reward_id = str(uuid4())
             reward_config_id = choice(list(self.all_reward_configs))
@@ -113,21 +118,33 @@ class CarinaGenerators:
                     self.now,  # updated_at
                     reward_id,  # id (:uuid)
                     code,  # code
-                    False,  # allocated
+                    allocated,  # allocated
                     reward_config_id,  # reward_config_id
                     False,  # deleted
                     retailer_id,  # retailer_id
                 ]
             )
 
-            self.all_rewards.append(
-                {
-                    'reward_uuid': reward_id,
-                    'reward_config_id': reward_config_id,
-                    'retailer_id': retailer_id,
-                    'code': code
-                }
-            )
+            if allocated:
+                self.allocated_rewards.append(
+                    {
+                        'reward_uuid': reward_id,
+                        'reward_config_id': reward_config_id,
+                        'retailer_id': retailer_id,
+                        'code': code,
+                        'allocated': allocated
+                    }
+                )
+            else:
+                self.unallocated_rewards.append(
+                    {
+                        'reward_uuid': reward_id,
+                        'reward_config_id': reward_config_id,
+                        'retailer_id': retailer_id,
+                        'code': code,
+                        'allocated': allocated
+                    }
+                )
 
         return rewards
 
@@ -139,7 +156,7 @@ class CarinaGenerators:
         """
 
         reward_updates = []
-        reward_uuids = [item['reward_uuid'] for item in self.all_rewards]
+        reward_uuids = [item['reward_uuid'] for item in self.allocated_rewards]
 
         for count in range(self.data_config.reward_updates):
             reward_updates.append(

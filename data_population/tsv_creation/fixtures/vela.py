@@ -10,8 +10,8 @@ vela_task_type_ids = {
     "delete-campaign-balances": 4,
 }
 
-#  We will generate <data_config.transactions> retry rows for each of the following task types:
-vela_retry_task_types_to_populate = {"reward-adjustment": "transactions"}
+#  We will generate retry rows for each of the following task types equal to the sum of their data_config values:
+vela_retry_task_types_to_populate = {"reward-adjustment": ["transactions"]}
 
 
 def generate_vela_type_key_values(data_config: DataConfig) -> dict[int, dict]:

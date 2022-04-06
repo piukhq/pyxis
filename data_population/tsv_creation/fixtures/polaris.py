@@ -42,13 +42,13 @@ polaris_task_type_ids = {
     "pending-reward-allocation": 7,
 }
 
-#  We will generate <data_config.account_holders> retry rows for each of the following task types:
+#  We will generate retry rows for each of the following task types equal to the sum of their data_config values:
 polaris_retry_task_types_to_populate = {
-    "enrolment-callback": "account_holders",
-    "account-holder-activation": "account_holders",
-    "create-campaign-balances": "account_holders",
-    "send-welcome-email": "account_holders",
-    "pending-reward-allocation": "pending_rewards",
+    "enrolment-callback": ["account_holders"],
+    "account-holder-activation": ["account_holders"],
+    "create-campaign-balances": ["account_holders"],
+    "send-welcome-email": ["account_holders"],
+    "pending-reward-allocation": ["pending_rewards", "allocated_rewards"],
 }
 
 

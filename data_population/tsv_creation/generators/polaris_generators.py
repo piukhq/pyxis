@@ -14,7 +14,8 @@ class PolarisGenerators:
         self.now = datetime.utcnow()
         self.data_config = data_config
         self.all_account_holder_retailers: dict = {}
-        self.all_rewards: list = []
+        self.allocated_rewards: list = []
+        self.unallocated_rewards: list = []
         self.account_holders_by_retailer: dict = {}
 
     def get_account_holders_by_retailer(self):
@@ -139,7 +140,7 @@ class PolarisGenerators:
 
         for reward_count in range(1, self.data_config.allocated_rewards + 1):
 
-            reward = self.all_rewards.pop()
+            reward = self.allocated_rewards.pop()
 
             account_holder_rewards.append(
                 [
@@ -171,7 +172,7 @@ class PolarisGenerators:
 
         for reward_count in range(1, self.data_config.pending_rewards + 1):
 
-            reward = self.all_rewards.pop()
+            reward = self.unallocated_rewards.pop()
 
             account_holder_pending_rewards.append(
                 [
