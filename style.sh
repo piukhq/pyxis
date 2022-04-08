@@ -1,6 +1,10 @@
 #!/bin/sh
 
-pipenv run black . && \
-pipenv run flake8 . && \
-pipenv run isort . && \
-pipenv run xenon --no-assert --max-average A --max-modules B --max-absolute B .
+pipenv shell "\
+black . && \
+flake8 . && \
+isort . && \
+xenon --no-assert -a A -m B -b B . && \
+mypy .
+exit\
+"

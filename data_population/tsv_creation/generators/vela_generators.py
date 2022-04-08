@@ -104,7 +104,7 @@ class VelaGenerators:
                 randint(1, self.data_config.retailers),  # retailer_rewards.id fkey
             ]
             if additionals is not None:
-                data.extend(additionals)  # type: ignore
+                data.extend(additionals)
             transactions.append(data)
         return transactions
 

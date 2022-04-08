@@ -46,9 +46,10 @@ class DataTaskHandler:
 
         logger.info(f"{db_name.upper()}: Beginning database re-population ...")
 
-        connection = DB_CONNECTION_URI.replace("/postgres?", f"/{db_name}?")
+        connection_string = DB_CONNECTION_URI.replace("/postgres?", f"/{db_name}?")
+        connection = psycopg2.connect(connection_string)
 
-        with psycopg2.connect(connection) as connection:
+        with connection:
             with connection.cursor() as cursor:
                 for tsv_info in tsv_info_list:
 
@@ -87,6 +88,7 @@ class DataTaskHandler:
                         cursor.execute(update_seq_statement)
                         logger.info(f"{db_name.upper()}: {table_name}: Successfully update sequence")
 
+        connection.close()
         logger.info(f"{db_name.upper()}: All tables successfully repopulated")
 
     @property
