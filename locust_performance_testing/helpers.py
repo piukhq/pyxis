@@ -10,6 +10,7 @@ from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
 from locust import task
 from locust.exception import StopUser
+from psycopg2 import pool
 
 import settings as s
 
@@ -21,6 +22,12 @@ retailer_count = None  # value assigned by get_polaris_retailer_count()
 headers: dict = {}  # value assigned by get_headers()
 
 logger = logging.getLogger("LocustHandler")
+
+try:
+    polaris_connection_string = s.DB_CONNECTION_URI.replace("/postgres?", f"/{s.POLARIS_DB}?")
+    polaris_connection_pool = pool.SimpleConnectionPool(1, 20, polaris_connection_string)
+except Exception:
+    logger.error("Failed to create PostgreSQL connection pool")
 
 
 def repeatable_task():  # type: ignore
@@ -186,35 +193,36 @@ def get_account_holder_information_via_cursor_sequential(
     """
     logger.info(f"Fetching account information for {email}")
 
-    connection = s.DB_CONNECTION_URI.replace("/postgres?", f"/{s.POLARIS_DB}?")
+    connection = polaris_connection_pool.getconn()
 
-    with psycopg2.connect(connection) as connection:
-        with connection.cursor() as cursor:
+    with connection.cursor() as cursor:
 
-            total_retry_time = 0
+        total_retry_time = 0
 
-            while total_retry_time < timeout:
+        while total_retry_time < timeout:
 
-                query = "SELECT email, account_number, account_holder_uuid from account_holder WHERE email = %s ;"
+            query = "SELECT email, account_number, account_holder_uuid from account_holder WHERE email = %s ;"
 
-                try:
-                    cursor.execute(query, (email,))
-                    result = cursor.fetchone()
-                except Exception:
-                    raise StopUser("Unable to direct fetch account_holder information from db")
+            try:
+                cursor.execute(query, (email,))
+                result = cursor.fetchone()
+            except Exception:
+                raise StopUser("Unable to direct fetch account_holder information from db")
 
-                if result[1] is not None and result[2] is not None:
-                    # need to ensure we have both account_number and account_holder_uuid
-                    email = result[0]
-                    account_number = result[1]
-                    account_holder_id = result[2]
-                    return AccountHolder(email, account_number, account_holder_id)
+            if result[1] is not None and result[2] is not None:
+                # need to ensure we have both account_number and account_holder_uuid
+                email = result[0]
+                account_number = result[1]
+                account_holder_id = result[2]
+                return AccountHolder(email, account_number, account_holder_id)
 
-                time.sleep(retry_period)
-                total_retry_time += retry_period  # type: ignore
+            time.sleep(retry_period)
+            total_retry_time += retry_period  # type: ignore
 
-                if total_retry_time >= timeout:
-                    logger.info(
-                        f"Timeout ({timeout})s on direct fetch of account information with email: " f"{email}"
-                    )  # only if timeout occurs
-                    return AccountHolder("", "", "")
+            if total_retry_time >= timeout:
+                logger.info(
+                    f"Timeout ({timeout})s on direct fetch of account information with email: " f"{email}"
+                )  # only if timeout occurs
+                return AccountHolder("", "", "")
+
+    polaris_connection_pool.putconn(connection)  # returns connection to pool
