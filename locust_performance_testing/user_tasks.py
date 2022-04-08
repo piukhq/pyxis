@@ -39,12 +39,12 @@ class UserTasks(SequentialTaskSet):
         self.account_number = ""
         self.account_uuid = ""
         self.now = int(datetime.timestamp(datetime.now()))
-        self.accounts_to_fetch = []
-        self.accounts = []
+        self.accounts_to_fetch: list[str] = []
+        self.accounts: list[AccountHolder] = []
 
     # ---------------------------------POLARIS ENDPOINTS---------------------------------
 
-    def get_account_holder(self):
+    def get_account_holder(self) -> AccountHolder:
         if self.accounts:
             return random.choice(list(self.accounts))
         else:
@@ -88,7 +88,7 @@ class UserTasks(SequentialTaskSet):
                     self.accounts.append(get_account_holder_information_via_cursor_sequential(email, 60, 0.5))
 
     @task
-    def internal_update_account_information(self):
+    def internal_update_account_information(self) -> None:
         """
         Helper function (not endpoint function) to populate account data by direct db query (replaces BPL callback)
         """

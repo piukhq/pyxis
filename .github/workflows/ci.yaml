@@ -19,8 +19,9 @@ jobs:
       - run: pipenv install --dev --system --deploy --ignore-pipfile
       - run: xenon --no-assert --max-average A --max-modules B --max-absolute B .
       - run: flake8 .
-      - run: black --line-length=120 --check .
-      - run: isort --check --line-length 120 --profile black .
+      - run: black --check .
+      - run: isort --check .
+      - run: mypy .
   release:
     if: github.ref == 'refs/heads/master' && github.event_name == 'push'
     name: release
