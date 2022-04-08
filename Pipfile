@@ -12,6 +12,7 @@ azure-keyvault-secrets = "*"
 azure-identity = "*"
 jinja2 = "==3.0.3"
 itsdangerous = "==2.0.1"
+sqlalchemy = "*"
 
 [dev-packages]
 black = "*"
