@@ -135,41 +135,45 @@ def get_account_holder_information_via_cursor_bulk(
     accounts_to_fetch = all_accounts_to_fetch
     account_data = []
 
-    with polaris_connection.cursor() as cursor:
+    with polaris_connection:
 
-        total_retry_time = 0
+        with polaris_connection.cursor() as cursor:
 
-        while total_retry_time < timeout and accounts_to_fetch:
+            total_retry_time = 0
 
-            query = "SELECT email, account_number, account_holder_uuid from account_holder WHERE email IN %s ;"
+            while total_retry_time < timeout and accounts_to_fetch:
 
-            try:
-                cursor.execute(query, (tuple(accounts_to_fetch),))
-                results = cursor.fetchall()
-            except Exception:
-                raise StopUser("Unable to direct fetch account_holder information from db")
+                query = "SELECT email, account_number, account_holder_uuid from account_holder WHERE email IN %s ;"
 
-            for result in results:
-                if result[1] is not None and result[2] is not None:
-                    # need to ensure we have both account_number and account_holder_uuid
-                    email = result[0]
-                    account_number = result[1]
-                    account_holder_id = result[2]
-                    account_data.append(AccountHolder(email, account_number, account_holder_id))
-                    accounts_to_fetch.remove(email)
-                    logger.info(f"Found information for user {email} and removed from fetch list")
+                try:
+                    cursor.execute(query, (tuple(accounts_to_fetch),))
+                    results = cursor.fetchall()
+                except Exception:
+                    raise StopUser("Unable to direct fetch account_holder information from db")
 
-            time.sleep(retry_period)
-            total_retry_time += retry_period  # type: ignore
+                for result in results:
+                    if result[1] is not None and result[2] is not None:
+                        # need to ensure we have both account_number and account_holder_uuid
+                        email = result[0]
+                        account_number = result[1]
+                        account_holder_id = result[2]
+                        account_data.append(AccountHolder(email, account_number, account_holder_id))
+                        accounts_to_fetch.remove(email)
+                        logger.info(f"Found information for user {email} and removed from fetch list")
 
-            if total_retry_time >= timeout:
-                logger.info(
-                    f"Timeout ({timeout})s on direct fetch of account information with remaining emails: "
-                    f"{accounts_to_fetch}"
-                )  # only if timeout occurs
+                time.sleep(retry_period)
+                total_retry_time += retry_period  # type: ignore
 
-            if not accounts_to_fetch:
-                logger.info(f"Successfully fetched all account information from db in {time.time() - t} seconds")
+                if total_retry_time >= timeout:
+                    logger.info(
+                        f"Timeout ({timeout})s on direct fetch of account information with remaining emails: "
+                        f"{accounts_to_fetch}"
+                    )  # only if timeout occurs
+
+                if not accounts_to_fetch:
+                    logger.info(f"Successfully fetched all account information from db in {time.time() - t} seconds")
+
+    polaris_connection.close()
 
     return account_data
 
@@ -187,31 +191,34 @@ def get_account_holder_information_via_cursor_sequential(
     """
     logger.info(f"Fetching account information for {email}")
 
-    with polaris_connection.cursor() as cursor:
+    with polaris_connection:
+        with polaris_connection.cursor() as cursor:
 
-        total_retry_time = 0.0
-        account_holder: Optional[AccountHolder] = None
+            total_retry_time = 0.0
+            account_holder: Optional[AccountHolder] = None
 
-        while total_retry_time < timeout:
+            while total_retry_time < timeout:
 
-            query = "SELECT email, account_number, account_holder_uuid from account_holder WHERE email = %s ;"
+                query = "SELECT email, account_number, account_holder_uuid from account_holder WHERE email = %s ;"
 
-            try:
-                cursor.execute(query, (email,))
-                result = cursor.fetchone()
-            except Exception:
-                raise StopUser("Unable to direct fetch account_holder information from db")
+                try:
+                    cursor.execute(query, (email,))
+                    result = cursor.fetchone()
+                except Exception:
+                    raise StopUser("Unable to direct fetch account_holder information from db")
 
-            if result[1] is not None and result[2] is not None:
-                # need to ensure we have both account_number and account_holder_uuid
-                email = result[0]
-                account_number = result[1]
-                account_holder_id = result[2]
-                account_holder = AccountHolder(email, account_number, account_holder_id)
-                break
+                if result[1] is not None and result[2] is not None:
+                    # need to ensure we have both account_number and account_holder_uuid
+                    email = result[0]
+                    account_number = result[1]
+                    account_holder_id = result[2]
+                    account_holder = AccountHolder(email, account_number, account_holder_id)
+                    break
 
-            time.sleep(retry_period)
-            total_retry_time += retry_period
+                time.sleep(retry_period)
+                total_retry_time += retry_period
+
+    polaris_connection.close()
 
     if account_holder is None:
         logger.info(
