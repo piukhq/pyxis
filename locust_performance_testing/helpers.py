@@ -25,7 +25,7 @@ logger = logging.getLogger("LocustHandler")
 
 try:
     polaris_connection_string: str = s.DB_CONNECTION_URI.replace("/postgres?", f"/{s.POLARIS_DB}?")
-    polaris_connection = psycopg2.connect(polaris_connection_string)
+
 except Exception:
     logger.error("Failed to create PostgreSQL connection pool")
 
@@ -87,13 +87,15 @@ def get_polaris_retailer_count() -> int:
     global retailer_count
 
     if not retailer_count:
-        with polaris_connection:
+        with psycopg2.connect(polaris_connection_string) as polaris_connection:
             with polaris_connection.cursor() as cursor:
                 query = "SELECT count(*) from retailer_config;"
                 cursor.execute(query)
                 results = cursor.fetchone()
 
                 retailer_count = int(results[0])
+
+        polaris_connection.close()
 
     return retailer_count
 
@@ -135,7 +137,7 @@ def get_account_holder_information_via_cursor_bulk(
     accounts_to_fetch = all_accounts_to_fetch
     account_data = []
 
-    with polaris_connection:
+    with psycopg2.connect(polaris_connection_string) as polaris_connection:
 
         with polaris_connection.cursor() as cursor:
 
@@ -191,7 +193,8 @@ def get_account_holder_information_via_cursor_sequential(
     """
     logger.info(f"Fetching account information for {email}")
 
-    with polaris_connection:
+    with psycopg2.connect(polaris_connection_string) as polaris_connection:
+
         with polaris_connection.cursor() as cursor:
 
             total_retry_time = 0.0
