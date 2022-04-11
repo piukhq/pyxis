@@ -1,5 +1,4 @@
 from locust import HttpUser, constant, events
-from locust.env import Environment
 
 from locust_performance_testing.helpers import set_initial_starting_pk, set_task_repeats
 from locust_performance_testing.user_tasks import UserTasks
@@ -29,6 +28,6 @@ class WebsiteUser(HttpUser):
 
 
 @events.test_start.add_listener
-def on_test_start(environment: Environment, **kwargs) -> None:  # type: ignore
+def on_test_start(environment, **kwargs) -> None:  # type: ignore
     print("Test started")
     set_initial_starting_pk()

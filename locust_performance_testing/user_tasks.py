@@ -51,7 +51,10 @@ class UserTasks(SequentialTaskSet):
 
         repeats = get_task_repeats()
 
-        accounts_to_fetch = max(repeats["post_transaction"], repeats["get_marketing_unsubscribe"])
+        # We get a 'group' of account_holders from the db equal to the number of transactions for this user, as we
+        # ideally want to send 1 transaction per account holder.
+
+        accounts_to_fetch = repeats["post_transaction"]
 
         accounts = fetch_preloaded_account_holder_information(accounts_to_fetch)
 
@@ -121,7 +124,6 @@ class UserTasks(SequentialTaskSet):
         self.client.get(
             f"{self.url_prefix}/loyalty/retailer_{account.retailer}/marketing/unsubscribe?u="
             f"{account.account_holder_uuid}",
-            headers=self.headers["polaris_key"],
             name=f"{self.url_prefix}/loyalty/<retailer_slug>/marketing/unsubscribe?u=<account_uuid>",
         )
 
@@ -145,7 +147,7 @@ class UserTasks(SequentialTaskSet):
             name=f"{self.url_prefix}/retailers/<retailer_slug>/transaction",
         )
 
-    #  endpoint not yet implemented but leaving for later -
+    #  endpoint not yet implemented but leaving for later
     @repeatable_task()
     def delete_account(self) -> None:
 

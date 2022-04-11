@@ -54,26 +54,6 @@ def get_task_repeats() -> dict:
     return repeat_tasks
 
 
-@dataclass
-class AccountHolder:
-    email: str
-    account_number: str
-    account_holder_uuid: str
-    retailer: int
-    account_holder_id: int
-    marketing: bool = True
-
-
-def account_holder_gen(array: list[AccountHolder]) -> Iterator[AccountHolder]:
-    index = 0
-    while True:
-        yield array[index]
-        if index < len(array) - 1:
-            index += 1
-        else:
-            index = 0
-
-
 def load_secrets() -> dict:
     global all_secrets
 
@@ -155,6 +135,26 @@ def get_headers() -> dict:
             )
 
     return headers
+
+
+@dataclass
+class AccountHolder:
+    email: str
+    account_number: str
+    account_holder_uuid: str
+    retailer: int
+    account_holder_id: int
+    marketing: bool = True
+
+
+def account_holder_gen(array: list[AccountHolder]) -> Iterator[AccountHolder]:
+    index = 0
+    while True:
+        yield array[index]
+        if index < len(array) - 1:
+            index += 1
+        else:
+            index = 0
 
 
 def set_initial_starting_pk() -> None:
