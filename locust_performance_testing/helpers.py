@@ -1,12 +1,11 @@
 import logging
-import random
-import time
 
 from dataclasses import dataclass
 from functools import wraps
 from typing import Optional
 
 import psycopg2
+import redis
 
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
@@ -19,17 +18,15 @@ repeat_tasks: dict = {}  # value assigned by locustfile
 
 all_secrets: dict = {}  # value assigned by load_secrets()
 retailer_count: Optional[int] = None  # value assigned by get_polaris_retailer_count()
-account_holder_count: Optional[int]  = None
+account_holder_count: Optional[int] = None
 
 headers: dict = {}  # value assigned by get_headers()
 
 logger = logging.getLogger("LocustHandler")
 
-try:
-    polaris_connection_string: str = s.DB_CONNECTION_URI.replace("/postgres?", f"/{s.POLARIS_DB}?")
+r = redis.from_url(s.REDIS_URL)
 
-except Exception:
-    logger.error("Failed to create PostgreSQL connection pool")
+polaris_connection_string: str = s.DB_CONNECTION_URI.replace("/postgres?", f"/{s.POLARIS_DB}?")
 
 
 def repeatable_task():  # type: ignore
@@ -50,6 +47,21 @@ def repeatable_task():  # type: ignore
 def set_task_repeats(repeats: dict) -> None:
     global repeat_tasks
     repeat_tasks = repeats
+
+
+def get_task_repeats() -> dict:
+    global repeat_tasks
+    return repeat_tasks
+
+
+def gen(array):
+    index = 0
+    while True:
+        yield array[index]
+        if index < len(array) - 1:
+            index += 1
+        else:
+            index = 0
 
 
 def load_secrets() -> dict:
@@ -78,6 +90,7 @@ class AccountHolder:
     account_number: str
     account_holder_uuid: str
     retailer: int
+    account_holder_id: int
     marketing: bool = True
 
 
@@ -144,6 +157,16 @@ def get_headers() -> dict:
     return headers
 
 
+def set_initial_starting_pk():
+    r.set("pyxis_starting_pk", 1)
+
+
+def get_and_increment_starting_pk(increment):
+    starting_pk = int(r.get("pyxis_starting_pk").decode())
+    r.set("pyxis_starting_pk", starting_pk + increment)
+    return starting_pk
+
+
 def fetch_preloaded_account_holder_information(number_of_accounts: int = 1) -> list[AccountHolder]:
     """
     Tries to get account holder information directly from polaris in a retry loop.
@@ -152,24 +175,25 @@ def fetch_preloaded_account_holder_information(number_of_accounts: int = 1) -> l
     :return: dictionary of {account_holder_email: {account_number: 1234, account_holder_uuid: 1a2b3c}}.
     """
 
-    starting_pk = random.randint(1, get_polaris_account_holder_count())
+    starting_pk = get_and_increment_starting_pk(number_of_accounts)
 
-    # id_fetch_list = [i for i in range(starting_pk, starting_pk + number_of_accounts)]
+    id_fetch_list = [i for i in range(starting_pk, starting_pk + number_of_accounts)]
 
     all_account_holders = []
 
-    logger.info(f"Fetching account information for ids: {[i for i in range(starting_pk, starting_pk + number_of_accounts)]}")
+    logger.info(f"Fetching account information for ids: {id_fetch_list}")
 
     with psycopg2.connect(polaris_connection_string) as polaris_connection:
 
         with polaris_connection.cursor() as cursor:
 
-            query = "select email, account_number, account_holder_uuid, retailer_id from account_holder limit %s offset %s   ;"
+            query = (
+                "select email, account_number, account_holder_uuid, retailer_id, id from account_holder WHERE id IN %s;"
+            )
 
             try:
-                cursor.execute(query, (number_of_accounts, starting_pk - 1))
+                cursor.execute(query, (tuple(id_fetch_list),))
                 results = cursor.fetchall()
-                print(results)
             except Exception:
                 raise StopUser("Unable to direct fetch account_holder information from db")
 
@@ -179,11 +203,13 @@ def fetch_preloaded_account_holder_information(number_of_accounts: int = 1) -> l
                 account_number = result[1]
                 account_holder_uuid = result[2]
                 retailer_id = result[3]
+                account_holder_id = result[4]
                 account_holder = AccountHolder(
                     email=email,
                     account_number=account_number,
-                    account_holder_uuid= account_holder_uuid,
-                    retailer=retailer_id
+                    account_holder_uuid=account_holder_uuid,
+                    retailer=retailer_id,
+                    account_holder_id=account_holder_id,
                 )
 
                 all_account_holders.append(account_holder)

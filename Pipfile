@@ -12,6 +12,8 @@ azure-keyvault-secrets = "*"
 azure-identity = "*"
 jinja2 = "==3.0.3"
 itsdangerous = "==2.0.1"
+redis = "*"
+werkzeug = "==2.0.3"
 
 [dev-packages]
 black = "*"
