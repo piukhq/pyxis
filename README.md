@@ -20,4 +20,4 @@ python commands.py --help
 # Running Performance Tests:
 To start up locust, run:
 
-`pipenv run locust --host=https://performance.sandbox.gb.bink.com --locustfile=PATH_TO_FILE`
+`pipenv run locust --host=https://perf-bpl.sandbox.gb.bink.com --locustfile=PATH_TO_FILE`

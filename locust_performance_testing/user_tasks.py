@@ -1,20 +1,22 @@
+import logging
 import random
+import time
 
 from datetime import datetime
+from typing import Iterator
 from uuid import uuid4
 
 from faker import Faker
-from locust import SequentialTaskSet, task
+from locust import SequentialTaskSet
 from locust.exception import StopUser
-
-import settings
 
 from locust_performance_testing.helpers import (
     AccountHolder,
-    get_account_holder_information_via_cursor_bulk,
-    get_account_holder_information_via_cursor_sequential,
+    account_holder_gen,
+    fetch_preloaded_account_holder_information,
     get_headers,
     get_polaris_retailer_count,
+    get_task_repeats,
     load_secrets,
     repeatable_task,
 )
@@ -39,16 +41,24 @@ class UserTasks(SequentialTaskSet):
         self.account_number = ""
         self.account_uuid = ""
         self.now = int(datetime.timestamp(datetime.now()))
-        self.accounts_to_fetch: list[str] = []
         self.accounts: list[AccountHolder] = []
+        self.begin_time: float = time.time()
+        self.account_holders: Iterator[AccountHolder] = None  # type: ignore
 
     # ---------------------------------POLARIS ENDPOINTS---------------------------------
 
-    def get_account_holder(self) -> AccountHolder:
-        if self.accounts:
-            return random.choice(list(self.accounts))
-        else:
-            return AccountHolder("", "", "")
+    def on_start(self) -> None:
+
+        repeats = get_task_repeats()
+
+        # We get a 'group' of account_holders from the db equal to the number of transactions for this user, as we
+        # ideally want to send 1 transaction per account holder.
+
+        accounts_to_fetch = repeats["post_transaction"]
+
+        accounts = fetch_preloaded_account_holder_information(accounts_to_fetch)
+
+        self.account_holders = account_holder_gen(accounts)
 
     @repeatable_task()
     def post_account_holder(self) -> None:
@@ -74,36 +84,22 @@ class UserTasks(SequentialTaskSet):
             "third_party_identifier": "perf",
         }
 
-        with self.client.post(
+        self.client.post(
             f"{self.url_prefix}/loyalty/{self.retailer_slug}/accounts/enrolment",
             json=data,
             headers=self.headers["polaris_key"],
             name=f"{self.url_prefix}/loyalty/<retailer_slug>/accounts/enrolment",
-        ) as response:
-
-            if response.status_code == 202:
-                if settings.FETCH_BULK:
-                    self.accounts_to_fetch.append(email)
-                else:
-                    self.accounts.append(get_account_holder_information_via_cursor_sequential(email, 60, 0.5))
-
-    @task
-    def internal_update_account_information(self) -> None:
-        """
-        Helper function (not endpoint function) to populate account data by direct db query (replaces BPL callback)
-        """
-        if settings.FETCH_BULK:
-            self.accounts = get_account_holder_information_via_cursor_bulk(self.accounts_to_fetch, 60, 0.8)
+        )
 
     @repeatable_task()
     def post_get_by_credentials(self) -> None:
 
-        account = self.get_account_holder()
+        account: AccountHolder = next(self.account_holders)
 
         data = {"email": account.email, "account_number": account.account_number}
 
         self.client.post(
-            f"{self.url_prefix}/loyalty/{self.retailer_slug}/accounts/getbycredentials",
+            f"{self.url_prefix}/loyalty/retailer_{account.retailer}/accounts/getbycredentials",
             json=data,
             headers=self.headers["polaris_key"],
             name=f"{self.url_prefix}/loyalty/<retailer_slug>/accounts/getbycredentials",
@@ -112,10 +108,10 @@ class UserTasks(SequentialTaskSet):
     @repeatable_task()
     def get_account(self) -> None:
 
-        account = self.get_account_holder()
+        account: AccountHolder = next(self.account_holders)
 
         self.client.get(
-            f"{self.url_prefix}/loyalty/{self.retailer_slug}/accounts/{account.account_holder_uuid}",
+            f"{self.url_prefix}/loyalty/retailer_{account.retailer}/accounts/{account.account_holder_uuid}",
             headers=self.headers["polaris_key"],
             name=f"{self.url_prefix}/loyalty/<retailer_slug>/accounts/<account_uuid>",
         )
@@ -123,18 +119,18 @@ class UserTasks(SequentialTaskSet):
     @repeatable_task()
     def get_marketing_unsubscribe(self) -> None:
 
-        account = self.get_account_holder()
+        account: AccountHolder = next(self.account_holders)
 
         self.client.get(
-            f"{self.url_prefix}/loyalty/{self.retailer_slug}/marketing/unsubscribe?u={account.account_holder_uuid}",
-            headers=self.headers["polaris_key"],
+            f"{self.url_prefix}/loyalty/retailer_{account.retailer}/marketing/unsubscribe?u="
+            f"{account.account_holder_uuid}",
             name=f"{self.url_prefix}/loyalty/<retailer_slug>/marketing/unsubscribe?u=<account_uuid>",
         )
 
     @repeatable_task()
     def post_transaction(self) -> None:
 
-        account = self.get_account_holder()
+        account: AccountHolder = next(self.account_holders)
 
         data = {
             "id": f"TX{uuid4()}",
@@ -145,7 +141,7 @@ class UserTasks(SequentialTaskSet):
         }
 
         self.client.post(
-            f"{self.url_prefix}/retailers/{self.retailer_slug}/transaction",
+            f"{self.url_prefix}/retailers/retailer_{account.retailer}/transaction",
             headers=self.headers["vela_key"],
             json=data,
             name=f"{self.url_prefix}/retailers/<retailer_slug>/transaction",
@@ -155,7 +151,7 @@ class UserTasks(SequentialTaskSet):
     @repeatable_task()
     def delete_account(self) -> None:
 
-        account = self.get_account_holder()
+        account: AccountHolder = next(self.account_holders)
 
         with self.client.delete(
             f"{self.url_prefix}/loyalty/{self.retailer_slug}/accounts/{account.account_holder_uuid}",
@@ -169,4 +165,6 @@ class UserTasks(SequentialTaskSet):
 
     @repeatable_task()
     def stop_locust_after_test_suite(self) -> None:
+        logger = logging.getLogger("UserTimer")
+        logger.info(f"User completed all tasks in {time.time() - self.begin_time} seconds.")
         raise StopUser()

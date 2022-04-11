@@ -21,6 +21,8 @@ VAULT_URL = env_var("VAULT_URL", "")
 POLARIS_AUTH_KEY_NAME = env_var("POLARIS_AUTH_KEY_NAME", "bpl-polaris-api-auth-token")
 VELA_AUTH_KEY_NAME = env_var("VELA_AUTH_KEY_NAME", "bpl-vela-api-auth-token")
 
+REDIS_URL = env_var("REDIS_URL", "redis://localhost:6379/0")
+
 DB_CONNECTION_URI = env_var("DB_CONNECTION_URI", "")
 POLARIS_DB = env_var("POLARIS_DB", "polaris")
 VELA_DB = env_var("VELA_DB", "vela")
