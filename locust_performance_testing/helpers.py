@@ -162,8 +162,16 @@ def set_initial_starting_pk() -> None:
 
 
 def get_and_increment_starting_pk(increment: int) -> int:
+
+    max_id = get_polaris_account_holder_count()
+
     starting_pk = int(r.get("pyxis_starting_pk").decode())  # type: ignore
+
+    if starting_pk + increment > max_id:  # If we get to the end of the account_holder table, restart at 1.
+        starting_pk = 1
+
     r.set("pyxis_starting_pk", starting_pk + increment)
+
     return starting_pk
 
 
