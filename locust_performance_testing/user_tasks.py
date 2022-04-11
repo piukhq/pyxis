@@ -1,4 +1,6 @@
+import logging
 import random
+import time
 
 from datetime import datetime
 from uuid import uuid4
@@ -28,9 +30,11 @@ class UserTasks(SequentialTaskSet):
     be called by the User MUST have the @repeatable_task() decorator, and must also be included in the 'repeats'
     dictionary in the parent locustfile.
     """
+    logger = logging.getLogger("UserTimer")
 
     def __init__(self, parent) -> None:  # type: ignore
         super().__init__(parent)
+        self.begin_time: float = time.time()
         self.url_prefix = "/bpl"
         self.keys = load_secrets()
         self.headers = get_headers()
@@ -169,4 +173,5 @@ class UserTasks(SequentialTaskSet):
 
     @repeatable_task()
     def stop_locust_after_test_suite(self) -> None:
+        self.logger.info(f"User finished in {time.time() - self.begin_time} seconds")
         raise StopUser()
