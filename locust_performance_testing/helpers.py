@@ -2,7 +2,7 @@ import logging
 
 from dataclasses import dataclass
 from functools import wraps
-from typing import Optional
+from typing import Iterator, Optional
 
 import psycopg2
 import redis
@@ -54,7 +54,17 @@ def get_task_repeats() -> dict:
     return repeat_tasks
 
 
-def gen(array):
+@dataclass
+class AccountHolder:
+    email: str
+    account_number: str
+    account_holder_uuid: str
+    retailer: int
+    account_holder_id: int
+    marketing: bool = True
+
+
+def account_holder_gen(array: list[AccountHolder]) -> Iterator[AccountHolder]:
     index = 0
     while True:
         yield array[index]
@@ -82,16 +92,6 @@ def load_secrets() -> dict:
         logger.info("Successfully loaded secrets")
 
     return all_secrets
-
-
-@dataclass
-class AccountHolder:
-    email: str
-    account_number: str
-    account_holder_uuid: str
-    retailer: int
-    account_holder_id: int
-    marketing: bool = True
 
 
 def get_polaris_retailer_count() -> int:
@@ -157,12 +157,12 @@ def get_headers() -> dict:
     return headers
 
 
-def set_initial_starting_pk():
+def set_initial_starting_pk() -> None:
     r.set("pyxis_starting_pk", 1)
 
 
-def get_and_increment_starting_pk(increment):
-    starting_pk = int(r.get("pyxis_starting_pk").decode())
+def get_and_increment_starting_pk(increment: int) -> int:
+    starting_pk = int(r.get("pyxis_starting_pk").decode())  # type: ignore
     r.set("pyxis_starting_pk", starting_pk + increment)
     return starting_pk
 

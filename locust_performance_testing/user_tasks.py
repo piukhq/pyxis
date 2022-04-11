@@ -3,6 +3,7 @@ import random
 import time
 
 from datetime import datetime
+from typing import Iterator
 from uuid import uuid4
 
 from faker import Faker
@@ -11,8 +12,8 @@ from locust.exception import StopUser
 
 from locust_performance_testing.helpers import (
     AccountHolder,
+    account_holder_gen,
     fetch_preloaded_account_holder_information,
-    gen,
     get_headers,
     get_polaris_retailer_count,
     get_task_repeats,
@@ -42,11 +43,11 @@ class UserTasks(SequentialTaskSet):
         self.now = int(datetime.timestamp(datetime.now()))
         self.accounts: list[AccountHolder] = []
         self.begin_time: float = time.time()
-        self.account_holders: iter = None
+        self.account_holders: Iterator[AccountHolder] = None  # type: ignore
 
     # ---------------------------------POLARIS ENDPOINTS---------------------------------
 
-    def on_start(self):
+    def on_start(self) -> None:
 
         repeats = get_task_repeats()
 
@@ -54,7 +55,7 @@ class UserTasks(SequentialTaskSet):
 
         accounts = fetch_preloaded_account_holder_information(accounts_to_fetch)
 
-        self.account_holders = gen(accounts)
+        self.account_holders = account_holder_gen(accounts)
 
     @repeatable_task()
     def post_account_holder(self) -> None:
@@ -90,7 +91,7 @@ class UserTasks(SequentialTaskSet):
     @repeatable_task()
     def post_get_by_credentials(self) -> None:
 
-        account = next(self.account_holders)
+        account: AccountHolder = next(self.account_holders)
 
         data = {"email": account.email, "account_number": account.account_number}
 
@@ -104,7 +105,7 @@ class UserTasks(SequentialTaskSet):
     @repeatable_task()
     def get_account(self) -> None:
 
-        account = next(self.account_holders)
+        account: AccountHolder = next(self.account_holders)
 
         self.client.get(
             f"{self.url_prefix}/loyalty/retailer_{account.retailer}/accounts/{account.account_holder_uuid}",
@@ -115,7 +116,7 @@ class UserTasks(SequentialTaskSet):
     @repeatable_task()
     def get_marketing_unsubscribe(self) -> None:
 
-        account = next(self.account_holders)
+        account: AccountHolder = next(self.account_holders)
 
         self.client.get(
             f"{self.url_prefix}/loyalty/retailer_{account.retailer}/marketing/unsubscribe?u="
@@ -127,7 +128,7 @@ class UserTasks(SequentialTaskSet):
     @repeatable_task()
     def post_transaction(self) -> None:
 
-        account = next(self.account_holders)
+        account: AccountHolder = next(self.account_holders)
 
         data = {
             "id": f"TX{uuid4()}",
@@ -148,7 +149,7 @@ class UserTasks(SequentialTaskSet):
     @repeatable_task()
     def delete_account(self) -> None:
 
-        account = next(self.account_holders)
+        account: AccountHolder = next(self.account_holders)
 
         with self.client.delete(
             f"{self.url_prefix}/loyalty/{self.retailer_slug}/accounts/{account.account_holder_uuid}",
