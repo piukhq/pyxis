@@ -3,7 +3,6 @@ import uuid
 from datetime import datetime, timedelta
 from random import choice, randint
 
-from data_population.common.utils import random_ascii
 from data_population.data_config import DataConfig
 from data_population.tsv_creation.fixtures.polaris import AccountHolderStatuses, marketing_preferences, profile_config
 from settings import fake
@@ -13,6 +12,19 @@ class PolarisGenerators:
     def __init__(self, data_config: DataConfig) -> None:
         self.now = datetime.utcnow()
         self.data_config = data_config
+        self.all_account_holder_retailers: dict = {}
+        self.allocated_rewards: list = []
+        self.unallocated_rewards: list = []
+        self.account_holders_by_retailer: dict = {}
+
+    def get_account_holders_by_retailer(self):
+        if not self.account_holders_by_retailer:
+            for retailer in range(1, self.data_config.retailers + 1):
+                self.account_holders_by_retailer[retailer] = [
+                    k for k, v in self.all_account_holder_retailers.items() if v == retailer
+                ]
+
+        return self.account_holders_by_retailer
 
     def retailer_config(self) -> list:
         """Generates n retailer_configs (n defined in data_config)"""
@@ -39,21 +51,27 @@ class PolarisGenerators:
 
     def account_holder(self) -> list:
         """Generates n account_holders (n defined in data_config)"""
+
         account_holders = []
         for count in range(1, self.data_config.account_holders + 1):
+            account_id = count
+            account_holder_uuid = uuid.uuid4()
+            retailer_id = randint(1, self.data_config.retailers)
             account_holders.append(
                 [
                     f"user_{count}@performancetest.com",  # email
                     AccountHolderStatuses.ACTIVE,  # status
                     f"{fake.credit_card_number()}_{count}",  # account_number
                     self.now,  # created_at
-                    randint(1, self.data_config.retailers),  # retailer_id
+                    retailer_id,  # retailer_id
                     self.now,  # updated_at
-                    uuid.uuid4(),  # account_holder_uuid
-                    count,  # id
+                    account_holder_uuid,  # account_holder_uuid
+                    account_id,  # id
                     uuid.uuid4(),  # opt_out_token
                 ]
             )
+            self.all_account_holder_retailers[account_id] = retailer_id
+
         return account_holders
 
     def account_holder_profile(self) -> list:
@@ -97,44 +115,49 @@ class PolarisGenerators:
     def account_holder_campaign_balance(self) -> list:
         """Generates account_holder_campaign_balances (n defined in data_config (1-1 w/account_holders))"""
         account_holder_campaign_balances = []
-        total_campaigns = self.data_config.retailers * self.data_config.campaigns_per_retailer
-        for count in range(1, self.data_config.account_holders + 1):
+        for account_holder_id in range(1, self.data_config.account_holders + 1):
+
+            retailer_id = self.all_account_holder_retailers[account_holder_id]
+            campaign_slug = f"campaign_{retailer_id * self.data_config.campaigns_per_retailer}"
+
             account_holder_campaign_balances.append(
                 [
                     self.now,  # created_at
                     self.now,  # updated_at
-                    count,  # id
-                    f"campaign_{randint(1, total_campaigns)}",  # campaign_slug
+                    account_holder_id,  # id
+                    campaign_slug,  # campaign_slug
                     randint(100, 1000),  # balance
-                    count,  # account_holder_id
+                    account_holder_id,  # account_holder_id
                 ]
             )
         return account_holder_campaign_balances
 
     def account_holder_reward(self) -> list:
         """
-        Generates account_holder_rewards (1-1 w/ account_holders)
+        Generates account_holder_rewards (1-1 w/ data_config.allocated_rewards)
         """
         account_holder_rewards = []
-        total_account_holders = self.data_config.account_holders
-        total_retailers = self.data_config.retailers  # 10
+        account_holders_by_retailer = self.get_account_holders_by_retailer()
 
-        for reward_count in range(1, self.data_config.rewards + 1):
+        for reward_count in range(1, self.data_config.allocated_rewards + 1):
+
+            reward = self.allocated_rewards.pop()
+
             account_holder_rewards.append(
                 [
                     self.now,  # created_at
                     self.now,  # updated_at
-                    str(uuid.uuid4()),  # reward_uuids
-                    random_ascii(),  # code
+                    reward["reward_uuid"],  # reward_uuid
+                    reward["code"],  # code
                     self.now,  # issued_date
                     self.now + timedelta(days=30),  # expiry_date
                     choice(["ISSUED", "CANCELLED", "REDEEMED"]),  # status
-                    self.now,
-                    self.now,
-                    "perftest-reward-slug",  # reward_slug
-                    f"retailer_{randint(1, total_retailers)}",  # retailer_slug
+                    "NULL",  # redeemed_date
+                    "NULL",  # cancelled_date
+                    f"reward_{reward['reward_config_id']}",  # reward_slug
+                    f"retailer_{reward['retailer_id']}",  # retailer_slug
                     str(uuid.uuid4()),  # idempotency_token
-                    randint(1, total_account_holders),  # account_holder_id
+                    choice(account_holders_by_retailer[reward["retailer_id"]]),  # account_holder_id
                     reward_count,  # id
                 ]
             )
@@ -142,27 +165,29 @@ class PolarisGenerators:
 
     def account_holder_pending_reward(self) -> list:
         """
-        Generates account_holder_pending_rewards (1-1 w/ account_holders)
+        Generates account_holder_pending_rewards (1-1 w/ data_config.pending_rewards)
         """
-        account_holder_pending_rewards = []
-        total_account_holders = self.data_config.account_holders
-        total_retailers = self.data_config.retailers
-        total_campaigns = self.data_config.retailers * self.data_config.campaigns_per_retailer
 
-        for reward_count in range(1, self.data_config.rewards + 1):
+        account_holder_pending_rewards = []
+        account_holders_by_retailer = self.get_account_holders_by_retailer()
+
+        for reward_count in range(1, self.data_config.pending_rewards + 1):
+
+            reward = self.unallocated_rewards.pop()
+
             account_holder_pending_rewards.append(
                 [
                     self.now,  # created_at
                     self.now,  # updated_at
                     reward_count,  # id
                     self.now,  # created_date
-                    self.now + timedelta(days=30),  # conversion_date
+                    self.now + timedelta(days=-1),  # conversion_date
                     randint(500, 1000),  # value
-                    f"campaign_{randint(1,total_campaigns)}",
-                    f"reward_{randint(1,total_campaigns)}",  # reward_slug
-                    f"retailer_{randint(1, total_retailers)}",  # retailer_slug
+                    f"campaign_{reward['retailer_id'] * self.data_config.campaigns_per_retailer}",
+                    f"reward_{reward['reward_config_id']}",  # reward_slug
+                    f"retailer_{reward['retailer_id']}",  # retailer_slug
                     str(uuid.uuid4()),  # idempotency_token
-                    randint(1, total_account_holders),  # account_holder_id
+                    choice(account_holders_by_retailer[reward["retailer_id"]]),  # account_holder_id
                 ]
             )
         return account_holder_pending_rewards

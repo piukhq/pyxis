@@ -12,8 +12,8 @@ carina_task_type_ids = {
     "delete-unallocated-rewards": 4,
 }
 
-#  We will generate <data_config.rewards> retry rows for each of the following task types:
-carina_retry_task_types_to_populate = {"reward-issuance": "rewards"}
+#  We will generate retry rows for each of the following task types equal to the sum of their data_config values:
+carina_retry_task_types_to_populate = {"reward-issuance": ["allocated_rewards"]}
 
 
 def generate_carina_type_key_values(data_config: DataConfig) -> dict[int, dict]:
@@ -29,7 +29,7 @@ def generate_carina_type_key_values(data_config: DataConfig) -> dict[int, dict]:
             6: str(uuid4()),  # reward_uuid
             7: random_ascii(10),  # code
             12: str(uuid4()),  # idempotency_token
-            17: random_ascii(5),  # customer_card_ref
+            17: random_ascii(5),  # agent_state_params_raw
         },
         carina_task_type_ids["reward-status-adjustment"]: {
             8: str(uuid4()),  # reward_uuid

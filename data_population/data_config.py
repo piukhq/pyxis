@@ -7,7 +7,9 @@ class DataConfig:
     account_holders: int
     campaigns_per_retailer: int
     earn_rule_per_campaign: int
-    rewards: int  # refers to rewards (i.e. claimable vouchers etc., not reward_configs or reward_rules)
+    allocated_rewards: int  # number of rewards already allocated to account_holders
+    pending_rewards: int  # number of rewards already promised to account_holders (pending)
+    spare_rewards: int  # number of spare rewards not yet allocated or promised to account_holders
     transactions: int
     reward_updates: int
 
@@ -18,7 +20,9 @@ data_configs = {
         campaigns_per_retailer=1,
         earn_rule_per_campaign=1,
         account_holders=200000,
-        rewards=3000,
+        allocated_rewards=1000,
+        pending_rewards=1000,
+        spare_rewards=0,
         transactions=2000,
         reward_updates=2000,
     ),
@@ -27,43 +31,20 @@ data_configs = {
         campaigns_per_retailer=1,
         earn_rule_per_campaign=1,
         account_holders=390000,
-        rewards=210000,
+        allocated_rewards=70000,
+        pending_rewards=70000,
+        spare_rewards=70000,
         transactions=561600,
         reward_updates=0,
-    ),
-    "1m-tx": DataConfig(
-        retailers=10,
-        campaigns_per_retailer=1,
-        earn_rule_per_campaign=1,
-        account_holders=10000,
-        rewards=1000,
-        transactions=1000000,
-        reward_updates=1000,
-    ),
-    "500k-tx": DataConfig(
-        retailers=10,
-        campaigns_per_retailer=1,
-        earn_rule_per_campaign=1,
-        account_holders=10000,
-        rewards=1000,
-        transactions=500000,
-        reward_updates=1000,
-    ),
-    "750k-tx": DataConfig(
-        retailers=10,
-        campaigns_per_retailer=1,
-        earn_rule_per_campaign=1,
-        account_holders=10000,
-        rewards=1000,
-        transactions=500000,
-        reward_updates=1000,
     ),
     "test": DataConfig(
         retailers=10,
         campaigns_per_retailer=1,
         earn_rule_per_campaign=1,
         account_holders=1000,
-        rewards=500,
+        allocated_rewards=300,
+        pending_rewards=200,
+        spare_rewards=50,
         transactions=2000,
         reward_updates=0,
     ),

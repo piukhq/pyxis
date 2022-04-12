@@ -80,6 +80,7 @@ class TSVHandler:
             CARINA_DB,
             table="retry_task",
         )
+
         self.write_to_tsv(
             task_type_key_value(
                 task_type_ids_dict=carina_task_type_ids,
@@ -91,7 +92,11 @@ class TSVHandler:
             table="task_type_key_value",
         )
 
-        # POLARIS GENERATION
+        # POLARIS GENERATION (ACCOUNT_HOLDER_REWARDS AND RETRY TASKS)
+
+        self.polaris_generator.allocated_rewards = self.carina_generator.allocated_rewards
+        self.polaris_generator.unallocated_rewards = self.carina_generator.unallocated_rewards
+
         self.write_to_tsv(self.polaris_generator.retailer_config(), POLARIS_DB, table="retailer_config")
         self.write_to_tsv(self.polaris_generator.account_holder(), POLARIS_DB, table="account_holder")
         self.write_to_tsv(self.polaris_generator.account_holder_profile(), POLARIS_DB, table="account_holder_profile")
