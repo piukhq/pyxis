@@ -17,7 +17,7 @@ class PolarisGenerators:
         self.unallocated_rewards: list = []
         self.account_holders_by_retailer: dict = {}
 
-    def get_account_holders_by_retailer(self):
+    def get_account_holders_by_retailer(self) -> dict:
         if not self.account_holders_by_retailer:
             for retailer in range(1, self.data_config.retailers + 1):
                 self.account_holders_by_retailer[retailer] = [
