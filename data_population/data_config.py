@@ -33,7 +33,7 @@ data_configs = {
         account_holders=390000,
         allocated_rewards=210000,
         pending_rewards=210000,
-        spare_rewards=80000,
+        spare_rewards=100000,
         transactions=561600,
         reward_updates=0,
     ),
