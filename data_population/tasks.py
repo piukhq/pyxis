@@ -29,3 +29,13 @@ def populate_all(data_configuration: str) -> None:
     t = time.time()
     db_tasks.DataTaskHandler().repopulate_all_databases()
     logger.info(f"All tsvs successfully uploaded in {time.time() - t} seconds")
+
+
+@timed_function
+def upload_only(data_configuration: str) -> None:
+
+    #  Repopulate all dbs
+    logger.info("Attempting upload of all tsvs")
+    t = time.time()
+    db_tasks.DataTaskHandler().repopulate_all_databases()
+    logger.info(f"All tsvs successfully uploaded in {time.time() - t} seconds")
