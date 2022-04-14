@@ -100,7 +100,6 @@ class DataTaskHandler:
 
         # Vacuum must be done outside of a transaction and so must be called by an autocommit connection
 
-
     @property
     def all_tsv_info(self) -> list:
         """
