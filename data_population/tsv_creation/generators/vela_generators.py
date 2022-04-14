@@ -61,7 +61,7 @@ class VelaGenerators:
                         self.now,  # created_at
                         self.now,  # updated_at
                         3,  # threshold
-                        1,  # increment
+                        3,  # increment
                         1,  # increment_multiplier
                         campaign_count,  # campaign_id
                     ]
