@@ -48,6 +48,15 @@ class DataTaskHandler:
 
         connection_string = DB_CONNECTION_URI.replace("/postgres?", f"/{db_name}?")
         connection = psycopg2.connect(connection_string)
+        vacuum_connection = psycopg2.connect(connection_string)
+        vacuum_connection.autocommit = True
+
+        def vacuum_table(table_to_vacuum):
+            with vacuum_connection:
+                vacuum_query = f"VACUUM FULL {table_to_vacuum}"
+                with vacuum_connection.cursor() as vacuum_cursor:
+                    vacuum_cursor.execute(vacuum_query)
+                    logger.info(f"{db_name.upper()}: {table_to_vacuum}: Successfully vacuumed table")
 
         with connection:
             with connection.cursor() as cursor:
@@ -67,6 +76,8 @@ class DataTaskHandler:
                     with open(os.path.join(TSV_BASE_DIR, file_name)) as f:
                         cursor.copy_from(f, table_name, sep="\t", null="NULL")
                     logger.info(f"{db_name.upper()}: {table_name}: Successfully uploaded data")
+
+                    vacuum_table(table_name)
 
                     # UPDATE SEQUENCES
                     column = "id"
@@ -89,7 +100,11 @@ class DataTaskHandler:
                         logger.info(f"{db_name.upper()}: {table_name}: Successfully update sequence")
 
         connection.close()
+        vacuum_connection.close()
         logger.info(f"{db_name.upper()}: All tables successfully repopulated")
+
+        # Vacuum must be done outside of a transaction and so must be called by an autocommit connection
+
 
     @property
     def all_tsv_info(self) -> list:
