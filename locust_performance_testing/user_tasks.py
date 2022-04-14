@@ -134,7 +134,7 @@ class UserTasks(SequentialTaskSet):
 
         data = {
             "id": f"TX{uuid4()}",
-            "transaction_total": random.randint(1000, 9999),
+            "transaction_total": random.randint(100, 400),
             "datetime": self.now,
             "MID": "1234",
             "loyalty_id": account.account_holder_uuid,

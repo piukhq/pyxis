@@ -60,8 +60,8 @@ class VelaGenerators:
                         next(id_gen),  # id
                         self.now,  # created_at
                         self.now,  # updated_at
-                        3,  # threshold
-                        3,  # increment
+                        100,  # threshold
+                        500,  # increment
                         1,  # increment_multiplier
                         campaign_count,  # campaign_id
                     ]
@@ -78,7 +78,7 @@ class VelaGenerators:
                     count,  # id
                     self.now,  # created_at
                     self.now,  # updated_at
-                    3,  # reward_goal
+                    500,  # reward_goal
                     count,  # campaign_id
                     f"reward_{count}",  # reward_slug
                     0,  # allocation_window

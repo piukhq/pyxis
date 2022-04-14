@@ -126,7 +126,7 @@ class PolarisGenerators:
                     self.now,  # updated_at
                     account_holder_id,  # id
                     campaign_slug,  # campaign_slug
-                    randint(100, 1000),  # balance
+                    0,  # balance
                     account_holder_id,  # account_holder_id
                 ]
             )
