@@ -48,48 +48,57 @@ class DataTaskHandler:
 
         connection_string = DB_CONNECTION_URI.replace("/postgres?", f"/{db_name}?")
         connection = psycopg2.connect(connection_string)
+        connection.autocommit = True
+        # All execute statements will run immediately, rather than in a larger transaction. This is because VACUUM
+        # cannot work in a transaction.
 
-        with connection:
-            with connection.cursor() as cursor:
-                for tsv_info in tsv_info_list:
+        for tsv_info in tsv_info_list:
 
-                    table_name = tsv_info["table"]
-                    file_name = tsv_info["filename"]
+            cursor = connection.cursor()
+            table_name = tsv_info["table"]
+            file_name = tsv_info["filename"]
 
-                    # TRUNCATE
-                    logger.info(f"{db_name.upper()}: {table_name}: Attempting to truncate table")
-                    truncate_statement = f'TRUNCATE "{table_name}" CASCADE'
-                    cursor.execute(truncate_statement)
-                    logger.info(f"{db_name.upper()}: {table_name}: Successfully truncated table")
+            # TRUNCATE
+            logger.info(f"{db_name.upper()}: {table_name}: Attempting to truncate table")
+            truncate_statement = f'TRUNCATE "{table_name}" CASCADE'
+            cursor.execute(truncate_statement)
+            logger.info(f"{db_name.upper()}: {table_name}: Successfully truncated table")
 
-                    # UPLOAD/COPY
-                    logger.info(f"{db_name.upper()}: {table_name}: Attempting to copy data into table")
-                    with open(os.path.join(TSV_BASE_DIR, file_name)) as f:
-                        cursor.copy_from(f, table_name, sep="\t", null="NULL")
-                    logger.info(f"{db_name.upper()}: {table_name}: Successfully uploaded data")
+            # VACUUM (Cannot be inside a transaction block)
+            cursor = connection.cursor()
+            cursor.execute(f"VACUUM FULL {table_name}")
+            logger.info(f"{db_name.upper()}: {table_name}: Successfully vacuumed table")
 
-                    # UPDATE SEQUENCES
-                    column = "id"
-                    task_table_columns = {
-                        "retry_task": "retry_task_id",
-                        "task_type": "task_type_id",
-                        "task_type_key": "task_type_key_id",
-                    }
-                    if table_name in task_table_columns:
-                        column = task_table_columns[table_name]
-                    sequence_name = f"'{table_name}_{column}_seq'"
-                    query_statement = f"SELECT * FROM pg_class where relname = {sequence_name}"
-                    cursor.execute(query_statement)
-                    if cursor.fetchone() is not None:
-                        logger.info(f"{db_name.upper()}: {table_name}: Attempting to update table seq")
-                        update_seq_statement = (
-                            f"select setval({sequence_name}, (select max({column})+1 from {table_name}), false)"
-                        )
-                        cursor.execute(update_seq_statement)
-                        logger.info(f"{db_name.upper()}: {table_name}: Successfully update sequence")
+            # UPLOAD/COPY
+            logger.info(f"{db_name.upper()}: {table_name}: Attempting to copy data into table")
+            with open(os.path.join(TSV_BASE_DIR, file_name)) as f:
+                cursor.copy_from(f, table_name, sep="\t", null="NULL")
+            logger.info(f"{db_name.upper()}: {table_name}: Successfully uploaded data")
+
+            # UPDATE SEQUENCES
+            column = "id"
+            task_table_columns = {
+                "retry_task": "retry_task_id",
+                "task_type": "task_type_id",
+                "task_type_key": "task_type_key_id",
+            }
+            if table_name in task_table_columns:
+                column = task_table_columns[table_name]
+            sequence_name = f"'{table_name}_{column}_seq'"
+            query_statement = f"SELECT * FROM pg_class where relname = {sequence_name}"
+            cursor.execute(query_statement)
+            if cursor.fetchone() is not None:
+                logger.info(f"{db_name.upper()}: {table_name}: Attempting to update table seq")
+                update_seq_statement = (
+                    f"select setval({sequence_name}, (select max({column})+1 from {table_name}), false)"
+                )
+                cursor.execute(update_seq_statement)
+                logger.info(f"{db_name.upper()}: {table_name}: Successfully update sequence")
 
         connection.close()
         logger.info(f"{db_name.upper()}: All tables successfully repopulated")
+
+        # Vacuum must be done outside of a transaction and so must be called by an autocommit connection
 
     @property
     def all_tsv_info(self) -> list:

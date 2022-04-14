@@ -3,13 +3,11 @@ import logging
 import click
 
 from data_population.data_config import data_configs
-from data_population.tasks import populate_all
+from data_population.tasks import populate_all, upload_only
 
 logger = logging.getLogger("Data-controller")
 
-tasks = {
-    "populate-db": populate_all,
-}
+tasks = {"populate-db": populate_all, "upload-only": upload_only}
 
 param_options = {
     "tasks": list(tasks.keys()),

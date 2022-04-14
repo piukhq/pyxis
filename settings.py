@@ -27,5 +27,3 @@ DB_CONNECTION_URI = env_var("DB_CONNECTION_URI", "")
 POLARIS_DB = env_var("POLARIS_DB", "polaris")
 VELA_DB = env_var("VELA_DB", "vela")
 CARINA_DB = env_var("CARINA_DB", "carina")
-
-FETCH_BULK = True
