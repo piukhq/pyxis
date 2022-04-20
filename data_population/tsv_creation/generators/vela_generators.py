@@ -64,6 +64,7 @@ class VelaGenerators:
                         500,  # increment
                         1,  # increment_multiplier
                         campaign_count,  # campaign_id
+                        0,  # max_amount
                     ]
                 )
         return earn_rules
