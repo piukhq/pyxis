@@ -35,14 +35,14 @@ def generate_carina_type_key_values(data_config: DataConfig) -> dict[int, dict]:
             8: str(uuid4()),  # reward_uuid
             9: f"perf-test-retailer-{randint(1, total_retailers)}",  # retailer_slug
             10: datetime.utcnow(),  # date
-            11: choice(["ACTIVE", "CANCELLED", "ENDED"]),
+            11: choice(["ACTIVE", "CANCELLED", "ENDED"]),  # status
         },
         carina_task_type_ids["cancel-rewards"]: {
             13: f"retailer_{randint(1, total_retailers)}",  # retailer_slug
             14: f"reward_{randint(1, total_reward_configs)}",  # reward_slug
         },
         carina_task_type_ids["delete-unallocated-rewards"]: {
-            15: f"retailer_{randint(1, total_retailers)}",  # retailer_slug
+            15: {randint(1, total_retailers)},  # retailer_id
             16: f"reward_{randint(1, total_reward_configs)}",  # reward_slug
         },
     }
