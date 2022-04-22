@@ -42,7 +42,7 @@ def generate_carina_type_key_values(data_config: DataConfig) -> dict[int, dict]:
             14: f"reward_{randint(1, total_reward_configs)}",  # reward_slug
         },
         carina_task_type_ids["delete-unallocated-rewards"]: {
-            15: {randint(1, total_retailers)},  # retailer_id
+            15: randint(1, total_retailers),  # retailer_id
             16: f"reward_{randint(1, total_reward_configs)}",  # reward_slug
         },
     }
