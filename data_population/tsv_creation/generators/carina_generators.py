@@ -30,20 +30,6 @@ class CarinaGenerators:
             )
         return retailers
 
-    def fetch_type(self) -> list:
-        """Generates n fetch types (fixed n - can add more if needed)"""
-        fetch_types = [
-            [
-                self.now,  # created_at
-                self.now,  # updated_at
-                1,  # id
-                "Performance Fetch Type",  # name
-                {"validity_days": "integer"},  # required_fields
-                "app.fetch_reward.pre_loaded.PreLoaded",  # path
-            ]
-        ]
-        return fetch_types
-
     def retailer_fetch_type(self) -> list:
         """Generates n retailer<->fetch_type links (1 per retailer (fetch type 1 only))"""
         retailer_fetch_types = []
@@ -54,7 +40,7 @@ class CarinaGenerators:
                     self.now,  # created_at
                     self.now,  # updated_at
                     retailer_count,  # retailer_id
-                    1,  # fetch_type_id
+                    1,  # fetch_type_id (1=Preloaded, 2=Jigsaw)
                     "",  # agent_config
                 ]
             )
@@ -76,13 +62,13 @@ class CarinaGenerators:
 
                 reward_configs.append(
                     [
-                        reward_config_id,  # id
                         self.now,  # created_at
                         self.now,  # updated_at
+                        reward_config_id,  # id
                         f"reward_{reward_config_id}",  # reward_slug
-                        "ACTIVE",  # status
                         retailer_count,  # retailer_id
                         1,  # fetch_type_id
+                        "ACTIVE",  # status
                         {"validity_days": 90},  # required_fields_values
                     ]
                 )
@@ -122,8 +108,8 @@ class CarinaGenerators:
                     reward_id,  # id (:uuid)
                     code,  # code
                     allocated,  # allocated
-                    reward_config_id,  # reward_config_id
                     False,  # deleted
+                    reward_config_id,  # reward_config_id
                     retailer_id,  # retailer_id
                 ]
             )
@@ -164,12 +150,12 @@ class CarinaGenerators:
         for count in range(self.data_config.reward_updates):
             reward_updates.append(
                 [
-                    count,  # id
                     self.now,  # created_at
                     self.now,  # updated_at
-                    self.now.date(),  # date
-                    choice(["CANCELLED", "REDEEMED", "ISSUED"]),  # allocated
+                    count,  # id
                     choice(reward_uuids),  # reward_uuid
+                    self.now.date(),  # date
+                    choice(["CANCELLED", "REDEEMED", "ISSUED"]),  # status
                 ]
             )
         return reward_updates

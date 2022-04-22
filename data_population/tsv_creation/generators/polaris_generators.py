@@ -32,15 +32,15 @@ class PolarisGenerators:
         for count in range(1, self.data_config.retailers + 1):
             retailer_configs.append(
                 [
+                    self.now,  # created_at
+                    self.now,  # updated_at
                     count,  # id
                     f"Retailer {count}",  # name
                     f"retailer_{count}",  # slug
                     str(count).zfill(4),  # account_number_prefix (e.g. '0013')
                     10,  # account_number_length
-                    self.now,  # created_at
                     profile_config,  # profile_config
-                    self.now,  # updated_at
-                    marketing_preferences,  # marketing_preference
+                    marketing_preferences,  # marketing_preference_config
                     "Performance Retailer",  # loyalty_name
                     "",  # email_header_image
                     "Performance Retailer <welcome@performance_retailer.com>",  # welcome_email_from
@@ -59,12 +59,12 @@ class PolarisGenerators:
             retailer_id = randint(1, self.data_config.retailers)
             account_holders.append(
                 [
+                    self.now,  # created_at
+                    self.now,  # updated_at
                     f"user_{count}@performancetest.com",  # email
                     AccountHolderStatuses.ACTIVE,  # status
                     f"{fake.credit_card_number()}_{count}",  # account_number
-                    self.now,  # created_at
                     retailer_id,  # retailer_id
-                    self.now,  # updated_at
                     account_holder_uuid,  # account_holder_uuid
                     account_id,  # id
                     uuid.uuid4(),  # opt_out_token
@@ -80,16 +80,16 @@ class PolarisGenerators:
         for count in range(1, self.data_config.account_holders + 1):
             account_holder_profiles.append(
                 [
+                    count,  # id
                     fake.first_name(),  # first name
                     fake.last_name(),  # surname
                     self.now,  # date_of_birth
                     "01234567891",  # phone
                     "Fake_first_line_address",  # address_line1
                     "Fake_second_line_address",  # address_line2
-                    "Fake_postcode",  # retailer_id
+                    "Fake_postcode",  # postcode
                     "Fake_city",  # city
                     count,  # account_holder_id
-                    count,  # id
                     "",  # custom
                 ]
             )
@@ -125,9 +125,9 @@ class PolarisGenerators:
                     self.now,  # created_at
                     self.now,  # updated_at
                     account_holder_id,  # id
+                    account_holder_id,  # account_holder_id
                     campaign_slug,  # campaign_slug
                     0,  # balance
-                    account_holder_id,  # account_holder_id
                 ]
             )
         return account_holder_campaign_balances
@@ -147,6 +147,7 @@ class PolarisGenerators:
                 [
                     self.now,  # created_at
                     self.now,  # updated_at
+                    reward_count,  # id
                     reward["reward_uuid"],  # reward_uuid
                     reward["code"],  # code
                     self.now,  # issued_date
@@ -158,7 +159,6 @@ class PolarisGenerators:
                     f"retailer_{reward['retailer_id']}",  # retailer_slug
                     str(uuid.uuid4()),  # idempotency_token
                     choice(account_holders_by_retailer[reward["retailer_id"]]),  # account_holder_id
-                    reward_count,  # id
                 ]
             )
         return account_holder_rewards
@@ -183,7 +183,7 @@ class PolarisGenerators:
                     self.now,  # created_date
                     self.now + timedelta(days=-1),  # conversion_date
                     randint(500, 1000),  # value
-                    f"campaign_{reward['retailer_id'] * self.data_config.campaigns_per_retailer}",
+                    f"campaign_{reward['retailer_id'] * self.data_config.campaigns_per_retailer}",  # campaign_slug
                     f"reward_{reward['reward_config_id']}",  # reward_slug
                     f"retailer_{reward['retailer_id']}",  # retailer_slug
                     str(uuid.uuid4()),  # idempotency_token
