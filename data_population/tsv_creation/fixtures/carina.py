@@ -8,8 +8,8 @@ from data_population.data_config import DataConfig
 carina_task_type_ids = {
     "reward-issuance": 1,
     "reward-status-adjustment": 2,
-    "cancel-rewards": 3,
-    "delete-unallocated-rewards": 4,
+    "delete-unallocated-rewards": 3,
+    "cancel-rewards": 4,
 }
 
 #  We will generate retry rows for each of the following task types equal to the sum of their data_config values:
