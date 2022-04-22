@@ -30,7 +30,6 @@ def generate_carina_type_key_values(data_config: DataConfig) -> dict[int, dict]:
             7: random_ascii(10),  # code
             8: randint(1, total_reward_configs),  # reward_config_id
             9: datetime.utcnow(),  # issued_date
-
         },
         carina_task_type_ids["reward-status-adjustment"]: {
             10: f"perf-test-retailer-{randint(1, total_retailers)}",  # retailer_slug
