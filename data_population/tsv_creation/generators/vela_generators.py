@@ -33,11 +33,11 @@ class VelaGenerators:
                 campaigns.append(
                     [
                         campaign_id,  # id
+                        self.now,  # created_at
+                        self.now,  # updated_at
                         "ACTIVE",  # status
                         f"Campaign {campaign_id}",  # name
                         f"campaign_{campaign_id}",  # slug
-                        self.now,  # created_at
-                        self.now,  # updated_at
                         count,  # retailer_id
                         "STAMPS",  # loyalty_type
                         self.now,  # start_date
@@ -80,9 +80,9 @@ class VelaGenerators:
                     self.now,  # created_at
                     self.now,  # updated_at
                     500,  # reward_goal
-                    count,  # campaign_id
                     f"reward_{count}",  # reward_slug
                     0,  # allocation_window
+                    count,  # campaign_id
                 ]
             )
         return reward_rules

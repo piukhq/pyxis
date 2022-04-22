@@ -69,7 +69,6 @@ class TSVHandler:
 
         # CARINA GENERATION
         self.write_to_tsv(self.carina_generator.retailer(), CARINA_DB, table="retailer")
-        self.write_to_tsv(self.carina_generator.fetch_type(), CARINA_DB, table="fetch_type")
         self.write_to_tsv(self.carina_generator.retailer_fetch_type(), CARINA_DB, table="retailer_fetch_type")
         self.write_to_tsv(self.carina_generator.reward_config(), CARINA_DB, table="reward_config")
         self.write_to_tsv(self.carina_generator.reward(), CARINA_DB, table="reward")
