@@ -61,12 +61,12 @@ class PolarisGenerators:
                 [
                     self.now,  # created_at
                     self.now,  # updated_at
+                    account_id,  # id
                     f"user_{count}@performancetest.com",  # email
                     AccountHolderStatuses.ACTIVE,  # status
                     f"{fake.credit_card_number()}_{count}",  # account_number
                     retailer_id,  # retailer_id
                     account_holder_uuid,  # account_holder_uuid
-                    account_id,  # id
                     uuid.uuid4(),  # opt_out_token
                 ]
             )
