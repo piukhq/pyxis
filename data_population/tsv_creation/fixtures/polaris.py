@@ -54,8 +54,8 @@ polaris_retry_task_types_to_populate = {
 
 def generate_polaris_type_key_values(data_config: DataConfig) -> dict[int, dict]:
     total_account_holders = data_config.account_holders
-    total_retailers = data_config.retailers
-    total_campaigns = data_config.retailers * data_config.campaigns_per_retailer
+    total_retailers = data_config.jigsaw_retailers + data_config.preloaded_retailers
+    total_campaigns = total_retailers * data_config.campaigns_per_retailer
     polaris_task_type_keys: dict[int, dict] = {
         polaris_task_type_ids["enrolment-callback"]: {
             1: str(uuid4()),  # account_holder_uuid

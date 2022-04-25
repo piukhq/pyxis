@@ -16,7 +16,8 @@ class VelaGenerators:
 
     def retailer_rewards(self) -> list:
         retailers = []
-        for count in range(1, self.data_config.retailers + 1):
+        total_retailers = self.data_config.jigsaw_retailers + self.data_config.preloaded_retailers
+        for count in range(1, total_retailers + 1):
             self.retailer_ids.append(count)
             retailers.append([count, f"retailer_{count}"])  # id  # slug
         return retailers
@@ -25,7 +26,8 @@ class VelaGenerators:
         """Generates campaigns (n defined in data_config as retailers * campaigns per retailer)"""
         id_gen = id_generator(1)
         campaigns = []
-        for count in range(1, self.data_config.retailers + 1):
+        total_retailers = self.data_config.jigsaw_retailers + self.data_config.preloaded_retailers
+        for count in range(1, total_retailers + 1):
             for campaign_count in range(1, self.data_config.campaigns_per_retailer + 1):
 
                 campaign_id = next(id_gen)
@@ -51,7 +53,8 @@ class VelaGenerators:
         Generates earn_rules (n defined in data_config as retailers * campaigns per retailer * earn_rules per campaign)
         """
         id_gen = id_generator(1)
-        total_campaigns = self.data_config.retailers * self.data_config.campaigns_per_retailer
+        total_retailers = self.data_config.jigsaw_retailers + self.data_config.preloaded_retailers
+        total_campaigns = total_retailers * self.data_config.campaigns_per_retailer
         earn_rules = []
         for campaign_count in range(1, total_campaigns + 1):
             for earn_rule_count in range(self.data_config.earn_rule_per_campaign):
@@ -71,7 +74,8 @@ class VelaGenerators:
 
     def reward_rule(self) -> list:
         """Generates reward_rules (n defined in data_config as retailers * campaigns per retailer (1-1 w/campaigns))"""
-        total_campaigns = self.data_config.retailers * self.data_config.campaigns_per_retailer
+        total_retailers = self.data_config.jigsaw_retailers + self.data_config.preloaded_retailers
+        total_campaigns = total_retailers * self.data_config.campaigns_per_retailer
         reward_rules = []
         for count in range(1, total_campaigns + 1):
             reward_rules.append(
@@ -91,6 +95,7 @@ class VelaGenerators:
         """Generates transactions (n defined in n data_config)"""
         id_gen = id_generator(1)
         transactions = []
+        total_retailers = self.data_config.jigsaw_retailers + self.data_config.preloaded_retailers
 
         for count in range(1, self.data_config.transactions + 1):
             data = [
@@ -102,7 +107,7 @@ class VelaGenerators:
                 "MID_1234",  # mid
                 self.now,  # datetime
                 uuid4(),  # account_holder_uuid, not a fkey
-                randint(1, self.data_config.retailers),  # retailer_rewards.id fkey
+                randint(1, total_retailers),  # retailer_rewards.id fkey
             ]
             if additionals is not None:
                 data.extend(additionals)

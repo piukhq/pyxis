@@ -15,8 +15,8 @@ vela_retry_task_types_to_populate = {"reward-adjustment": ["transactions"]}
 
 
 def generate_vela_type_key_values(data_config: DataConfig) -> dict[int, dict]:
-    total_retailers = data_config.retailers
-    total_campaigns = data_config.retailers * data_config.campaigns_per_retailer
+    total_retailers = data_config.jigsaw_retailers + data_config.preloaded_retailers
+    total_campaigns = total_retailers * data_config.campaigns_per_retailer
     total_transactions = data_config.transactions
     vela_task_type_keys: dict[int, dict] = {
         vela_task_type_ids["reward-adjustment"]: {

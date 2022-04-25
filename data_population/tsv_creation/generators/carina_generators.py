@@ -19,7 +19,9 @@ class CarinaGenerators:
         """Generates n retailers (n defined in data_config)"""
         retailers = []
 
-        for retailer_count in range(1, self.data_config.retailers + 1):
+        total_retailers = self.data_config.jigsaw_retailers + self.data_config.preloaded_retailers
+
+        for retailer_count in range(1, total_retailers + 1):
             retailers.append(
                 [
                     self.now,  # created_at
@@ -34,13 +36,18 @@ class CarinaGenerators:
         """Generates n retailer<->fetch_type links (1 per retailer (fetch type 1 only))"""
         retailer_fetch_types = []
 
-        for retailer_count in range(1, self.data_config.retailers + 1):
+        total_retailers = self.data_config.jigsaw_retailers + self.data_config.preloaded_retailers
+
+        for retailer_count in range(1, total_retailers + 1):
+            fetch_type_id = 1 if retailer_count <= self.data_config.preloaded_retailers else 2
+            # (1=Preloaded, 2=Jigsaw)
+
             retailer_fetch_types.append(
                 [
                     self.now,  # created_at
                     self.now,  # updated_at
                     retailer_count,  # retailer_id
-                    1,  # fetch_type_id (1=Preloaded, 2=Jigsaw)
+                    fetch_type_id,  # fetch_type_id
                     "",  # agent_config
                 ]
             )
@@ -55,9 +62,12 @@ class CarinaGenerators:
         id_gen = id_generator(1)
         reward_configs = []
 
-        for retailer_count in range(1, self.data_config.retailers + 1):
-            for campaign_count in range(self.data_config.campaigns_per_retailer):
+        total_retailers = self.data_config.jigsaw_retailers + self.data_config.preloaded_retailers
 
+        for retailer_count in range(1, total_retailers + 1):
+            fetch_type_id = 1 if retailer_count <= self.data_config.preloaded_retailers else 2
+            # (1=Preloaded, 2=Jigsaw)
+            for campaign_count in range(self.data_config.campaigns_per_retailer):
                 reward_config_id = next(id_gen)
 
                 reward_configs.append(
@@ -67,7 +77,7 @@ class CarinaGenerators:
                         reward_config_id,  # id
                         f"reward_{reward_config_id}",  # reward_slug
                         retailer_count,  # retailer_id
-                        1,  # fetch_type_id
+                        fetch_type_id,  # fetch_type_id
                         "ACTIVE",  # status
                         {"validity_days": 90},  # required_fields_values
                     ]

@@ -17,7 +17,7 @@ carina_retry_task_types_to_populate = {"reward-issuance": ["allocated_rewards"]}
 
 
 def generate_carina_type_key_values(data_config: DataConfig) -> dict[int, dict]:
-    total_retailers = data_config.retailers
+    total_retailers = data_config.jigsaw_retailers + data_config.preloaded_retailers
     total_reward_configs = total_retailers * data_config.campaigns_per_retailer
     carina_task_type_key_values: dict[int, dict] = {
         carina_task_type_ids["reward-issuance"]: {

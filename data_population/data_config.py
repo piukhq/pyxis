@@ -3,7 +3,8 @@ from dataclasses import dataclass
 
 @dataclass
 class DataConfig:
-    retailers: int
+    preloaded_retailers: int
+    jigsaw_retailers: int
     account_holders: int
     campaigns_per_retailer: int
     earn_rule_per_campaign: int
@@ -16,7 +17,8 @@ class DataConfig:
 
 data_configs = {
     "benchmark": DataConfig(
-        retailers=10,
+        preloaded_retailers=5,
+        jigsaw_retailers=5,
         campaigns_per_retailer=1,
         earn_rule_per_campaign=1,
         account_holders=200000,
@@ -27,18 +29,20 @@ data_configs = {
         reward_updates=2000,
     ),
     "peak": DataConfig(
-        retailers=5,
+        preloaded_retailers=3,
+        jigsaw_retailers=2,
         campaigns_per_retailer=1,
         earn_rule_per_campaign=1,
         account_holders=390000,
         allocated_rewards=210000,
         pending_rewards=42000,
-        spare_rewards=100000,
+        spare_rewards=60000,
         transactions=561600,
         reward_updates=0,
     ),
     "test": DataConfig(
-        retailers=10,
+        preloaded_retailers=5,
+        jigsaw_retailers=5,
         campaigns_per_retailer=1,
         earn_rule_per_campaign=1,
         account_holders=1000,

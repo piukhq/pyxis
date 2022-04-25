@@ -19,7 +19,8 @@ class PolarisGenerators:
 
     def get_account_holders_by_retailer(self) -> dict:
         if not self.account_holders_by_retailer:
-            for retailer in range(1, self.data_config.retailers + 1):
+            total_retailers = self.data_config.jigsaw_retailers + self.data_config.preloaded_retailers
+            for retailer in range(1, total_retailers + 1):
                 self.account_holders_by_retailer[retailer] = [
                     k for k, v in self.all_account_holder_retailers.items() if v == retailer
                 ]
@@ -29,7 +30,8 @@ class PolarisGenerators:
     def retailer_config(self) -> list:
         """Generates n retailer_configs (n defined in data_config)"""
         retailer_configs = []
-        for count in range(1, self.data_config.retailers + 1):
+        total_retailers = self.data_config.jigsaw_retailers + self.data_config.preloaded_retailers
+        for count in range(1, total_retailers + 1):
             retailer_configs.append(
                 [
                     self.now,  # created_at
@@ -53,10 +55,11 @@ class PolarisGenerators:
         """Generates n account_holders (n defined in data_config)"""
 
         account_holders = []
+        total_retailers = self.data_config.jigsaw_retailers + self.data_config.preloaded_retailers
         for count in range(1, self.data_config.account_holders + 1):
             account_id = count
             account_holder_uuid = uuid.uuid4()
-            retailer_id = randint(1, self.data_config.retailers)
+            retailer_id = randint(1, total_retailers)
             account_holders.append(
                 [
                     self.now,  # created_at
