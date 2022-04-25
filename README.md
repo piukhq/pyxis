@@ -1,3 +1,5 @@
+Performance testing for BPL applications (Polaris, Carina, Vela)
+
 # Database Population:
 For local database population, `.env` should contain:
 ```
