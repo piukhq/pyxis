@@ -84,7 +84,7 @@ class CarinaGenerators:
                     ]
                 )
 
-                self.all_reward_configs[reward_config_id] = {'retailer': retailer_count, 'fetch_type': fetch_type_id}
+                self.all_reward_configs[reward_config_id] = {"retailer": retailer_count, "fetch_type": fetch_type_id}
 
         return reward_configs
 
@@ -108,19 +108,21 @@ class CarinaGenerators:
 
         # Split out reward configs by fetch type
         for config in self.all_reward_configs:
-            if config['fetch_type'] == 1:
+            if config["fetch_type"] == 1:
                 preloaded_reward_configs.update(config)
             else:
                 jigsaw_reward_configs.update(config)
 
-        def get_rewards(number_of_rewards: int, allocated: bool, reward_configs: dict, output_to_list: list = None):
+        def get_rewards(
+            number_of_rewards: int, allocated: bool, reward_configs: dict, output_to_list: list = None
+        ) -> list:
 
             rewards = []
 
             for i in range(number_of_rewards):
                 reward_id = str(uuid4())
                 reward_config_id = choice(list(reward_configs))
-                retailer_id = reward_configs[reward_config_id]['retailer']  # retailer_id
+                retailer_id = reward_configs[reward_config_id]["retailer"]  # retailer_id
                 code = str(uuid4())
 
                 rewards.append(
@@ -155,7 +157,7 @@ class CarinaGenerators:
             number_of_rewards=self.data_config.allocated_rewards,
             allocated=True,
             reward_configs=self.all_reward_configs,
-            output_to_list=self.allocated_rewards
+            output_to_list=self.allocated_rewards,
         )
         all_rewards.append(allocated_rewards)
 
@@ -165,7 +167,7 @@ class CarinaGenerators:
             number_of_rewards=self.data_config.preloaded_pending_rewards,
             allocated=False,
             reward_configs=preloaded_reward_configs,
-            output_to_list=self.pending_rewards
+            output_to_list=self.pending_rewards,
         )
         all_rewards.append(preloaded_pending_rewards)
 
@@ -175,7 +177,7 @@ class CarinaGenerators:
             number_of_rewards=self.data_config.jigsaw_pending_rewards,
             allocated=False,
             reward_configs=jigsaw_reward_configs,
-            output_to_list=self.pending_rewards
+            output_to_list=self.pending_rewards,
         )
 
         # Spare rewards - used to populate only carina rewards table with extra rewards for later issuance by fetch_type
@@ -184,7 +186,7 @@ class CarinaGenerators:
             number_of_rewards=self.data_config.spare_rewards,
             allocated=False,
             reward_configs=preloaded_reward_configs,
-            output_to_list=self.pending_rewards
+            output_to_list=self.pending_rewards,
         )
         all_rewards.append(spare_rewards)
 
