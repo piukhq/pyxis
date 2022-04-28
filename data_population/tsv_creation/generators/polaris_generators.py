@@ -14,7 +14,7 @@ class PolarisGenerators:
         self.data_config = data_config
         self.all_account_holder_retailers: dict = {}
         self.allocated_rewards: list = []
-        self.unallocated_rewards: list = []
+        self.pending_rewards: list = []
         self.account_holders_by_retailer: dict = {}
 
     def get_account_holders_by_retailer(self) -> dict:
@@ -168,15 +168,17 @@ class PolarisGenerators:
 
     def account_holder_pending_reward(self) -> list:
         """
-        Generates account_holder_pending_rewards (1-1 w/ data_config.pending_rewards)
+        Generates account_holder_pending_rewards (1-1 w/ data_config.preloaded_pending_rewards +
+        data_config.jigsaw_pending_rewards)
         """
 
         account_holder_pending_rewards = []
         account_holders_by_retailer = self.get_account_holders_by_retailer()
+        total_pending_rewards = self.data_config.preloaded_pending_rewards + self.data_config.jigsaw_pending_rewards
 
-        for reward_count in range(1, self.data_config.pending_rewards + 1):
+        for reward_count in range(1, total_pending_rewards + 1):
 
-            reward = self.unallocated_rewards.pop()
+            reward = self.pending_rewards.pop()
 
             account_holder_pending_rewards.append(
                 [

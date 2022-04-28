@@ -94,7 +94,7 @@ class TSVHandler:
         # POLARIS GENERATION (ACCOUNT_HOLDER_REWARDS AND RETRY TASKS)
 
         self.polaris_generator.allocated_rewards = self.carina_generator.allocated_rewards
-        self.polaris_generator.unallocated_rewards = self.carina_generator.unallocated_rewards
+        self.polaris_generator.pending_rewards = self.carina_generator.pending_rewards
 
         self.write_to_tsv(self.polaris_generator.retailer_config(), POLARIS_DB, table="retailer_config")
         self.write_to_tsv(self.polaris_generator.account_holder(), POLARIS_DB, table="account_holder")
