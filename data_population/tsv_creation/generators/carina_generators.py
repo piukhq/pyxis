@@ -108,10 +108,10 @@ class CarinaGenerators:
 
         # Split out reward configs by fetch type
         for config in self.all_reward_configs:
-            if config["fetch_type"] == 1:
-                preloaded_reward_configs.update(config)
+            if self.all_reward_configs[config]["fetch_type"] == 1:
+                preloaded_reward_configs[config] = self.all_reward_configs[config]
             else:
-                jigsaw_reward_configs.update(config)
+                jigsaw_reward_configs[config] = self.all_reward_configs[config]
 
         def get_rewards(
             number_of_rewards: int, allocated: bool, reward_configs: dict, output_to_list: list = None
@@ -127,8 +127,8 @@ class CarinaGenerators:
 
                 rewards.append(
                     [
-                        self.now,  # created_at
-                        self.now,  # updated_at
+                        datetime.utcnow(),  # created_at
+                        datetime.utcnow(),  # updated_at
                         reward_id,  # id (:uuid)
                         code,  # code
                         allocated,  # allocated
@@ -139,7 +139,7 @@ class CarinaGenerators:
                 )
 
                 #  Save reward details for later use in polaris
-                if output_to_list:
+                if output_to_list is not None:
                     output_to_list.append(
                         {
                             "reward_uuid": reward_id,
@@ -159,7 +159,7 @@ class CarinaGenerators:
             reward_configs=self.all_reward_configs,
             output_to_list=self.allocated_rewards,
         )
-        all_rewards.append(allocated_rewards)
+        all_rewards += allocated_rewards
 
         # Preloaded pending rewards - used to populate both carina rewards table and polaris pending_rewards
         # (fetch_type 1 retailers)
@@ -169,7 +169,7 @@ class CarinaGenerators:
             reward_configs=preloaded_reward_configs,
             output_to_list=self.pending_rewards,
         )
-        all_rewards.append(preloaded_pending_rewards)
+        all_rewards += preloaded_pending_rewards
 
         # Jigsaw pending rewards - used to populate only polaris pending_rewards (no need to add to carina rewards as
         # these will be fetched from Jigsaw, but we generate these here for simplicity) (fetch_type 2 retailers)
@@ -188,7 +188,7 @@ class CarinaGenerators:
             reward_configs=preloaded_reward_configs,
             output_to_list=self.pending_rewards,
         )
-        all_rewards.append(spare_rewards)
+        all_rewards += spare_rewards
 
         return all_rewards
 

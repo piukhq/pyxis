@@ -18,14 +18,14 @@ class DataConfig:
 
 data_configs = {
     "benchmark": DataConfig(
-        preloaded_retailers=5,
-        jigsaw_retailers=5,
+        preloaded_retailers=2,
+        jigsaw_retailers=3,
         campaigns_per_retailer=1,
         earn_rule_per_campaign=1,
         account_holders=200000,
         allocated_rewards=1000,
-        preloaded_pending_rewards=1000,
-        jigsaw_pending_rewards=1000,
+        preloaded_pending_rewards=729,
+        jigsaw_pending_rewards=321,
         spare_rewards=0,
         transactions=2000,
         reward_updates=2000,
