@@ -33,7 +33,7 @@ class UserTasks(SequentialTaskSet):
 
     def __init__(self, parent) -> None:  # type: ignore
         super().__init__(parent)
-        self.url_prefix = "/bpl"
+        self.url_prefix = ""
         self.keys = load_secrets()
         self.headers = get_headers()
         self.retailer_slug = f"retailer_{random.randint(1, get_polaris_retailer_count())}"
