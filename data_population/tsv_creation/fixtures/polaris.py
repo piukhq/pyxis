@@ -40,6 +40,7 @@ polaris_task_type_ids = {
     "cancel-rewards": 5,
     "send-welcome-email": 6,
     "pending-reward-allocation": 7,
+    "convert-pending-rewards": 8,
 }
 
 #  We will generate retry rows for each of the following task types equal to the sum of their data_config values:
@@ -49,6 +50,7 @@ polaris_retry_task_types_to_populate = {
     "create-campaign-balances": ["account_holders"],
     "send-welcome-email": ["account_holders"],
     "pending-reward-allocation": ["pending_rewards", "allocated_rewards"],
+    "convert-pending-rewards": ["pending_rewards"],
 }
 
 
@@ -88,6 +90,10 @@ def generate_polaris_type_key_values(data_config: DataConfig) -> dict[int, dict]
             16: f"reward_{randint(1, total_campaigns)}",  # reward_slug
             17: str(uuid4()),  # account_holder_uuid,
             18: randint(1, data_config.pending_rewards),  # pending_reward_id,
+        },
+        polaris_task_type_ids["convert-pending-rewards"]: {
+            19: f"retailer_{randint(1, total_retailers)}",  # retailer_slug
+            20: f"campaign_{randint(1, total_campaigns)}",  # campaign_slug
         },
     }
     return polaris_task_type_keys
