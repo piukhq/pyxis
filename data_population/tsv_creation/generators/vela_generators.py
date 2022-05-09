@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta
 from random import randint
-from typing import Optional
 from uuid import uuid4
 
 from data_population.common.utils import id_generator
@@ -87,29 +86,45 @@ class VelaGenerators:
             )
         return reward_rules
 
-    def transaction(self, additionals: Optional[list] = None) -> list:
+    def transaction(self) -> list:
         """Generates transactions (n defined in n data_config)"""
         id_gen = id_generator(1)
         transactions = []
-
         for count in range(1, self.data_config.transactions + 1):
-            data = [
-                next(id_gen),  # id
-                self.now,  # created_at
-                self.now,  # updated_at
-                f"tx_{count}",  # transaction_id
-                randint(500, 1000),  # amount
-                "MID_1234",  # mid
-                self.now,  # datetime
-                uuid4(),  # account_holder_uuid, not a fkey
-                randint(1, self.data_config.retailers),  # retailer_rewards.id fkey
-            ]
-            if additionals is not None:
-                data.extend(additionals)
-            transactions.append(data)
+            transactions.append(
+                [
+                    next(id_gen),  # id
+                    self.now,  # created_at
+                    self.now,  # updated_at
+                    f"tx_{count}",  # transaction_id
+                    randint(500, 1000),  # amount
+                    "MID_1234",  # mid
+                    self.now,  # datetime
+                    uuid4(),  # account_holder_uuid, not a fkey
+                    randint(1, self.data_config.retailers),  # retailer_rewards.id fkey
+                    f"tx_payment_{count}",  # transaction_id
+                ]
+            )
         return transactions
 
     def processed_transaction(self) -> list:
         """Generates processed transaction (1-1 w/ transactions in data config)"""
-        additional_col = ['{"campaign_1", "campaign_2"}']  # campaign_slug, array
-        return self.transaction(additionals=additional_col)
+        id_gen = id_generator(1)
+        processed_transactions = []
+        for count in range(1, self.data_config.transactions + 1):
+            processed_transactions.append(
+                [
+                    next(id_gen),  # id
+                    self.now,  # created_at
+                    self.now,  # updated_at
+                    f"tx_{count}",  # transaction_id
+                    randint(500, 1000),  # amount
+                    "MID_1234",  # mid
+                    self.now,  # datetime
+                    uuid4(),  # account_holder_uuid, not a fkey
+                    randint(1, self.data_config.retailers),  # retailer_rewards.id fkey
+                    '{"campaign_1", "campaign_2"}',
+                    f"tx_payment_{count}",  # transaction_id
+                ]
+            )
+        return processed_transactions
