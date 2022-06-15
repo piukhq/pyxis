@@ -3,6 +3,7 @@ import random
 import time
 
 from datetime import datetime
+from random import randint
 from typing import Iterator
 from uuid import uuid4
 
@@ -135,6 +136,7 @@ class UserTasks(SequentialTaskSet):
         data = {
             "id": f"TX{uuid4()}",
             "transaction_total": random.randint(100, 400),
+            "transaction_id": f"BPL123456789{randint(1, 20000)}",
             "datetime": self.now,
             "MID": "1234",
             "loyalty_id": account.account_holder_uuid,
