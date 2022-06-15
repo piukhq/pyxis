@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from random import randint
+from random import choice, randint
 from uuid import uuid4
 
 from data_population.common.utils import id_generator
@@ -102,7 +102,8 @@ class VelaGenerators:
                     self.now,  # datetime
                     uuid4(),  # account_holder_uuid, not a fkey
                     randint(1, self.data_config.retailers),  # retailer_rewards.id fkey
-                    f"tx_payment_{count}",  # transaction_id
+                    f"tx_payment_{count}",  # payment_transaction_id
+                    choice(["PROCESSED", "DUPLICATE", "NO_ACTIVE_CAMPAIGNS"]),  # status
                 ]
             )
         return transactions
@@ -123,8 +124,8 @@ class VelaGenerators:
                     self.now,  # datetime
                     uuid4(),  # account_holder_uuid, not a fkey
                     randint(1, self.data_config.retailers),  # retailer_rewards.id fkey
-                    '{"campaign_1", "campaign_2"}',
-                    f"tx_payment_{count}",  # transaction_id
+                    '{"campaign_1", "campaign_2"}',  # campaign_slugs: array
+                    f"tx_payment_{count}",  # payment_transaction_id
                 ]
             )
         return processed_transactions
