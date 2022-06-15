@@ -159,6 +159,7 @@ class PolarisGenerators:
                     f"retailer_{reward['retailer_id']}",  # retailer_slug
                     str(uuid.uuid4()),  # idempotency_token
                     choice(account_holders_by_retailer[reward["retailer_id"]]),  # account_holder_id
+                    "",  # associated_url
                 ]
             )
         return account_holder_rewards
