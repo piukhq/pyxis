@@ -3,6 +3,7 @@ import uuid
 from datetime import datetime, timedelta
 from random import choice, randint
 
+from data_population.common.utils import id_generator
 from data_population.data_config import DataConfig
 from data_population.tsv_creation.fixtures.polaris import AccountHolderStatuses, marketing_preferences, profile_config
 from settings import fake
@@ -189,6 +190,51 @@ class PolarisGenerators:
                     f"retailer_{reward['retailer_id']}",  # retailer_slug
                     str(uuid.uuid4()),  # idempotency_token
                     choice(account_holders_by_retailer[reward["retailer_id"]]),  # account_holder_id
+                    False,  # enqueued
                 ]
             )
         return account_holder_pending_rewards
+
+    def balance_adjustment(self) -> list:
+        """
+        Generates balance_adjustment rows (1-1 w/ data_config.transactions)
+        """
+
+        balance_adjustments = []
+
+        for count in range(1, self.data_config.transactions + 1):
+
+            balance_adjustments.append(
+                [
+                    count,  # id
+                    f"token_{count}",  # token
+                    randint(500, 1000),  # adjustment
+                    self.now,  # created_at
+                    randint(1, self.data_config.account_holders),  # account_holder_id
+                ]
+            )
+        return balance_adjustments
+
+    def email_template(self) -> list:
+        """
+        Generates email_template rows (2-1 w/ data_config.retails)
+        Different email templates for each retailer
+        """
+
+        email_templates = []
+        row_id = id_generator(1)
+        template_id = id_generator(1)
+
+        for template_type in ("WELCOME_EMAIL", "REWARD_ISSUANCE"):
+            for count in range(1, self.data_config.retailers + 1):
+                email_templates.append(
+                    [
+                        self.now,  # created_at
+                        self.now,  # updated_at
+                        next(row_id),  # id
+                        next(template_id),  # template_id
+                        template_type,  # type
+                        count,  # retailer_id
+                    ]
+                )
+        return email_templates

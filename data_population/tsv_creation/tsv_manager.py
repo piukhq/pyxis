@@ -117,6 +117,8 @@ class TSVHandler:
         self.write_to_tsv(
             self.polaris_generator.account_holder_pending_reward(), POLARIS_DB, table="account_holder_pending_reward"
         )
+        self.write_to_tsv(self.polaris_generator.balance_adjustment(), POLARIS_DB, table="balance_adjustment")
+        self.write_to_tsv(self.polaris_generator.email_template(), POLARIS_DB, table="email_template")
 
         self.write_to_tsv(
             retry_task(polaris_task_type_ids, polaris_retry_task_types_to_populate, data_config=self.data_config),
