@@ -19,6 +19,7 @@ from data_population.tsv_creation.generators.carina_generators import CarinaGene
 from data_population.tsv_creation.generators.polaris_generators import PolarisGenerators
 from data_population.tsv_creation.generators.task_generators import retry_task, task_type_key_value
 from data_population.tsv_creation.generators.vela_generators import VelaGenerators
+from db_query import get_session
 from settings import CARINA_DB, POLARIS_DB, TSV_BASE_DIR, VELA_DB
 
 execution_order = id_generator(1)
@@ -59,7 +60,7 @@ class TSVHandler:
         self.write_to_tsv(
             task_type_key_value(
                 task_type_ids_dict=vela_task_type_ids,
-                task_type_keys_dict=generate_vela_type_key_values(self.data_config),
+                task_type_keys_dict=generate_vela_type_key_values(get_session(VELA_DB), self.data_config),
                 task_types_to_populate=vela_retry_task_types_to_populate,
                 data_config=self.data_config,
             ),
@@ -83,7 +84,7 @@ class TSVHandler:
         self.write_to_tsv(
             task_type_key_value(
                 task_type_ids_dict=carina_task_type_ids,
-                task_type_keys_dict=generate_carina_type_key_values(self.data_config),
+                task_type_keys_dict=generate_carina_type_key_values(get_session(CARINA_DB), self.data_config),
                 task_types_to_populate=carina_retry_task_types_to_populate,
                 data_config=self.data_config,
             ),
@@ -128,7 +129,7 @@ class TSVHandler:
         self.write_to_tsv(
             task_type_key_value(
                 task_type_ids_dict=polaris_task_type_ids,
-                task_type_keys_dict=generate_polaris_type_key_values(self.data_config),
+                task_type_keys_dict=generate_polaris_type_key_values(get_session(POLARIS_DB), self.data_config),
                 task_types_to_populate=polaris_retry_task_types_to_populate,
                 data_config=self.data_config,
             ),

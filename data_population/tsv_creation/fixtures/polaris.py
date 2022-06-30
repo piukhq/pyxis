@@ -1,8 +1,12 @@
 from enum import Enum
 from random import randint
+from typing import Union
+
+from sqlalchemy.orm import Session
 
 from data_population.common.utils import random_ascii
 from data_population.data_config import DataConfig
+from data_population.tsv_creation.fixtures.common import process_type_key_ids_and_values
 
 profile_config = {
     "email": {"required": "true", "label": "email"},
@@ -57,57 +61,62 @@ polaris_retry_task_types_to_populate = {
 }
 
 
-def generate_polaris_type_key_values(data_config: DataConfig) -> dict[int, dict]:
+def _get_polaris_task_type_key_values_fixture(data_config: DataConfig) -> dict[int, dict[int, Union[str, int]]]:
     total_account_holders = data_config.account_holders
     total_retailers = data_config.retailers
     total_campaigns = data_config.retailers * data_config.campaigns_per_retailer
-    polaris_task_type_keys: dict[int, dict] = {
+    _polaris_task_type_key_values_fixture: dict[int, dict[int, Union[str, int]]] = {
         polaris_task_type_ids["account-holder-activation"]: {
-            1: randint(1, total_account_holders),  # account_holder_id
-            2: randint(1, total_account_holders),  # welcome_email_retry_task_id
-            3: randint(1, total_account_holders),  # callback_retry_task_id
+            "account_holder_id": randint(1, total_account_holders),
+            "welcome_email_retry_task_id": randint(1, total_account_holders),
+            "callback_retry_task_id": randint(1, total_account_holders),
         },
         polaris_task_type_ids["send-welcome-email"]: {
-            4: randint(1, total_account_holders),  # account_holder_id
+            "account_holder_id": randint(1, total_account_holders),
         },
         polaris_task_type_ids["enrolment-callback"]: {
-            5: randint(1, total_account_holders),  # account_holder_id
-            6: f"https://{random_ascii(10)}/example_url",  # callback_url
-            7: f"{random_ascii(10)}",  # third_party_identifier
+            "account_holder_id": randint(1, total_account_holders),
+            "callback_url": f"https://{random_ascii(10)}/example_url",
+            "third_party_identifier": f"{random_ascii(10)}",
         },
         polaris_task_type_ids["create-campaign-balances"]: {
-            8: f"retailer_{randint(1, total_retailers)}",  # retailer_slug,
-            9: f"campaign_{randint(1, total_retailers)}",  # campaign_slug
+            "retailer_slug": f"retailer_{randint(1, total_retailers)}",
+            "campaign_slug": f"campaign_{randint(1, total_retailers)}",
         },
         polaris_task_type_ids["delete-campaign-balances"]: {
-            10: f"retailer_{randint(1, total_retailers)}",  # retailer_slug
-            11: f"campaign_{randint(1, total_campaigns)}",  # campaign_slug
+            "retailer_slug": f"retailer_{randint(1, total_retailers)}",
+            "campaign_slug": f"campaign_{randint(1, total_campaigns)}",
         },
         polaris_task_type_ids["cancel-rewards"]: {
-            12: f"retailer_{randint(1, total_retailers)}",  # retailer_slug
-            13: f"reward_{randint(1, total_campaigns)}",  # reward_slug
+            "retailer_slug": f"retailer_{randint(1, total_retailers)}",
+            "reward_slug": f"reward_{randint(1, total_campaigns)}",
         },
         polaris_task_type_ids["pending-reward-allocation"]: {
-            14: randint(1, data_config.pending_rewards),  # pending_reward_id,
-            15: randint(1, total_account_holders),  # account_holder_id
-            16: f"retailer_{randint(1, total_retailers)}",  # retailer_slug
-            17: f"reward_{randint(1, total_campaigns)}",  # reward_slug
+            "pending_reward_id": randint(1, data_config.pending_rewards),
+            "account_holder_id": randint(1, total_account_holders),
+            "retailer_slug": f"retailer_{randint(1, total_retailers)}",
+            "reward_slug": f"reward_{randint(1, total_campaigns)}",
         },
         polaris_task_type_ids["anonymise-account-holder"]: {
-            18: randint(1, total_account_holders),  # account_holder_id
-            19: randint(1, total_retailers),  # retailer_id
+            "account_holder_id": randint(1, total_account_holders),
+            "retailer_id": randint(1, total_retailers),
         },
         polaris_task_type_ids["pending-accounts-activation"]: {
-            20: f"retailer_{randint(1, total_retailers)}",  # retailer_slug
-            21: f"campaign_{randint(1, total_campaigns)}",  # campaign_slug
+            "retailer_slug": f"retailer_{randint(1, total_retailers)}",
+            "campaign_slug": f"campaign_{randint(1, total_campaigns)}",
         },
         polaris_task_type_ids["convert-pending-rewards"]: {
-            22: f"retailer_{randint(1, total_retailers)}",  # retailer_slug
-            23: f"campaign_{randint(1, total_campaigns)}",  # campaign_slug
+            "retailer_slug": f"retailer_{randint(1, total_retailers)}",
+            "campaign_slug": f"campaign_{randint(1, total_campaigns)}",
         },
         polaris_task_type_ids["delete-pending-rewards"]: {
-            24: f"retailer_{randint(1, total_retailers)}",  # retailer_slug
-            25: f"campaign_{randint(1, total_campaigns)}",  # campaign_slug
+            "retailer_slug": f"retailer_{randint(1, total_retailers)}",
+            "campaign_slug": f"campaign_{randint(1, total_campaigns)}",
         },
     }
-    return polaris_task_type_keys
+    return _polaris_task_type_key_values_fixture
+
+
+def generate_polaris_type_key_values(db_session: "Session", data_config: DataConfig) -> dict[int, dict]:
+    polaris_task_type_key_value_fixture = _get_polaris_task_type_key_values_fixture(data_config)
+    return process_type_key_ids_and_values(db_session, polaris_task_type_ids, polaris_task_type_key_value_fixture)
