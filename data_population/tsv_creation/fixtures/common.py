@@ -1,5 +1,3 @@
-from typing import Union
-
 from sqlalchemy.orm import Session
 
 from db_query import get_task_type
@@ -18,7 +16,7 @@ audit_data = [
 ]
 
 
-def _get_task_type_key_ids_and_value(db_session, task_name: str) -> dict:
+def _get_task_type_key_ids_and_value(db_session: "Session", task_name: str) -> dict:
     task_type = get_task_type(db_session, task_name=task_name)
     return task_type.get_key_ids_by_name()
 
@@ -26,8 +24,8 @@ def _get_task_type_key_ids_and_value(db_session, task_name: str) -> dict:
 def process_type_key_ids_and_values(
     db_session: "Session",
     task_type_ids: dict[str, int],
-    task_type_key_value_fixture: dict[int, dict[int, Union[str, int]]],
-) -> dict[int, dict[int, Union[str, int]]]:
+    task_type_key_value_fixture: dict[int, dict[int, str | int]],
+) -> dict[int, dict[int, str | int]]:
     task_type_keys: dict[int, dict] = {}
     task_names: list[str] = list(task_type_ids.keys())
     for task_name in task_names:

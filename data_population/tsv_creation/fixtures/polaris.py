@@ -1,6 +1,5 @@
 from enum import Enum
 from random import randint
-from typing import Union
 
 from sqlalchemy.orm import Session
 
@@ -61,11 +60,11 @@ polaris_retry_task_types_to_populate = {
 }
 
 
-def _get_polaris_task_type_key_values_fixture(data_config: DataConfig) -> dict[int, dict[int, Union[str, int]]]:
+def _get_polaris_task_type_key_values_fixture(data_config: DataConfig) -> dict[int, dict[str, str | int]]:
     total_account_holders = data_config.account_holders
     total_retailers = data_config.retailers
     total_campaigns = data_config.retailers * data_config.campaigns_per_retailer
-    _polaris_task_type_key_values_fixture: dict[int, dict[int, Union[str, int]]] = {
+    _polaris_task_type_key_values_fixture: dict[int, dict[str, str | int]] = {
         polaris_task_type_ids["account-holder-activation"]: {
             "account_holder_id": randint(1, total_account_holders),
             "welcome_email_retry_task_id": randint(1, total_account_holders),

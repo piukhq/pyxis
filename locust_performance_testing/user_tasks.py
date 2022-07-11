@@ -4,7 +4,7 @@ import time
 
 from datetime import datetime
 from random import randint
-from typing import Iterator
+from collections.abc import Iterator
 from uuid import uuid4
 
 from faker import Faker

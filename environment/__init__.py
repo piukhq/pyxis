@@ -15,7 +15,7 @@ def read_env() -> None:
     try:
         with open(".env") as f:
             content = f.read()
-    except IOError:
+    except OSError:
         content = ""
 
     for line in content.splitlines():

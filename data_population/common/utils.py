@@ -3,7 +3,7 @@ import random
 import string
 import time
 
-from typing import Iterable
+from collections.abc import Iterable
 
 
 def id_generator(starting_num: int = 0) -> Iterable[int]:

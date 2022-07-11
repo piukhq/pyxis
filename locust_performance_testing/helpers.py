@@ -1,8 +1,8 @@
 import logging
 
+from collections.abc import Iterator
 from dataclasses import dataclass
 from functools import wraps
-from typing import Iterator, Optional
 
 import psycopg2
 import redis
@@ -17,8 +17,8 @@ import settings as s
 repeat_tasks: dict = {}  # value assigned by locustfile
 
 all_secrets: dict = {}  # value assigned by load_secrets()
-retailer_count: Optional[int] = None  # value assigned by get_polaris_retailer_count()
-account_holder_count: Optional[int] = None
+retailer_count: int | None = None  # value assigned by get_polaris_retailer_count()
+account_holder_count: int | None = None
 
 headers: dict = {}  # value assigned by get_headers()
 

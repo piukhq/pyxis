@@ -1,6 +1,4 @@
 #!/usr/bin/env python
-from typing import Union
-
 from retry_tasks_lib.db.models import TaskType, load_models_to_metadata
 from sqlalchemy import create_engine
 from sqlalchemy.future import select
@@ -10,7 +8,7 @@ from sqlalchemy.pool import NullPool
 from settings import DB_CONNECTION_URI
 
 
-def get_session(DB: Union[str, bool, None]) -> "Session":
+def get_session(DB: str | bool | None) -> "Session":
     db_connection_string: str = DB_CONNECTION_URI.replace("/postgres?", f"/{DB}?")
 
     sync_engine = create_engine(db_connection_string, echo=False, pool_pre_ping=True, future=True, poolclass=NullPool)
