@@ -6,14 +6,10 @@ from data_population.common.utils import id_generator
 from data_population.data_config import DataConfig
 from data_population.tsv_creation.fixtures import (
     carina_retry_task_types_to_populate,
-    carina_task_type_ids,
-    generate_carina_type_key_values,
-    generate_polaris_type_key_values,
-    generate_vela_type_key_values,
+    fetch_task_types_ids,
+    generate_task_type_key_values,
     polaris_retry_task_types_to_populate,
-    polaris_task_type_ids,
     vela_retry_task_types_to_populate,
-    vela_task_type_ids,
 )
 from data_population.tsv_creation.generators.carina_generators import CarinaGenerators
 from data_population.tsv_creation.generators.polaris_generators import PolarisGenerators
@@ -30,11 +26,14 @@ class TSVHandler:
     """Handles whole TSV creation journey for all databases."""
 
     def __init__(self, data_config: DataConfig) -> None:
-        self.id = 0
+        self.id = 0  # pylint: disable=invalid-name
         self.data_config = data_config
         self.polaris_generator = PolarisGenerators(data_config=data_config)
         self.vela_generator = VelaGenerators(data_config=data_config)
         self.carina_generator = CarinaGenerators(data_config=data_config)
+        self.polaris_task_type_ids = fetch_task_types_ids(POLARIS_DB)
+        self.vela_task_type_ids = fetch_task_types_ids(VELA_DB)
+        self.carina_task_type_ids = fetch_task_types_ids(CARINA_DB)
 
     def create_tsv_files(self) -> None:
         """
@@ -52,14 +51,14 @@ class TSVHandler:
         self.write_to_tsv(self.vela_generator.processed_transaction(), VELA_DB, table="processed_transaction")
 
         self.write_to_tsv(
-            retry_task(vela_task_type_ids, vela_retry_task_types_to_populate, data_config=self.data_config),
+            retry_task(self.vela_task_type_ids, vela_retry_task_types_to_populate, data_config=self.data_config),
             VELA_DB,
             table="retry_task",
         )
         self.write_to_tsv(
             task_type_key_value(
-                task_type_ids_dict=vela_task_type_ids,
-                task_type_keys_dict=generate_vela_type_key_values(self.data_config),
+                task_type_ids_dict=self.vela_task_type_ids,
+                task_type_keys_dict=generate_task_type_key_values(VELA_DB),
                 task_types_to_populate=vela_retry_task_types_to_populate,
                 data_config=self.data_config,
             ),
@@ -75,15 +74,15 @@ class TSVHandler:
         self.write_to_tsv(self.carina_generator.reward_update(), CARINA_DB, table="reward_update")
 
         self.write_to_tsv(
-            retry_task(carina_task_type_ids, carina_retry_task_types_to_populate, data_config=self.data_config),
+            retry_task(self.carina_task_type_ids, carina_retry_task_types_to_populate, data_config=self.data_config),
             CARINA_DB,
             table="retry_task",
         )
 
         self.write_to_tsv(
             task_type_key_value(
-                task_type_ids_dict=carina_task_type_ids,
-                task_type_keys_dict=generate_carina_type_key_values(self.data_config),
+                task_type_ids_dict=self.carina_task_type_ids,
+                task_type_keys_dict=generate_task_type_key_values(CARINA_DB),
                 task_types_to_populate=carina_retry_task_types_to_populate,
                 data_config=self.data_config,
             ),
@@ -121,14 +120,14 @@ class TSVHandler:
         self.write_to_tsv(self.polaris_generator.email_template(), POLARIS_DB, table="email_template")
 
         self.write_to_tsv(
-            retry_task(polaris_task_type_ids, polaris_retry_task_types_to_populate, data_config=self.data_config),
+            retry_task(self.polaris_task_type_ids, polaris_retry_task_types_to_populate, data_config=self.data_config),
             POLARIS_DB,
             table="retry_task",
         )
         self.write_to_tsv(
             task_type_key_value(
-                task_type_ids_dict=polaris_task_type_ids,
-                task_type_keys_dict=generate_polaris_type_key_values(self.data_config),
+                task_type_ids_dict=self.polaris_task_type_ids,
+                task_type_keys_dict=generate_task_type_key_values(POLARIS_DB),
                 task_types_to_populate=polaris_retry_task_types_to_populate,
                 data_config=self.data_config,
             ),
@@ -137,7 +136,7 @@ class TSVHandler:
         )
 
     @staticmethod
-    def write_to_tsv(data: list, db: str, table: str) -> None:
+    def write_to_tsv(data: list, db_name: str, table: str) -> None:
         """
         Writes data to tsv with filename containing all information needed for upload (including order).
 
@@ -151,10 +150,10 @@ class TSVHandler:
         if not os.path.isdir(TSV_BASE_DIR):
             os.mkdir(TSV_BASE_DIR)
 
-        tsv_name = os.path.join(TSV_BASE_DIR, f"tsv-{db}-{execute_id}-{table}.tsv")
+        tsv_name = os.path.join(TSV_BASE_DIR, f"tsv-{db_name}-{execute_id}-{table}.tsv")
 
-        with open(tsv_name, "w+") as f:
-            tsv_writer = csv.writer(f, delimiter="\t", quoting=csv.QUOTE_NONE, escapechar="", quotechar="")
+        with open(tsv_name, "w+", encoding="utf-8") as file:
+            tsv_writer = csv.writer(file, delimiter="\t", quoting=csv.QUOTE_NONE, escapechar="", quotechar="")
             tsv_writer.writerows(data)
 
         logger.info(f"Wrote tsv {tsv_name}")

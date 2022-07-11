@@ -4,23 +4,17 @@ import time
 
 from datetime import datetime
 from random import randint
-from typing import Iterator
+from typing import TYPE_CHECKING, Generator
 from uuid import uuid4
 
 from faker import Faker
 from locust import SequentialTaskSet
 from locust.exception import StopUser
 
-from locust_performance_testing.helpers import (
-    AccountHolder,
-    account_holder_gen,
-    fetch_preloaded_account_holder_information,
-    get_headers,
-    get_polaris_retailer_count,
-    get_task_repeats,
-    load_secrets,
-    repeatable_task,
-)
+from locust_performance_testing.helpers import AccountHolder, locust_handler, repeatable_task
+
+if TYPE_CHECKING:
+    from locust import HttpUser
 
 
 class UserTasks(SequentialTaskSet):
@@ -32,34 +26,35 @@ class UserTasks(SequentialTaskSet):
     dictionary in the parent locustfile.
     """
 
-    def __init__(self, parent) -> None:  # type: ignore
+    account_holders: Generator[AccountHolder, None, None]
+
+    def __init__(self, parent: "HttpUser") -> None:
         super().__init__(parent)
         self.url_prefix = ""
-        self.keys = load_secrets()
-        self.headers = get_headers()
-        self.retailer_slug = f"retailer_{random.randint(1, get_polaris_retailer_count())}"
+        self.keys = locust_handler.load_secrets()
+        self.headers = locust_handler.get_headers()
+        self.retailer_slug = f"retailer_{random.randint(1, locust_handler.get_polaris_retailer_count())}"
         self.fake = Faker()
         self.account_number = ""
         self.account_uuid = ""
         self.now = int(datetime.timestamp(datetime.now()))
         self.accounts: list[AccountHolder] = []
         self.begin_time: float = time.time()
-        self.account_holders: Iterator[AccountHolder] = None  # type: ignore
 
     # ---------------------------------POLARIS ENDPOINTS---------------------------------
 
     def on_start(self) -> None:
 
-        repeats = get_task_repeats()
+        repeats = locust_handler.repeat_tasks
 
         # We get a 'group' of account_holders from the db equal to the number of transactions for this user, as we
         # ideally want to send 1 transaction per account holder.
 
         accounts_to_fetch = repeats["post_transaction"]
 
-        accounts = fetch_preloaded_account_holder_information(accounts_to_fetch)
+        accounts = locust_handler.fetch_preloaded_account_holder_information(accounts_to_fetch)
 
-        self.account_holders = account_holder_gen(accounts)
+        self.account_holders = locust_handler.account_holder_gen(accounts)
 
     @repeatable_task()
     def post_account_holder(self) -> None:
@@ -95,7 +90,9 @@ class UserTasks(SequentialTaskSet):
     @repeatable_task()
     def post_get_by_credentials(self) -> None:
 
-        account: AccountHolder = next(self.account_holders)
+        account: AccountHolder = next(self.account_holders, None)
+        if not account:
+            raise ValueError(f"no more accounts in {self.__class__.__name__}.account_holders")
 
         data = {"email": account.email, "account_number": account.account_number}
 

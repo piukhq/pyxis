@@ -18,7 +18,7 @@ def retry_task(task_type_ids_dict: dict, task_types_to_populate: dict, data_conf
     id_gen = id_generator(1)
     retry_tasks = []
     for task_type, value_list in task_types_to_populate.items():
-        rowcount = sum([getattr(data_config, i) for i in value_list])
+        rowcount = sum(getattr(data_config, i) for i in value_list)
         for _ in range(1, rowcount + 1):
             task_type_id = task_type_ids_dict[task_type]
             now = datetime.utcnow()
@@ -51,8 +51,8 @@ def task_type_key_value(
 
     task_type_key_value_rows = []
     for task_type, value_list in task_types_to_populate.items():
-        rowcount = sum([getattr(data_config, i) for i in value_list])
-        for count in range(1, rowcount + 1):
+        rowcount = sum(getattr(data_config, i) for i in value_list)
+        for _ in range(1, rowcount + 1):
 
             retry_task_id = next(retry_task_id_gen)
 

@@ -1,7 +1,12 @@
+from typing import TYPE_CHECKING, Any
+
 from locust import HttpUser, constant, events
 
-from locust_performance_testing.helpers import set_initial_starting_pk, set_task_repeats
+from locust_performance_testing.helpers import locust_handler
 from locust_performance_testing.user_tasks import UserTasks
+
+if TYPE_CHECKING:
+    from locust.env import Environment
 
 
 class WebsiteUser(HttpUser):
@@ -22,12 +27,12 @@ class WebsiteUser(HttpUser):
         "stop_locust_after_test_suite": 1,  # Should be set to 1 in most normal situations
     }
 
-    set_task_repeats(repeats)
+    locust_handler.repeat_tasks = repeats
     tasks = [UserTasks]
     wait_time = constant(0)
 
 
 @events.test_start.add_listener
-def on_test_start(environment, **kwargs) -> None:  # type: ignore
+def on_test_start(environment: "Environment", **kwargs: Any) -> None:  # pylint: disable=unused-argument
     print("Test started")
-    set_initial_starting_pk()
+    locust_handler.set_initial_starting_pk()

@@ -71,19 +71,18 @@ class DataTaskHandler:
 
             # UPLOAD/COPY
             logger.info(f"{db_name.upper()}: {table_name}: Attempting to copy data into table")
-            with open(os.path.join(TSV_BASE_DIR, file_name)) as f:
-                cursor.copy_from(f, table_name, sep="\t", null="NULL")
+            with open(os.path.join(TSV_BASE_DIR, file_name), encoding="utf-8") as file:
+                cursor.copy_from(file, table_name, sep="\t", null="NULL")
             logger.info(f"{db_name.upper()}: {table_name}: Successfully uploaded data")
 
             # UPDATE SEQUENCES
-            column = "id"
-            task_table_columns = {
+
+            column = {
                 "retry_task": "retry_task_id",
                 "task_type": "task_type_id",
                 "task_type_key": "task_type_key_id",
-            }
-            if table_name in task_table_columns:
-                column = task_table_columns[table_name]
+            }.get(table_name, "id")
+
             sequence_name = f"'{table_name}_{column}_seq'"
             query_statement = f"SELECT * FROM pg_class where relname = {sequence_name}"
             cursor.execute(query_statement)

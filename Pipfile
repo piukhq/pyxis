@@ -5,7 +5,6 @@ name = "pypi"
 
 [packages]
 locust = "==1.5.2"
-click = "*"
 faker = "*"
 psycopg2-binary = "*"
 azure-keyvault-secrets = "*"
@@ -14,15 +13,17 @@ jinja2 = "==3.0.3"
 itsdangerous = "==2.0.1"
 redis = "*"
 werkzeug = "==2.0.3"
-types-redis = "*"
+environs = "*"
+typer = "*"
 
 [dev-packages]
 black = "*"
-flake8 = "*"
 xenon = "*"
 isort = "*"
 ipython = "*"
 mypy = "*"
+pylint = "*"
+types-redis = "*"
 
 [requires]
-python_version = "3.9"
+python_version = "3.10"
