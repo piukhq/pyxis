@@ -25,9 +25,11 @@ class VelaGenerators:
         id_gen = id_generator(1)
         campaigns = []
         for count in range(1, self.data_config.retailers + 1):
-            for campaign_count in range(1, self.data_config.campaigns_per_retailer + 1):
+            for _ in range(1, self.data_config.campaigns_per_retailer + 1):
 
-                campaign_id = next(id_gen)
+                campaign_id = next(id_gen, None)
+                if not campaign_id:
+                    raise ValueError("no campaign_id value found")
 
                 campaigns.append(
                     [
@@ -53,7 +55,7 @@ class VelaGenerators:
         total_campaigns = self.data_config.retailers * self.data_config.campaigns_per_retailer
         earn_rules = []
         for campaign_count in range(1, total_campaigns + 1):
-            for earn_rule_count in range(self.data_config.earn_rule_per_campaign):
+            for _ in range(self.data_config.earn_rule_per_campaign):
                 earn_rules.append(
                     [
                         next(id_gen),  # id

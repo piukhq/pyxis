@@ -56,7 +56,7 @@ class CarinaGenerators:
         reward_configs = []
 
         for retailer_count in range(1, self.data_config.retailers + 1):
-            for campaign_count in range(self.data_config.campaigns_per_retailer):
+            for _ in range(self.data_config.campaigns_per_retailer):
 
                 reward_config_id = next(id_gen)
 
@@ -94,7 +94,7 @@ class CarinaGenerators:
 
             # first <allocated_rewards> rewards should be set as allocated - these will be populated in polaris
             # account_holder_reward
-            allocated = True if reward < self.data_config.allocated_rewards else False
+            allocated = reward < self.data_config.allocated_rewards
 
             reward_id = str(uuid4())
             reward_config_id = choice(list(self.all_reward_configs))

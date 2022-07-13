@@ -48,4 +48,15 @@ data_configs = {
         transactions=2000,
         reward_updates=0,
     ),
+    "test-migration-script": DataConfig(
+        retailers=1,
+        campaigns_per_retailer=1,
+        earn_rule_per_campaign=1,
+        account_holders=2000,
+        allocated_rewards=300,
+        pending_rewards=200,
+        spare_rewards=50,
+        transactions=25000,
+        reward_updates=0,
+    ),
 }

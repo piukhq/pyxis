@@ -1,40 +1,31 @@
-import logging
+from enum import Enum
 
-import click
+from typer import Option, Typer, echo
 
 from data_population.data_config import data_configs
 from data_population.tasks import populate_all, upload_only
 
-logger = logging.getLogger("Data-controller")
-
+cli = Typer(name="Pyxis", help="performance sandbox test tool", no_args_is_help=True, add_completion=False)
 tasks = {"populate-db": populate_all, "upload-only": upload_only}
 
-param_options = {
-    "tasks": list(tasks.keys()),
-    "data_configuration": list(data_configs.keys()),
-}
 
-TASK_HELP = f"Task you wish to perform (required) " f"Please choose from: {param_options['tasks']}"
-
-DATA_CONFIGURATION_HELP = (
-    f"Data Configuration (required). " f"Please choose from: {param_options['data_configuration']}"
-)
+TaskNameOptions = Enum("TaskNameOptions", {k.replace("-", "_"): k for k in tasks})  # type: ignore [misc]
+DataConfigOptions = Enum("DataConfigOptions", {k.replace("-", "_"): k for k in data_configs})  # type: ignore [misc]
 
 
-@click.command()
-@click.option("-t", "--task-name", type=click.Choice(param_options["tasks"]), required=True, help=TASK_HELP)
-@click.option(
-    "-d",
-    "--data-configuration",
-    type=click.Choice(param_options["data_configuration"]),
-    required=True,
-    help=DATA_CONFIGURATION_HELP,
-)
-def main(task_name: str, data_configuration: str) -> None:
-    """Parses cli command -> tasks.py"""
+@cli.command(no_args_is_help=True)
+def main(
+    task_name: TaskNameOptions = Option(..., "--task-name", "-t", help="Task you wish to perform."),
+    data_configuration: DataConfigOptions = Option(
+        ..., "--data-configuration", "-d", help="Task's data configuration."
+    ),
+) -> None:
+    """Runs the provided task with the provided configuration"""
 
-    tasks[task_name](data_configuration)
+    echo("Starting...")
+    tasks[task_name.value](data_configuration.value)
+    echo("Finished.")
 
 
 if __name__ == "__main__":
-    main()
+    cli()

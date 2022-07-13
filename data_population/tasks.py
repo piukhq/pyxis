@@ -20,22 +20,22 @@ def populate_all(data_configuration: str) -> None:
     data_config = data_configs[data_configuration]
 
     #  Create all tsvs
-    t = time.time()
+    start_time = time.time()
     tsv_manager.TSVHandler(data_config).create_tsv_files()
-    logger.info(f"All tsvs successfully generated in {time.time() - t} seconds")
+    logger.info(f"All tsvs successfully generated in {time.time() - start_time} seconds")
 
     #  Repopulate all dbs
     logger.info("Attempting upload of all tsvs")
-    t = time.time()
+    start_time = time.time()
     db_tasks.DataTaskHandler().repopulate_all_databases()
-    logger.info(f"All tsvs successfully uploaded in {time.time() - t} seconds")
+    logger.info(f"All tsvs successfully uploaded in {time.time() - start_time} seconds")
 
 
 @timed_function
-def upload_only(data_configuration: str) -> None:
+def upload_only(data_configuration: str) -> None:  # pylint: disable=unused-argument
 
     #  Repopulate all dbs
     logger.info("Attempting upload of all tsvs")
-    t = time.time()
+    start_time = time.time()
     db_tasks.DataTaskHandler().repopulate_all_databases()
-    logger.info(f"All tsvs successfully uploaded in {time.time() - t} seconds")
+    logger.info(f"All tsvs successfully uploaded in {time.time() - start_time} seconds")
