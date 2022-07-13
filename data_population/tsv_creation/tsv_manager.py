@@ -2,6 +2,8 @@ import csv
 import logging
 import os
 
+from uuid import uuid4
+
 from data_population.common.utils import id_generator
 from data_population.data_config import DataConfig
 from data_population.tsv_creation.fixtures import (
@@ -28,8 +30,9 @@ class TSVHandler:
     def __init__(self, data_config: DataConfig) -> None:
         self.id = 0  # pylint: disable=invalid-name
         self.data_config = data_config
-        self.polaris_generator = PolarisGenerators(data_config=data_config)
-        self.vela_generator = VelaGenerators(data_config=data_config)
+        account_holder_uuids = [uuid4() for _ in range(data_config.account_holders)]
+        self.polaris_generator = PolarisGenerators(data_config=data_config, account_holder_uuids=account_holder_uuids)
+        self.vela_generator = VelaGenerators(data_config=data_config, account_holder_uuids=account_holder_uuids.copy())
         self.carina_generator = CarinaGenerators(data_config=data_config)
         self.polaris_task_type_ids = fetch_task_types_ids(POLARIS_DB)
         self.vela_task_type_ids = fetch_task_types_ids(VELA_DB)
