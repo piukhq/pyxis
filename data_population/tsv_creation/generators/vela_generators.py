@@ -1,17 +1,18 @@
 from datetime import datetime, timedelta
 from random import choice, randint
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from data_population.common.utils import id_generator
 from data_population.data_config import DataConfig
 
 
 class VelaGenerators:
-    def __init__(self, data_config: DataConfig) -> None:
+    def __init__(self, data_config: DataConfig, account_holder_uuids: list[UUID]) -> None:
         self.now = datetime.utcnow()
         self.end_date = self.now + timedelta(weeks=100)
         self.data_config = data_config
         self.retailer_ids: list = []
+        self.account_holder_uuids = account_holder_uuids
 
     def retailer_rewards(self) -> list:
         retailers = []
@@ -114,6 +115,7 @@ class VelaGenerators:
         """Generates processed transaction (1-1 w/ transactions in data config)"""
         id_gen = id_generator(1)
         processed_transactions = []
+
         for count in range(1, self.data_config.transactions + 1):
             processed_transactions.append(
                 [
@@ -124,7 +126,7 @@ class VelaGenerators:
                     randint(500, 1000),  # amount
                     "MID_1234",  # mid
                     self.now,  # datetime
-                    uuid4(),  # account_holder_uuid, not a fkey
+                    choice(self.account_holder_uuids),  # account_holder_uuid, not a fkey
                     randint(1, self.data_config.retailers),  # retailer_rewards.id fkey
                     '{"campaign_1", "campaign_2"}',  # campaign_slugs: array
                     f"tx_payment_{count}",  # payment_transaction_id

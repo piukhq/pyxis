@@ -10,13 +10,14 @@ from settings import fake
 
 
 class PolarisGenerators:
-    def __init__(self, data_config: DataConfig) -> None:
+    def __init__(self, data_config: DataConfig, account_holder_uuids: list[uuid.UUID]) -> None:
         self.now = datetime.utcnow()
         self.data_config = data_config
         self.all_account_holder_retailers: dict = {}
         self.allocated_rewards: list = []
         self.unallocated_rewards: list = []
         self.account_holders_by_retailer: dict = {}
+        self.account_holder_uuids = account_holder_uuids
 
     def get_account_holders_by_retailer(self) -> dict:
         if not self.account_holders_by_retailer:
@@ -56,7 +57,7 @@ class PolarisGenerators:
         account_holders = []
         for count in range(1, self.data_config.account_holders + 1):
             account_id = count
-            account_holder_uuid = uuid.uuid4()
+            account_holder_uuid = self.account_holder_uuids.pop()
             retailer_id = randint(1, self.data_config.retailers)
             account_holders.append(
                 [

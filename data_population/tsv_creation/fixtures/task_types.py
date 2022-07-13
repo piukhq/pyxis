@@ -48,7 +48,10 @@ def fetch_task_types_ids(db_name: str) -> dict[str, int]:
     with psycopg2.connect(db_uri) as db_connection:
         with db_connection.cursor() as cursor:
             cursor.execute(task_type_query)
-            return dict(cursor.fetchall())
+            result = dict(cursor.fetchall())
+
+    db_connection.close()
+    return result
 
 
 def _generate_fake_val_for_type(tk_type: str) -> Any:
@@ -74,6 +77,8 @@ def generate_task_type_key_values(db_name: str) -> dict[int, dict[int, Any]]:
                     task_type_key_data[tt_id] = []
 
                 task_type_key_data[tt_id].append(TaskTypeKeyData(type=tk_type, task_type_key_id=tk_id))
+
+    db_connection.close()
 
     return {
         tt_id: {tk_data.task_type_key_id: _generate_fake_val_for_type(tk_data.type) for tk_data in values}
