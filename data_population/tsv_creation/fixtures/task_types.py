@@ -16,7 +16,7 @@ polaris_retry_task_types_to_populate = {
     "enrolment-callback": ["account_holders"],
     "account-holder-activation": ["account_holders"],
     "create-campaign-balances": ["account_holders"],
-    "send-welcome-email": ["account_holders"],
+    "send-email": ["account_holders"],
     "pending-reward-allocation": ["pending_rewards", "allocated_rewards"],
     "convert-pending-rewards": ["pending_rewards"],
     "delete-pending-rewards": ["pending_rewards"],

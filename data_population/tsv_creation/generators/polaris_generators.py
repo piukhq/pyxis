@@ -44,9 +44,6 @@ class PolarisGenerators:
                     profile_config,  # profile_config
                     marketing_preferences,  # marketing_preference_config
                     "Performance Retailer",  # loyalty_name
-                    "",  # email_header_image
-                    "Performance Retailer <welcome@performance_retailer.com>",  # welcome_email_from
-                    "Welcome to Performance Retailer!",  # welcome_email_subject
                 ]
             )
         return retailer_configs
