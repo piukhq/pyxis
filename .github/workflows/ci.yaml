@@ -2,21 +2,22 @@ name: ci
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
   tests:
     name: tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions/setup-python@v2
         with:
           python-version: "3.10"
-      - run: pip install pipenv
-      - run: pipenv install --dev --system --deploy --ignore-pipfile
+      - run: pip install poetry
+      - run: poetry config virtualenvs.create false
+      - run: poetry install
       - run: xenon --no-assert --max-average A --max-modules B --max-absolute B .
       - run: black --check .
       - run: isort --check .
@@ -26,9 +27,9 @@ jobs:
     if: github.ref == 'refs/heads/master' && github.event_name == 'push'
     name: release
     runs-on: ubuntu-latest
-    needs: [ tests ]
+    needs: [tests]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - run: echo "::set-output name=date::$(date +'%FT%H%M%SZ')"
         id: date
       - uses: docker/login-action@v1

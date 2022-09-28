@@ -85,6 +85,7 @@ class VelaGenerators:
                     f"reward_{count}",  # reward_slug
                     0,  # allocation_window
                     count,  # campaign_id
+                    "NULL",  # reward_cap
                 ]
             )
         return reward_rules

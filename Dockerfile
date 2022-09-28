@@ -1,10 +1,11 @@
-FROM ghcr.io/binkhq/python:3.10
+FROM ghcr.io/binkhq/python:3.10-poetry
 
 WORKDIR /app
 ADD . .
 
+RUN poetry config virtualenvs.create false
 RUN apt update && apt -y install gcc vim nano tmux postgresql-client nginx && \
-    pipenv install --deploy --system --ignore-pipfile && \
+    poetry install && \
     mv /app/router/nginx.conf /etc/nginx && \
     apt-get autoremove -y gcc && rm -rf /var/lib/apt/lists/*
 

@@ -22,4 +22,4 @@ python commands.py --help
 # Running Performance Tests:
 To start up locust, run:
 
-`pipenv run locust --host=https://perf-bpl.sandbox.gb.bink.com --locustfile=PATH_TO_FILE`
+`poetry run locust --host=https://perf-bpl.sandbox.gb.bink.com --locustfile=PATH_TO_FILE`

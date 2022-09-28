@@ -111,6 +111,7 @@ class CarinaGenerators:
                     False,  # deleted
                     reward_config_id,  # reward_config_id
                     retailer_id,  # retailer_id
+                    self.now + timedelta(days=30),  # expiry_date
                 ]
             )
 
