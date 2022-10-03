@@ -175,6 +175,8 @@ class PolarisGenerators:
 
             reward = self.unallocated_rewards.pop()
 
+            pending_reward_value = randint(500, 1000)
+            pending_reward_count = 1
             account_holder_pending_rewards.append(
                 [
                     self.now,  # created_at
@@ -182,13 +184,16 @@ class PolarisGenerators:
                     reward_count,  # id
                     self.now,  # created_date
                     self.now + timedelta(days=-1),  # conversion_date
-                    randint(500, 1000),  # value
+                    pending_reward_value,  # value
                     f"campaign_{reward['retailer_id'] * self.data_config.campaigns_per_retailer}",  # campaign_slug
                     f"reward_{reward['reward_config_id']}",  # reward_slug
                     f"retailer_{reward['retailer_id']}",  # retailer_slug
                     str(uuid.uuid4()),  # idempotency_token
                     choice(account_holders_by_retailer[reward["retailer_id"]]),  # account_holder_id
                     False,  # enqueued
+                    pending_reward_count,  # count
+                    pending_reward_value * pending_reward_count,  # total_cost_to_user
+                    str(uuid.uuid4()),  # pending_reward_uuid
                 ]
             )
         return account_holder_pending_rewards
