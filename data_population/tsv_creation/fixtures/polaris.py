@@ -19,6 +19,14 @@ marketing_preferences = {
     }
 }
 
+TX_EARNED_DATA = [
+    {"type": "ACCUMULATOR", "value": "£15.00"},
+    {"type": "ACCUMULATOR", "value": "£15.00"},
+    {"type": "STAMPS", "value": "2"},
+    {"type": "ACCUMULATOR", "value": "£15.00"},
+    {"type": "ACCUMULATOR", "value": "£15.00"},
+]
+
 
 class AccountHolderStatuses(str, Enum):
     ACTIVE = "ACTIVE"

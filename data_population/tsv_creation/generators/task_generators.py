@@ -29,7 +29,7 @@ def retry_task(task_type_ids_dict: dict, task_types_to_populate: dict, data_conf
                     next(id_gen),  # retry_task_id
                     randint(1, 3),  # attempts
                     json.dumps(audit_data),  # audit data
-                    now + timedelta(minutes=5),  # next_time_attempt
+                    now + timedelta(days=2),  # next_time_attempt
                     choice(["SUCCESS", "REQUEUED", "CANCELLED"]),  # status
                     task_type_id,  # task_type_id
                 ]

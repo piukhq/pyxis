@@ -17,34 +17,29 @@ class CarinaGenerators:
 
     def retailer(self) -> list:
         """Generates n retailers (n defined in data_config)"""
-        retailers = []
-
-        for retailer_count in range(1, self.data_config.retailers + 1):
-            retailers.append(
-                [
-                    self.now,  # created_at
-                    self.now,  # updated_at
-                    retailer_count,  # id
-                    f"retailer_{retailer_count}",  # slug
-                ]
-            )
-        return retailers
+        return [
+            [
+                self.now,  # created_at
+                self.now,  # updated_at
+                retailer_count,  # id
+                f"retailer_{retailer_count}",  # slug
+                "ACTIVE",  # status
+            ]
+            for retailer_count in range(1, self.data_config.retailers + 1)
+        ]
 
     def retailer_fetch_type(self) -> list:
         """Generates n retailer<->fetch_type links (1 per retailer (fetch type 1 only))"""
-        retailer_fetch_types = []
-
-        for retailer_count in range(1, self.data_config.retailers + 1):
-            retailer_fetch_types.append(
-                [
-                    self.now,  # created_at
-                    self.now,  # updated_at
-                    retailer_count,  # retailer_id
-                    1,  # fetch_type_id (1=Preloaded, 2=Jigsaw)
-                    "",  # agent_config
-                ]
-            )
-        return retailer_fetch_types
+        return [
+            [
+                self.now,  # created_at
+                self.now,  # updated_at
+                retailer_count,  # retailer_id
+                1,  # fetch_type_id (1=Preloaded, 2=Jigsaw)
+                "",  # agent_config
+            ]
+            for retailer_count in range(1, self.data_config.retailers + 1)
+        ]
 
     def reward_config(self) -> list:
         """
@@ -59,7 +54,6 @@ class CarinaGenerators:
             for _ in range(self.data_config.campaigns_per_retailer):
 
                 reward_config_id = next(id_gen)
-
                 reward_configs.append(
                     [
                         self.now,  # created_at
@@ -111,6 +105,7 @@ class CarinaGenerators:
                     False,  # deleted
                     reward_config_id,  # reward_config_id
                     retailer_id,  # retailer_id
+                    self.now + timedelta(days=30),  # expiry_date
                 ]
             )
 
@@ -144,18 +139,43 @@ class CarinaGenerators:
         reward generator
         """
 
-        reward_updates = []
         reward_uuids = [item["reward_uuid"] for item in self.allocated_rewards]
 
-        for count in range(self.data_config.reward_updates):
-            reward_updates.append(
+        return [
+            [
+                self.now,  # created_at
+                self.now,  # updated_at
+                count,  # id
+                choice(reward_uuids),  # reward_uuid
+                self.now.date(),  # date
+                choice(["CANCELLED", "REDEEMED", "ISSUED"]),  # status
+            ]
+            for count in range(self.data_config.reward_updates)
+        ]
+
+    def reward_campaign(self) -> list:
+        """
+        Generates n reward_campaigns (n defined in data_config as retailers * campaigns per retailer)
+        Assumes a 121 relationship between reward_campaign (CARINA) and reward_rule/campaign (VELA) (i.e. only one
+        per campaign)
+        """
+
+        reward_campaigns: list = []
+        reward_slug_count = id_generator(1)
+        campaigns_count_gen = id_generator(1)
+
+        for retailer_count in range(1, self.data_config.retailers + 1):
+            campaign_count = next(campaigns_count_gen)
+            reward_campaigns.extend(
                 [
                     self.now,  # created_at
                     self.now,  # updated_at
-                    count,  # id
-                    choice(reward_uuids),  # reward_uuid
-                    self.now.date(),  # date
-                    choice(["CANCELLED", "REDEEMED", "ISSUED"]),  # status
+                    campaign_count,  # id
+                    f"reward_{next(reward_slug_count)}",  # reward_slug
+                    f"campaign_{campaign_count}",  # campaign_slug
+                    retailer_count,  # retailer_id
+                    "ACTIVE",  # campaign_status
                 ]
+                for _ in range(self.data_config.campaigns_per_retailer)
             )
-        return reward_updates
+        return reward_campaigns

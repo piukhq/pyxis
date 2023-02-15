@@ -47,6 +47,7 @@ class TSVHandler:
 
         # VELA GENERATION
         self.write_to_tsv(self.vela_generator.retailer_rewards(), VELA_DB, table="retailer_rewards")
+        self.write_to_tsv(self.vela_generator.retailer_stores(), VELA_DB, table="retailer_store")
         self.write_to_tsv(self.vela_generator.campaign(), VELA_DB, table="campaign")
         self.write_to_tsv(self.vela_generator.earn_rule(), VELA_DB, table="earn_rule")
         self.write_to_tsv(self.vela_generator.reward_rule(), VELA_DB, table="reward_rule")
@@ -75,6 +76,7 @@ class TSVHandler:
         self.write_to_tsv(self.carina_generator.reward_config(), CARINA_DB, table="reward_config")
         self.write_to_tsv(self.carina_generator.reward(), CARINA_DB, table="reward")
         self.write_to_tsv(self.carina_generator.reward_update(), CARINA_DB, table="reward_update")
+        self.write_to_tsv(self.carina_generator.reward_campaign(), CARINA_DB, table="reward_campaign")
 
         self.write_to_tsv(
             retry_task(self.carina_task_type_ids, carina_retry_task_types_to_populate, data_config=self.data_config),
@@ -121,6 +123,11 @@ class TSVHandler:
         )
         self.write_to_tsv(self.polaris_generator.balance_adjustment(), POLARIS_DB, table="balance_adjustment")
         self.write_to_tsv(self.polaris_generator.email_template(), POLARIS_DB, table="email_template")
+        # self.write_to_tsv(
+        #     self.polaris_generator.account_holder_transaction_history(),
+        #     POLARIS_DB,
+        #     table="account_holder_transaction_history"
+        # )
 
         self.write_to_tsv(
             retry_task(self.polaris_task_type_ids, polaris_retry_task_types_to_populate, data_config=self.data_config),
