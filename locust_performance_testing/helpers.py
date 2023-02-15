@@ -20,6 +20,7 @@ class AccountHolder:
     email: str
     account_number: str
     account_holder_uuid: str
+    opt_out_token: int
     retailer: int
     account_holder_id: int
     marketing: bool = True
@@ -38,7 +39,10 @@ class LocustHandler:
             decode_responses=True,
         )
         self.repeat_tasks: dict = {}  # value assigned by locustfile
-        self.all_secrets: dict = {}  # value assigned by load_secrets()
+        self.all_secrets: dict = {
+            "polaris_key": "iFqnIsZVX_-3AyztZcLwdkHj3Rgio-PEwpM7v3pFlG8",
+            "vela_key": "MOGjXnv5qD73Doy_zhUHbCeoeyF9mSUalfcBqvjEZEg",
+        }  # value assigned by load_secrets()
         self.retailer_count: int | None = None  # value assigned by get_polaris_retailer_count()
         self.account_holder_count: int | None = None
         self.headers: dict = {}  # value assigned by get_headers()
@@ -161,7 +165,7 @@ class LocustHandler:
             with polaris_connection.cursor() as cursor:
 
                 query = (
-                    "SELECT email, account_number, account_holder_uuid, retailer_id, id "
+                    "SELECT email, account_number, account_holder_uuid, opt_out_token, retailer_id, id "
                     "FROM account_holder "
                     "WHERE id IN %s;"
                 )
@@ -172,12 +176,20 @@ class LocustHandler:
                 except Exception as ex:
                     raise StopUser("Unable to direct fetch account_holder information from db") from ex
 
-                for email, account_number, account_holder_uuid, retailer_id, account_holder_id in results:
+                for (
+                    email,
+                    account_number,
+                    account_holder_uuid,
+                    opt_out_token,
+                    retailer_id,
+                    account_holder_id,
+                ) in results:
 
                     account_holder = AccountHolder(
                         email=email,
                         account_number=account_number,
                         account_holder_uuid=account_holder_uuid,
+                        opt_out_token=opt_out_token,
                         retailer=retailer_id,
                         account_holder_id=account_holder_id,
                     )
