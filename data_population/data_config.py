@@ -4,6 +4,7 @@ from dataclasses import dataclass
 @dataclass
 class DataConfig:
     retailers: int
+    stores_per_retailer: int
     account_holders: int
     campaigns_per_retailer: int
     earn_rule_per_campaign: int
@@ -17,6 +18,7 @@ class DataConfig:
 data_configs = {
     "benchmark": DataConfig(
         retailers=10,
+        stores_per_retailer=20,
         campaigns_per_retailer=1,
         earn_rule_per_campaign=1,
         account_holders=200000,
@@ -28,6 +30,7 @@ data_configs = {
     ),
     "peak": DataConfig(
         retailers=5,
+        stores_per_retailer=50,
         campaigns_per_retailer=1,
         earn_rule_per_campaign=1,
         account_holders=390000,
@@ -39,6 +42,7 @@ data_configs = {
     ),
     "test": DataConfig(
         retailers=10,
+        stores_per_retailer=20,
         campaigns_per_retailer=1,
         earn_rule_per_campaign=1,
         account_holders=1000,
@@ -50,6 +54,7 @@ data_configs = {
     ),
     "test-migration-script": DataConfig(
         retailers=1,
+        stores_per_retailer=1,
         campaigns_per_retailer=1,
         earn_rule_per_campaign=1,
         account_holders=2000,

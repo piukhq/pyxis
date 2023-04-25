@@ -6,7 +6,7 @@ from collections import defaultdict
 
 from data_population.common.utils import id_generator
 from data_population.data_config import DataConfig
-from data_population.tsv_creation.fixtures.polaris import AccountHolderStatuses, marketing_preferences, profile_config
+from data_population.tsv_creation.fixtures.common import AccountHolderStatuses, marketing_preferences, profile_config
 from datetime import timezone
 from settings import fake
 
@@ -212,6 +212,25 @@ class CosmosGenerators:
             for count in range(1, self.data_config.account_holders + 1)
         ]
 
+    def retailer_store(self) -> list:
+        """Generated retailer store objects for retailers"""
+        stores = []
+        id_ = id_generator(1)
+        for r in range(1, self.data_config.retailers + 1):
+            for n in range(1, self.data_config.stores_per_retailer + 1):
+                stores.append(
+                    [
+                        next(id_), # id
+                        self.now,  # created_at
+                        self.now,  # updated_at
+                        f"Store {r}-{n}",  # store_name
+                        f"mid-{r}-{n}",  # mid
+                        r,  # retailer_id
+
+                    ]
+                )
+        return stores
+
     def marketing_preference(self) -> list:
         """Generates account_holder_marketing_preferences (n defined in data_config (1-1 w/account_holders))"""
         return [
@@ -264,7 +283,7 @@ class CosmosGenerators:
                     retailer_id, # retailer_id
                     f"tx_{count}",  # transaction_id
                     randint(500, 1000),  # amount
-                    "MID_1234",  # mid # FIXME - RetailerStore
+                    f"mid-{retailer_id}-{choice(list(range(1, self.data_config.stores_per_retailer + 1)))}",  # mid
                     self.now,  # datetime
                     f"tx_payment_{count}",  # payment_transaction_id
                     "TRUE", # processed
@@ -291,9 +310,6 @@ class CosmosGenerators:
         """
         Generates n rewards/vouchers (total n defined as allocated_rewards + pending_rewards + spare_rewards in
         data_config).
-
-        Saves allocated_rewards and unallocated_rewards for later use by Polaris' account_holder_reward and
-        account_holder_pending_reward tables.
         """
 
         rewards = []

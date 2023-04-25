@@ -43,9 +43,10 @@ class TSVHandler:
         self.write_to_tsv(self.cosmos_generator.reward_config(), COSMOS_DB, table="reward_config")
         self.write_to_tsv(self.cosmos_generator.reward_rule(), COSMOS_DB, table="reward_rule")
         self.write_to_tsv(self.cosmos_generator.account_holder(), COSMOS_DB, table="account_holder")
+        self.write_to_tsv(self.cosmos_generator.account_holder_profile(), COSMOS_DB, table="account_holder_profile")
+        self.write_to_tsv(self.cosmos_generator.retailer_store(), COSMOS_DB, table="retailer_store")
         self.write_to_tsv(self.cosmos_generator.transaction(), COSMOS_DB, table="transaction")
         self.write_to_tsv(self.cosmos_generator.transaction_earn(), COSMOS_DB, table="transaction_earn")
-        self.write_to_tsv(self.cosmos_generator.account_holder_profile(), COSMOS_DB, table="account_holder_profile")
         self.write_to_tsv(
             self.cosmos_generator.marketing_preference(),
             COSMOS_DB,

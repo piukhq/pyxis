@@ -12,8 +12,7 @@ def retry_task(task_type_ids_dict: dict, task_types_to_populate: dict, data_conf
     """
     `tasks` = DataConfig.account_holder or DataConfig.reward_updates or DataConfig.transactions.
 
-    `task_type_ids_dict` refer to the fixtures that should be passed. These will be app specific to
-    polaris, carina and vela.
+    `task_type_ids_dict` refer to the fixtures that should be passed.
     """
     id_gen = id_generator(1)
     retry_tasks = []
@@ -44,7 +43,6 @@ def task_type_key_value(
     `tasks` = DataConfig.account_holder or DataConfig.reward_updates or DataConfig.transactions.
 
     `task_type_ids_dict` and `task_type_keys_dict` refer to the fixtures that should be passed.
-    These will be app specific to polaris, carina and vela.
     """
 
     retry_task_id_gen = id_generator(1)
