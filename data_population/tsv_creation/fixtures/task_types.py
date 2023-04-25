@@ -12,17 +12,12 @@ _fake = Faker(locale="en_GB")
 
 
 #  We will generate retry rows for each of the following task types equal to the sum of their data_config values:
-polaris_retry_task_types_to_populate = {
+cosmos_retry_task_types_to_populate = {
     "enrolment-callback": ["account_holders"],
     "account-holder-activation": ["account_holders"],
-    "create-campaign-balances": ["account_holders"],
     "send-email": ["account_holders"],
-    "pending-reward-allocation": ["pending_rewards", "allocated_rewards"],
-    "convert-pending-rewards": ["pending_rewards"],
-    "delete-pending-rewards": ["pending_rewards"],
+    "reward-issuance": ["allocated_rewards"],
 }
-vela_retry_task_types_to_populate = {"reward-adjustment": ["transactions"]}
-carina_retry_task_types_to_populate = {"reward-issuance": ["allocated_rewards"]}
 
 _tk_type_to_faker = {
     "STRING": _fake.pystr,

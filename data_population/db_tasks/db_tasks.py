@@ -5,7 +5,7 @@ import psycopg2
 
 import settings
 
-from settings import CARINA_DB, DB_CONNECTION_URI, POLARIS_DB, TSV_BASE_DIR, VELA_DB
+from settings import COSMOS_DB, DB_CONNECTION_URI, TSV_BASE_DIR # CARINA_DB, POLARIS_DB, VELA_DB
 
 logger = logging.getLogger("DataTaskHandler")
 
@@ -16,23 +16,7 @@ class DataTaskHandler:
     def repopulate_all_databases(self) -> None:
         """Sorts all_tsv_info per database and executes per-database truncation and copy tasks."""
 
-        polaris_tsvs = []
-        vela_tsvs = []
-        carina_tsvs = []
-
-        #  Sort tables per db
-        for tsv in self.all_tsv_info:
-            if tsv["db"] == POLARIS_DB:
-                polaris_tsvs.append(tsv)
-            elif tsv["db"] == VELA_DB:
-                vela_tsvs.append(tsv)
-            elif tsv["db"] == CARINA_DB:
-                carina_tsvs.append(tsv)
-
-        #  Upload tables per db
-        self.truncate_and_repopulate_all_tables(tsv_info_list=vela_tsvs, db_name=VELA_DB)
-        self.truncate_and_repopulate_all_tables(tsv_info_list=carina_tsvs, db_name=CARINA_DB)
-        self.truncate_and_repopulate_all_tables(tsv_info_list=polaris_tsvs, db_name=POLARIS_DB)
+        self.truncate_and_repopulate_all_tables(tsv_info_list=self.all_tsv_info, db_name=COSMOS_DB)
 
     @staticmethod
     def truncate_and_repopulate_all_tables(tsv_info_list: list, db_name: str) -> None:
