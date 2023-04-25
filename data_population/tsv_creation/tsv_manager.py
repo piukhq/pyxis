@@ -7,9 +7,9 @@ from uuid import uuid4
 from data_population.common.utils import id_generator
 from data_population.data_config import DataConfig
 from data_population.tsv_creation.fixtures import (
+    cosmos_retry_task_types_to_populate,
     fetch_task_types_ids,
     generate_task_type_key_values,
-    cosmos_retry_task_types_to_populate
 )
 from data_population.tsv_creation.generators.cosmos_generators import CosmosGenerators
 from data_population.tsv_creation.generators.task_generators import retry_task, task_type_key_value
@@ -60,9 +60,7 @@ class TSVHandler:
         self.write_to_tsv(self.cosmos_generator.email_template(), COSMOS_DB, table="email_template")
         self.write_to_tsv(self.cosmos_generator.retailer_fetch_type(), COSMOS_DB, table="retailer_fetch_type")
         self.write_to_tsv(self.cosmos_generator.reward(), COSMOS_DB, table="reward")
-        self.write_to_tsv(
-            self.cosmos_generator.pending_reward(), COSMOS_DB, table="pending_reward"
-        )
+        self.write_to_tsv(self.cosmos_generator.pending_reward(), COSMOS_DB, table="pending_reward")
         self.write_to_tsv(self.cosmos_generator.reward_update(), COSMOS_DB, table="reward_update")
 
         self.write_to_tsv(

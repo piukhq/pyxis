@@ -20,6 +20,7 @@ class AccountHolder:
     email: str
     account_number: str
     account_holder_uuid: str
+    opt_out_token: str
     retailer: int
     account_holder_id: int
     marketing: bool = True
@@ -27,7 +28,7 @@ class AccountHolder:
 
 class LocustHandler:
     logger = logging.getLogger("LocustHandler")
-    polaris_connection_string: str = settings.DB_CONNECTION_URI.replace("/postgres?", f"/{settings.POLARIS_DB}?")
+    cosmos_connection_string: str = settings.DB_CONNECTION_URI.replace("/postgres?", f"/{settings.COSMOS_DB}?")
 
     def __init__(self) -> None:
         self.redis = Redis.from_url(
@@ -39,12 +40,11 @@ class LocustHandler:
         )
         self.repeat_tasks: dict = {}  # value assigned by locustfile
         self.all_secrets: dict = {}  # value assigned by load_secrets()
-        self.retailer_count: int | None = None  # value assigned by get_polaris_retailer_count()
+        self.retailer_count: int | None = None  # value assigned by get_retailer_count()
         self.account_holder_count: int | None = None
         self.headers: dict = {}  # value assigned by get_headers()
 
     def load_secrets(self) -> dict:
-
         if not self.all_secrets:
             vault_logger = logging.getLogger("VaultHandler")
             client = SecretClient(vault_url=settings.VAULT_URL, credential=DefaultAzureCredential())
@@ -53,15 +53,15 @@ class LocustHandler:
             )
             self.all_secrets.update(
                 {
-                    "polaris_key": client.get_secret(settings.POLARIS_AUTH_KEY_NAME).value,
-                    "vela_key": client.get_secret(settings.VELA_AUTH_KEY_NAME).value,
+                    "accounts_api_key": client.get_secret(settings.POLARIS_AUTH_KEY_NAME).value,
+                    "transactions_api_key": client.get_secret(settings.VELA_AUTH_KEY_NAME).value,
                 }
             )
             vault_logger.info("Successfully loaded secrets")
 
         return self.all_secrets
 
-    def get_polaris_retailer_count(self) -> int:
+    def get_retailer_count(self) -> int:
         """
         Returns current retailer count in Polaris. Only contacts db on first execution.
 
@@ -69,19 +69,19 @@ class LocustHandler:
         """
 
         if not self.retailer_count:
-            with psycopg2.connect(self.polaris_connection_string) as polaris_connection:
-                with polaris_connection.cursor() as cursor:
-                    query = "SELECT count(*) from retailer_config;"
+            with psycopg2.connect(self.cosmos_connection_string) as cosmos_connection:
+                with cosmos_connection.cursor() as cursor:
+                    query = "SELECT count(*) from retailer;"
                     cursor.execute(query)
                     results = cursor.fetchone()
 
                     self.retailer_count = int(results[0])
 
-            polaris_connection.close()
+            cosmos_connection.close()
 
         return self.retailer_count
 
-    def get_polaris_account_holder_count(self) -> int:
+    def get_account_holder_count(self) -> int:
         """
         Returns current retailer count in Polaris. Only contacts db on first execution.
 
@@ -89,20 +89,19 @@ class LocustHandler:
         """
 
         if not self.account_holder_count:
-            with psycopg2.connect(self.polaris_connection_string) as polaris_connection:
-                with polaris_connection.cursor() as cursor:
+            with psycopg2.connect(self.cosmos_connection_string) as cosmos_connection:
+                with cosmos_connection.cursor() as cursor:
                     query = "SELECT count(*) from account_holder;"
                     cursor.execute(query)
                     results = cursor.fetchone()
 
                     self.account_holder_count = int(results[0])
 
-            polaris_connection.close()
+            cosmos_connection.close()
 
         return self.account_holder_count
 
     def get_headers(self) -> dict:
-
         for key, value in self.all_secrets.items():
             if key not in self.headers:
                 self.headers[key] = {}
@@ -130,7 +129,7 @@ class LocustHandler:
         self.redis.set("pyxis_starting_pk", 1)
 
     def get_and_increment_starting_pk(self, increment: int) -> int:
-        max_id = self.get_polaris_account_holder_count()
+        max_id = self.get_account_holder_count()
         starting_pk = int(self.redis.get("pyxis_starting_pk") or "1")
 
         if starting_pk + increment > max_id:  # If we get to the end of the account_holder table, restart at 1.
@@ -143,7 +142,7 @@ class LocustHandler:
     # pylint: disable=too-many-locals
     def fetch_preloaded_account_holder_information(self, number_of_accounts: int = 1) -> list[AccountHolder]:
         """
-        Tries to get account holder information directly from polaris in a retry loop.
+        Tries to get account holder information directly from cosmos db in a retry loop.
 
         :param number_of_accounts: number of accounts to be fetched. Defaults to 1.
         :return: dictionary of {account_holder_email: {account_number: 1234, account_holder_uuid: 1a2b3c}}.
@@ -157,11 +156,10 @@ class LocustHandler:
 
         self.logger.info(f"Fetching account information for ids: {id_fetch_list}")
 
-        with psycopg2.connect(self.polaris_connection_string) as polaris_connection:
-            with polaris_connection.cursor() as cursor:
-
+        with psycopg2.connect(self.cosmos_connection_string) as cosmos_connection:
+            with cosmos_connection.cursor() as cursor:
                 query = (
-                    "SELECT email, account_number, account_holder_uuid, retailer_id, id "
+                    "SELECT email, account_number, account_holder_uuid, opt_out_token, retailer_id, id "
                     "FROM account_holder "
                     "WHERE id IN %s;"
                 )
@@ -172,18 +170,25 @@ class LocustHandler:
                 except Exception as ex:
                     raise StopUser("Unable to direct fetch account_holder information from db") from ex
 
-                for email, account_number, account_holder_uuid, retailer_id, account_holder_id in results:
-
+                for (
+                    email,
+                    account_number,
+                    account_holder_uuid,
+                    opt_out_token,
+                    retailer_id,
+                    account_holder_id,
+                ) in results:
                     account_holder = AccountHolder(
                         email=email,
                         account_number=account_number,
                         account_holder_uuid=account_holder_uuid,
+                        opt_out_token=opt_out_token,
                         retailer=retailer_id,
                         account_holder_id=account_holder_id,
                     )
                     all_account_holders.append(account_holder)
 
-        polaris_connection.close()
+        cosmos_connection.close()
 
         return all_account_holders
 

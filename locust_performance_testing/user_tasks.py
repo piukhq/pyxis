@@ -12,6 +12,7 @@ from locust import SequentialTaskSet
 from locust.exception import StopUser
 
 from locust_performance_testing.helpers import AccountHolder, locust_handler, repeatable_task
+from settings import ACCOUNTS_API_URL, LUNA_API_URL, PUBLIC_API_URL, TRANSACTIONS_API_URL
 
 if TYPE_CHECKING:
     from locust import HttpUser
@@ -30,10 +31,10 @@ class UserTasks(SequentialTaskSet):
 
     def __init__(self, parent: "HttpUser") -> None:
         super().__init__(parent)
-        self.url_prefix = ""
+        self.url_prefix = "api"
         self.keys = locust_handler.load_secrets()
         self.headers = locust_handler.get_headers()
-        self.retailer_slug = f"retailer_{random.randint(1, locust_handler.get_polaris_retailer_count())}"
+        self.retailer_slug = f"retailer_{random.randint(1, locust_handler.get_retailer_count())}"
         self.fake = Faker()
         self.account_number = ""
         self.account_uuid = ""
@@ -44,7 +45,6 @@ class UserTasks(SequentialTaskSet):
     # ---------------------------------POLARIS ENDPOINTS---------------------------------
 
     def on_start(self) -> None:
-
         repeats = locust_handler.repeat_tasks
 
         # We get a 'group' of account_holders from the db equal to the number of transactions for this user, as we
@@ -58,7 +58,6 @@ class UserTasks(SequentialTaskSet):
 
     @repeatable_task()
     def post_account_holder(self) -> None:
-
         first_name = self.fake.first_name()
         last_name = self.fake.last_name()
         email = f"{first_name}_{last_name}_{str(self.fake.pyint())[:5]}@performance.com".lower()
@@ -76,20 +75,19 @@ class UserTasks(SequentialTaskSet):
                 "city": "Performanceville",
             },
             "marketing_preferences": [{"key": "marketing_pref", "value": True}],
-            "callback_url": "http://luna-api/enrol/callback/success",
+            "callback_url": f"{LUNA_API_URL}/enrol/callback/success",
             "third_party_identifier": "perf",
         }
 
         self.client.post(
-            f"{self.url_prefix}/loyalty/{self.retailer_slug}/accounts/enrolment",
+            f"{ACCOUNTS_API_URL}{self.url_prefix}/loyalty/{self.retailer_slug}/accounts/enrolment",
             json=data,
-            headers=self.headers["polaris_key"],
+            headers=self.headers["accounts_api_key"],
             name=f"{self.url_prefix}/loyalty/<retailer_slug>/accounts/enrolment",
         )
 
     @repeatable_task()
     def post_get_by_credentials(self) -> None:
-
         account: AccountHolder = next(self.account_holders, None)
         if not account:
             raise ValueError(f"no more accounts in {self.__class__.__name__}.account_holders")
@@ -97,37 +95,34 @@ class UserTasks(SequentialTaskSet):
         data = {"email": account.email, "account_number": account.account_number}
 
         self.client.post(
-            f"{self.url_prefix}/loyalty/retailer_{account.retailer}/accounts/getbycredentials",
+            f"{ACCOUNTS_API_URL}{self.url_prefix}/loyalty/retailer_{account.retailer}/accounts/getbycredentials",
             json=data,
-            headers=self.headers["polaris_key"],
+            headers=self.headers["accounts_api_key"],
             name=f"{self.url_prefix}/loyalty/<retailer_slug>/accounts/getbycredentials",
         )
 
     @repeatable_task()
     def get_account(self) -> None:
-
         account: AccountHolder = next(self.account_holders)
 
         self.client.get(
-            f"{self.url_prefix}/loyalty/retailer_{account.retailer}/accounts/{account.account_holder_uuid}",
-            headers=self.headers["polaris_key"],
+            f"{ACCOUNTS_API_URL}{self.url_prefix}/loyalty/retailer_{account.retailer}/accounts/{account.account_holder_uuid}",
+            headers=self.headers["accounts_api_key"],
             name=f"{self.url_prefix}/loyalty/<retailer_slug>/accounts/<account_uuid>",
         )
 
     @repeatable_task()
     def get_marketing_unsubscribe(self) -> None:
-
         account: AccountHolder = next(self.account_holders)
 
         self.client.get(
-            f"{self.url_prefix}/loyalty/retailer_{account.retailer}/marketing/unsubscribe?u="
-            f"{account.account_holder_uuid}",
+            f"{PUBLIC_API_URL}{self.url_prefix}/public/retailer_{account.retailer}/marketing/unsubscribe?u="
+            f"{account.opt_out_token}",
             name=f"{self.url_prefix}/loyalty/<retailer_slug>/marketing/unsubscribe?u=<account_uuid>",
         )
 
     @repeatable_task()
     def post_transaction(self) -> None:
-
         account: AccountHolder = next(self.account_holders)
 
         data = {
@@ -140,25 +135,11 @@ class UserTasks(SequentialTaskSet):
         }
 
         self.client.post(
-            f"{self.url_prefix}/retailers/retailer_{account.retailer}/transaction",
-            headers=self.headers["vela_key"],
+            f"{TRANSACTIONS_API_URL}{self.url_prefix}/transactions/retailer_{account.retailer}",
+            headers=self.headers["transactions_api_key"],
             json=data,
             name=f"{self.url_prefix}/retailers/<retailer_slug>/transaction",
         )
-
-    #  endpoint not yet implemented but leaving for later
-    @repeatable_task()
-    def delete_account(self) -> None:
-
-        account: AccountHolder = next(self.account_holders)
-
-        with self.client.delete(
-            f"{self.url_prefix}/loyalty/{self.retailer_slug}/accounts/{account.account_holder_uuid}",
-            headers=self.headers["polaris_key"],
-            name=f"{self.url_prefix}/loyalty/<retailer_slug>/accounts/<account_uuid>",
-        ) as response:
-            if response.status_code == 200:
-                self.accounts.remove(account)
 
     # ---------------------------------SPECIAL TASKS---------------------------------
 
