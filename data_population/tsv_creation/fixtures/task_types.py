@@ -63,11 +63,9 @@ def generate_task_type_key_values(db_name: str) -> dict[int, dict[int, Any]]:
 
     with psycopg2.connect(db_uri) as db_connection:
         with db_connection.cursor() as cursor:
-
             cursor.execute(task_type_key_query)
 
             for tk_type, tk_id, tt_id in cursor.fetchall():
-
                 if tt_id not in task_type_key_data:
                     task_type_key_data[tt_id] = []
 

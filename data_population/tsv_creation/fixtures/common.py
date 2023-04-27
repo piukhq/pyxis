@@ -26,6 +26,7 @@ class AccountHolderStatuses(str, Enum):
     FAILED = "FAILED"
     INACTIVE = "INACTIVE"
 
+
 audit_data = [
     {
         "request": {"url": "http://polaris-api/bpl/loyalty/test-retailer/accounts/foo/adjustments"},

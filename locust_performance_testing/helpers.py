@@ -47,7 +47,12 @@ class LocustHandler:
     def load_secrets(self) -> dict:
         if not self.all_secrets:
             vault_logger = logging.getLogger("VaultHandler")
-            client = SecretClient(vault_url=settings.VAULT_URL, credential=DefaultAzureCredential())
+            client = SecretClient(
+                vault_url=settings.VAULT_URL,
+                credential=DefaultAzureCredential(
+                    additionally_allowed_tenants=["a6e2367a-92ea-4e5a-b565-723830bcc095"]
+                ),
+            )
             vault_logger.info(
                 f"Attempting to load secrets [{settings.POLARIS_AUTH_KEY_NAME}], [{settings.VELA_AUTH_KEY_NAME}]"
             )
