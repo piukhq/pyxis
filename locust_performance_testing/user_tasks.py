@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Generator
 from uuid import uuid4
 
 from faker import Faker
-from locust import SequentialTaskSet
+from locust import SequentialTaskSet, tag
 from locust.exception import StopUser
 
 from locust_performance_testing.helpers import AccountHolder, locust_handler, repeatable_task
@@ -50,7 +50,7 @@ class UserTasks(SequentialTaskSet):
         # We get a 'group' of account_holders from the db equal to the number of transactions for this user, as we
         # ideally want to send 1 transaction per account holder.
 
-        accounts_to_fetch = repeats["post_transaction"]
+        accounts_to_fetch = repeats["post_transaction"] or repeats["post_transaction_with_trc"]
 
         accounts = locust_handler.fetch_preloaded_account_holder_information(accounts_to_fetch)
 
@@ -88,7 +88,7 @@ class UserTasks(SequentialTaskSet):
 
     @repeatable_task()
     def post_get_by_credentials(self) -> None:
-        account: AccountHolder = next(self.account_holders, None)
+        account: AccountHolder | None = next(self.account_holders, None)
         if not account:
             raise ValueError(f"no more accounts in {self.__class__.__name__}.account_holders")
 
@@ -104,9 +104,13 @@ class UserTasks(SequentialTaskSet):
     @repeatable_task()
     def get_account(self) -> None:
         account: AccountHolder = next(self.account_holders)
+        url = (
+            f"{ACCOUNTS_API_URL}{self.url_prefix}/loyalty/retailer_{account.retailer}/"
+            f"accounts/{account.account_holder_uuid}"
+        )
 
         self.client.get(
-            f"{ACCOUNTS_API_URL}{self.url_prefix}/loyalty/retailer_{account.retailer}/accounts/{account.account_holder_uuid}",
+            url,
             headers=self.headers["accounts_api_key"],
             name=f"{self.url_prefix}/loyalty/<retailer_slug>/accounts/<account_uuid>",
         )
@@ -121,13 +125,15 @@ class UserTasks(SequentialTaskSet):
             name=f"{self.url_prefix}/loyalty/<retailer_slug>/marketing/unsubscribe?u=<account_uuid>",
         )
 
+    @tag("post_random_transaction")
     @repeatable_task()
     def post_transaction(self) -> None:
+        """This user task sends a transaction with an amount which meets the reward goal"""
         account: AccountHolder = next(self.account_holders)
 
         data = {
             "id": f"TX{uuid4()}",
-            "transaction_total": random.randint(100, 400),
+            "transaction_total": random.randint(500, 1000),
             "transaction_id": f"BPL123456789{randint(1, 20000)}",
             "datetime": self.now,
             "MID": "1234",
@@ -139,6 +145,56 @@ class UserTasks(SequentialTaskSet):
             headers=self.headers["transactions_api_key"],
             json=data,
             name=f"{self.url_prefix}/retailers/<retailer_slug>/transaction",
+        )
+
+    @tag("trc_and_refund")
+    @repeatable_task()
+    def post_transaction_with_trc(self) -> None:
+        """This user task sends a transaction with an amount which meets the reward goal
+        a sufficient amount of times to reach a transaction reward cap (trc)
+        and must only be included in the test where a reward cap is in place in reward_rule table
+        """
+        account: AccountHolder = next(self.account_holders)
+
+        data = {
+            "id": f"TX{uuid4()}",
+            "transaction_total": 2000,
+            "transaction_id": f"BPL123456789{randint(1, 20000)}",
+            "datetime": self.now,
+            "MID": "1234",
+            "loyalty_id": account.account_holder_uuid,
+        }
+
+        self.client.post(
+            f"{TRANSACTIONS_API_URL}{self.url_prefix}/transactions/retailer_{account.retailer}",
+            headers=self.headers["transactions_api_key"],
+            json=data,
+            name="transaction_with_trc",
+        )
+
+    @tag("trc_and_refund")
+    @repeatable_task()
+    def post_transaction_with_refund(self) -> None:
+        """This user task sends a negative transaction with an amount big enough to trigger
+        the absorbing of pending rewards + account holder campaign balance in order to meet
+        the refund amount. Must only be run where data population is setup for ACCUMULATOR campaign
+        """
+        account: AccountHolder = next(self.account_holders)
+
+        data = {
+            "id": f"TX{uuid4()}",
+            "transaction_total": -10000,
+            "transaction_id": f"BPL123456789{randint(1, 20000)}",
+            "datetime": self.now,
+            "MID": "1234",
+            "loyalty_id": account.account_holder_uuid,
+        }
+
+        self.client.post(
+            f"{TRANSACTIONS_API_URL}{self.url_prefix}/transactions/retailer_{account.retailer}",
+            headers=self.headers["transactions_api_key"],
+            json=data,
+            name="refund_transaction",
         )
 
     # ---------------------------------SPECIAL TASKS---------------------------------

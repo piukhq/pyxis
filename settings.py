@@ -24,7 +24,7 @@ VELA_AUTH_KEY_NAME = env("VELA_AUTH_KEY_NAME", "bpl-vela-api-auth-token")
 REDIS_URL = env("REDIS_URL", "redis://localhost:6379/0")
 
 DB_CONNECTION_URI = env("DB_CONNECTION_URI", "")
-COSMOS_DB = env("COSMOS_DB", "cosmos")
+COSMOS_DB = env("COSMOS_DB", "perf_bpl_cosmos")
 ACCOUNTS_API_URL = env("ACCOUNTS_API_URL", "")
 TRANSACTIONS_API_URL = env("TRANSACTIONS_API_URL", "")
 PUBLIC_API_URL = env("PUBLIC_API_URL", "")

@@ -43,3 +43,18 @@ Alternatively, to run headless mode:
 ```sh
 pipenv run locust --host=http://localhost --locustfile=locust_performance_testing/locustfile_dev.py --headless --users=1 --spawn-rate=1
 ```
+
+The locust task set have tags which can be used to alter the user tasks which are run:
+
+i.e locust_performance_testing/user_tasks.py has the following tags:
+
+- `trc_and_refund`, this is for including/excluding user tasks which will additional bpl features, specifically transaction reward cap (trc) and refunds
+- `post_random_transaction`, this is for including/excluding user task for sending a randomized transaction value. See locust_performance_testing.user_tasks:post_transaction for more details
+
+The following command will all user tasks except the ones which are tagged with
+`post_random_transaction`
+
+```sh
+pipenv run locust --host=http://localhost --locustfile=locust_performance_testing/locustfile.py --exclude-tags post_random_transaction
+```
+

@@ -1,6 +1,6 @@
 import json
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from random import choice, randint
 
 from data_population.common.utils import id_generator
@@ -20,7 +20,7 @@ def retry_task(task_type_ids_dict: dict, task_types_to_populate: dict, data_conf
         rowcount = sum(getattr(data_config, i) for i in value_list)
         for _ in range(1, rowcount + 1):
             task_type_id = task_type_ids_dict[task_type]
-            now = datetime.utcnow()
+            now = datetime.now(timezone.utc)
             retry_tasks.append(
                 [
                     now,  # created_at
@@ -28,7 +28,7 @@ def retry_task(task_type_ids_dict: dict, task_types_to_populate: dict, data_conf
                     next(id_gen),  # retry_task_id
                     randint(1, 3),  # attempts
                     json.dumps(audit_data),  # audit data
-                    now + timedelta(minutes=5),  # next_time_attempt
+                    now + timedelta(days=2),  # next_time_attempt
                     choice(["SUCCESS", "REQUEUED", "CANCELLED"]),  # status
                     task_type_id,  # task_type_id
                 ]
@@ -51,7 +51,6 @@ def task_type_key_value(
     for task_type, value_list in task_types_to_populate.items():
         rowcount = sum(getattr(data_config, i) for i in value_list)
         for _ in range(1, rowcount + 1):
-
             retry_task_id = next(retry_task_id_gen)
 
             for task_type_key_id, value in task_type_keys_dict[task_type_ids_dict[task_type]].items():

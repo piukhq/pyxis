@@ -5,7 +5,7 @@ import psycopg2
 
 import settings
 
-from settings import COSMOS_DB, DB_CONNECTION_URI, TSV_BASE_DIR # CARINA_DB, POLARIS_DB, VELA_DB
+from settings import COSMOS_DB, DB_CONNECTION_URI, TSV_BASE_DIR  # CARINA_DB, POLARIS_DB, VELA_DB
 
 logger = logging.getLogger("DataTaskHandler")
 
@@ -37,7 +37,6 @@ class DataTaskHandler:
         # cannot work in a transaction.
 
         for tsv_info in tsv_info_list:
-
             cursor = connection.cursor()
             table_name = tsv_info["table"]
             file_name = tsv_info["filename"]

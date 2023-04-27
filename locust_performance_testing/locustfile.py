@@ -23,6 +23,8 @@ class WebsiteUser(HttpUser):
         "get_account": 39,
         "get_marketing_unsubscribe": 10,
         "post_transaction": 14,
+        "post_transaction_with_trc": 10,
+        "post_transaction_with_refund": 10,
         "delete_account": 0,  # will 404 if > post_account_holder (ENDPOINT NOT IMPLEMENTED)
         "stop_locust_after_test_suite": 1,  # Should be set to 1 in most normal situations
     }

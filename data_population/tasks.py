@@ -33,7 +33,6 @@ def populate_all(data_configuration: str) -> None:
 
 @timed_function
 def upload_only(data_configuration: str) -> None:  # pylint: disable=unused-argument
-
     #  Repopulate all dbs
     logger.info("Attempting upload of all tsvs")
     start_time = time.time()

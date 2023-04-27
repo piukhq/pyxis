@@ -18,7 +18,6 @@ def timed_function(func: Callable) -> Callable:
     """Times functions...!"""
 
     def inner(*args: Any, **kwargs: Any) -> None:
-
         logger = logging.getLogger("FunctionTimer")
 
         start_time = time.time()

@@ -1,13 +1,12 @@
 import uuid
 
-from datetime import datetime, timedelta
-from random import choice, randint
 from collections import defaultdict
+from datetime import datetime, timedelta, timezone
+from random import choice, randint
 
 from data_population.common.utils import id_generator
 from data_population.data_config import DataConfig
 from data_population.tsv_creation.fixtures.common import AccountHolderStatuses, marketing_preferences, profile_config
-from datetime import timezone
 from settings import fake
 
 
@@ -64,7 +63,6 @@ class CosmosGenerators:
         campaigns = []
         for count in range(1, self.data_config.retailers + 1):
             for _ in range(1, self.data_config.campaigns_per_retailer + 1):
-
                 if campaign_id := next(id_gen, None):
                     campaigns.append(
                         [
@@ -75,7 +73,7 @@ class CosmosGenerators:
                             f"Campaign {campaign_id}",  # name
                             f"campaign_{campaign_id}",  # slug
                             count,  # retailer_id
-                            "ACCUMULATOR",  # loyalty_type
+                            self.data_config.loyalty_type,  # loyalty_type
                             self.now,  # start_date
                             self.end_date,  # end_date (set to 100 weeks in the future)
                         ]
@@ -93,7 +91,8 @@ class CosmosGenerators:
         """
         id_gen = id_generator(1)
         total_campaigns = self.data_config.retailers * self.data_config.campaigns_per_retailer
-        earn_rules = []
+        earn_rules: list = []
+        increment = 500 if self.data_config.loyalty_type == "STAMPS" else "NULL"
         for campaign_count in range(1, total_campaigns + 1):
             earn_rules.extend(
                 [
@@ -101,7 +100,7 @@ class CosmosGenerators:
                     self.now,  # created_at
                     self.now,  # updated_at
                     100,  # threshold
-                    500,  # increment
+                    increment,  # increment
                     1,  # increment_multiplier
                     0,  # max_amount
                     campaign_count,  # campaign_id
@@ -121,7 +120,6 @@ class CosmosGenerators:
 
         for retailer_count in range(1, self.data_config.retailers + 1):
             for _ in range(self.data_config.campaigns_per_retailer):
-
                 reward_config_id = next(id_gen)
 
                 reward_configs.append(
@@ -156,15 +154,13 @@ class CosmosGenerators:
                         self.now,  # created_at
                         self.now,  # updated_at
                         500,  # reward_goal
-                        "NULL",  # allocation_window
-                        "NULL",  # reward_cap
+                        self.data_config.allocation_window,  # allocation_window
+                        self.data_config.reward_cap,  # reward_cap
                         id_,  # campaign_id
                         id_,  # reward_config_id
                     ]
                 )
         return reward_rules
-
-
 
     def account_holder(self) -> list:  # sourcery skip: use-assigned-variable
         """Generates n account_holders (n defined in data_config)"""
@@ -196,8 +192,8 @@ class CosmosGenerators:
         return [
             [
                 count,  # id
-                self.now, # created_at
-                self.now, # updated_at
+                self.now,  # created_at
+                self.now,  # updated_at
                 count,  # account_holder_id
                 fake.first_name(),  # first name
                 fake.last_name(),  # surname
@@ -216,17 +212,16 @@ class CosmosGenerators:
         """Generated retailer store objects for retailers"""
         stores = []
         id_ = id_generator(1)
-        for r in range(1, self.data_config.retailers + 1):
-            for n in range(1, self.data_config.stores_per_retailer + 1):
+        for retailer_count in range(1, self.data_config.retailers + 1):
+            for store_count in range(1, self.data_config.stores_per_retailer + 1):
                 stores.append(
                     [
-                        next(id_), # id
+                        next(id_),  # id
                         self.now,  # created_at
                         self.now,  # updated_at
-                        f"Store {r}-{n}",  # store_name
-                        f"mid-{r}-{n}",  # mid
-                        r,  # retailer_id
-
+                        f"Store {retailer_count}-{store_count}",  # store_name
+                        f"mid-{retailer_count}-{store_count}",  # mid
+                        retailer_count,  # retailer_id
                     ]
                 )
         return stores
@@ -250,9 +245,8 @@ class CosmosGenerators:
         """Generates account_holder_campaign_balances (n defined in data_config (1-1 w/account_holders))"""
         account_holder_campaign_balances = []
         for account_holder_id in range(1, self.data_config.account_holders + 1):
-
             retailer_id = self.all_account_holder_retailers[account_holder_id]
-            campaign_id =choice(self.campaigns_by_retailer[retailer_id])
+            campaign_id = choice(self.campaigns_by_retailer[retailer_id])
 
             account_holder_campaign_balances.append(
                 [
@@ -280,13 +274,13 @@ class CosmosGenerators:
                     self.now,  # created_at
                     self.now,  # updated_at
                     account_holder_id,  # account_holder_id
-                    retailer_id, # retailer_id
+                    retailer_id,  # retailer_id
                     f"tx_{count}",  # transaction_id
                     randint(500, 1000),  # amount
                     f"mid-{retailer_id}-{choice(list(range(1, self.data_config.stores_per_retailer + 1)))}",  # mid
                     self.now,  # datetime
                     f"tx_payment_{count}",  # payment_transaction_id
-                    "TRUE", # processed
+                    "TRUE",  # processed
                 ]
             )
         return transactions
@@ -317,19 +311,22 @@ class CosmosGenerators:
         for reward in range(
             self.data_config.allocated_rewards + self.data_config.pending_rewards + self.data_config.spare_rewards
         ):
-
             account_holders_by_retailer = self.get_account_holders_by_retailer()
             # first <allocated_rewards> rewards should be set as allocated
             reward_id = str(uuid.uuid4())
             reward_config_id = choice(list(self.retailers_by_reward_config))
             retailer_id = self.retailers_by_reward_config[reward_config_id]  # retailer_id
-            account_holder_id =  (choice(account_holders_by_retailer[retailer_id]) if reward < self.data_config.allocated_rewards else None)
+            account_holder_id = (
+                choice(account_holders_by_retailer[retailer_id])
+                if reward < self.data_config.allocated_rewards
+                else None
+            )
             campaign_id = choice(self.campaigns_by_retailer[retailer_id]) if account_holder_id else "NULL"
             code = str(uuid.uuid4())
 
             rewards.append(
                 [
-                    reward, # id
+                    reward,  # id
                     self.now,  # created_at
                     self.now,  # updated_at
                     reward_id,  # reward_uuid
@@ -339,8 +336,8 @@ class CosmosGenerators:
                     "FALSE",  # deleted
                     self.now,  # issued_date
                     self.end_date,  # expiry_date
-                    "NULL", # redeemed_date
-                    "NULL", # cancelled_date,
+                    "NULL",  # redeemed_date
+                    "NULL",  # cancelled_date,
                     "http://associated.url",  # associated_url
                     retailer_id,  # retailer_id
                     campaign_id,  # campaign_id
@@ -367,34 +364,36 @@ class CosmosGenerators:
 
         pending_rewards = []
         account_holders_by_retailer = self.get_account_holders_by_retailer()
+        pending_reward_value = 500
+        if self.data_config.pending_reward_conversion:
+            conversion_date = self.now + timedelta(days=-1)
+        else:
+            conversion_date = self.now + timedelta(days=1)
 
         for reward_count in range(1, self.data_config.pending_rewards + 1):
-
             reward = self.unallocated_rewards.pop()
-            value = randint(500, 1000)
 
             pending_rewards.append(
                 [
                     reward_count,  # id
                     self.now,  # created_at
                     self.now,  # updated_at
-                    uuid.uuid4(), # pending_reward_uuid
+                    uuid.uuid4(),  # pending_reward_uuid
                     choice(account_holders_by_retailer[reward["retailer_id"]]),  # account_holder_id
                     choice(self.campaigns_by_retailer[reward["retailer_id"]]),  # campaign_id
                     self.now,  # created_date
-                    self.now + timedelta(days=-1),  # conversion_date
-                    value, # value
-                    1, # count
-                    value, # total_cost_to_user
+                    conversion_date,  # conversion_date
+                    pending_reward_value,  # value
+                    1,  # count
+                    pending_reward_value,  # total_cost_to_user
                 ]
             )
         return pending_rewards
 
-
     def email_template_types(self) -> list:
         """Generates email_template_type rows - one of each per retailer"""
         row_id = id_generator(1)
-        template_types = []
+        template_types: list = []
         for _ in range(1, self.data_config.retailers + 1):
             for slug in ("WELCOME_EMAIL", "REWARD_ISSUANCE", "PURCHASE_PROMPT"):
                 template_types.extend(
@@ -406,6 +405,7 @@ class CosmosGenerators:
                     ]
                     for _ in range(1, self.data_config.retailers + 1)
                 )
+        return template_types
 
     def email_template(self) -> list:
         """
@@ -444,8 +444,6 @@ class CosmosGenerators:
             ]
             for retailer_count in range(1, self.data_config.retailers + 1)
         ]
-
-
 
     def reward_update(self) -> list:
         """
